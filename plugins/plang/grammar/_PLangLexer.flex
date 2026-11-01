@@ -1,6 +1,8 @@
 // Copyright 2026 pLang IDE contributors. Use of this source code is governed by the Apache 2.0 license.
 // Lexer grammar for the pLang language (https://github.com/PleaseEnterYourText-Studio/pLang).
 // Token set mirrors the reference compiler (include/token.h, src/Lexer.cpp).
+// Generate with JFlex and tools/lexer/idea-flex.skeleton, then replace the three-argument
+// Character.codePointAt(zzBufferL, pos, end) with the two-argument form, because the skeleton holds a CharSequence.
 package org.plang.lang.lexer;
 
 import com.intellij.lexer.FlexLexer;
@@ -43,7 +45,7 @@ BIN_LITERAL=0[bB][01_]+
 FLOAT_LITERAL=(({DIGITS}\.{DIGITS}?|\.{DIGITS})({EXPONENT})?|{DIGITS}{EXPONENT})[fF]?|{DIGITS}[fF]
 INT_LITERAL={DIGITS}(ll|LL|[lL])?
 
-IDENTIFIER=[:letter:]_[:letter:\d_]*
+IDENTIFIER=[:letter:][:letter:\d_]*
 
 %%
 
