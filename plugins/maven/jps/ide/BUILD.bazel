@@ -1,0 +1,56 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.maven.jps.ide` start
+content_module_jar(module = ":ide")
+### auto-generated section `dev intellij.maven.jps.ide` end
+
+### auto-generated section `build intellij.maven.jps.ide` start
+jvm_library(
+    name = "ide",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.maven.jps.ide",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//plugins/maven/jps",
+        "//java/compiler/openapi:java-compiler",
+        "//platform/util",
+        "//platform/core-api:core",
+        "//platform/lang-core",
+        "//plugins/maven",
+        "//platform/projectModel-api:projectModel",
+        "//platform/projectModel-impl",
+        "//platform/util/jdom",
+        "//platform/analysis-api:analysis",
+        "//platform/execution",
+        "//platform/backend/workspace",
+        "//platform/workspace/storage",
+        "//platform/platform-util-io:ide-util-io",
+        "//jps/jps-builders:build",
+        "//jps/model-api:model",
+    ],
+)
+### auto-generated section `build intellij.maven.jps.ide` end
+
+### auto-generated section `iml intellij.maven.jps.ide` start
+exports_files(
+    [
+        "intellij.maven.jps.ide.iml",
+        "resources/intellij.maven.jps.ide.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.maven.jps.ide` end

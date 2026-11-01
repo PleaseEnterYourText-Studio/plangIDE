@@ -1,0 +1,561 @@
+// Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+package com.intellij.psi.impl.smartPointers
+
+import com.intellij.codeInsight.multiverse.CodeInsightContext
+import com.intellij.codeInsight.multiverse.CodeInsightContextManager
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.editor.event.DocumentEvent
+import com.intellij.openapi.editor.impl.FrozenDocument
+import com.intellij.openapi.util.LowMemoryWatcher
+import com.intellij.openapi.util.Segment
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiElement
+import com.intellij.util.CommonProcessors
+import com.intellij.util.Processor
+import com.intellij.util.SmartList
+import com.intellij.util.containers.ContainerUtil
+import com.intellij.util.containers.SmartHashSet
+import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.annotations.TestOnly
+import org.jetbrains.annotations.VisibleForTesting
+import java.lang.ref.ReferenceQueue
+import java.lang.ref.WeakReference
+import java.util.Arrays
+
+/**
+ * Tracks smart pointers for a single file.
+ *
+ * ** GC **
+ *
+ * Instances of [SmartPsiElementPointerImpl] are stored on weak references.
+ * Corresponding [SelfElementInfo] instances are stored in [MarkerCache] on hard references.
+ * Once [SmartPsiElementPointerImpl] is garbage-collected, the corresponding [SelfElementInfo] is removed from [MarkerCache].
+ */
+@ApiStatus.Internal
+class SmartPointerTracker(initialModCount: Long) {
+  @Volatile
+  private var validationModCount: Long = initialModCount
+  private val selfInfoList = WeakPointerReferenceList()
+  private val fileInfoList = WeakPointerReferenceList()
+  private val markerCache = MarkerCache(this)
+  private var mySorted = false
+  private val holderCache = ContainerUtil.createConcurrentWeakKeySoftValueMap<CodeInsightContext, FileHolder>()
+  private val pendingContextMappings = SmartList<Map<CodeInsightContext, CodeInsightContext?>>()
+
+  /**
+   * A superset of the non-null [FileHolder.context]s of the live tracked infos, or `null` when unknown.
+   *
+   * [revalidate] uses the set to prove that a generation bump changed no context of this file without
+   * walking the infos; that walk is O(pointer count) and runs after every bulk PSI invalidation
+   * (see IJPL-258041), so the common no-change case must stay away from it.
+   *
+   * The set never misses a context: every write of a non-null context into a tracked info happens under
+   * the tracker monitor — the info's holder exists before [startTracking] adds the context here, and
+   * [revalidate] refreshes the set whenever it reassigns holders. The one unsynchronized holder write,
+   * in [SelfElementInfo.restoreFile], stores a null context and so cannot violate the invariant.
+   * The set may hold stale contexts (a collected pointer, a holder nulled by `restoreFile`); a stale
+   * entry costs one exact rescan, which replaces the set with the exact one.
+   */
+  private var knownContexts: MutableSet<CodeInsightContext>? = null
+
+  /** Registers [pointer] in this tracker and adds the context of its holder to [knownContexts]. */
+  @JvmName("startTracking")
+  @Synchronized
+  internal fun startTracking(pointer: SmartPsiElementPointerImpl<*>) {
+    val elementInfo = pointer.elementInfo as ContextAwareInfo
+
+    when (elementInfo) {
+      is SelfElementInfo -> {
+        val reference = SelfElementPointerReference(pointer, this)
+        selfInfoList.add(reference)
+        mySorted = false
+        if (pointer.selfInfo.hasRange()) {
+          markerCache.rangeChanged()
+        }
+      }
+      is FileElementInfo -> {
+        val reference = FilePointerReference(pointer, this)
+        fileInfoList.add(reference)
+      }
+      else -> {
+        throw IllegalArgumentException("Unexpected element info: $elementInfo")
+      }
+    }
+
+    elementInfo.fileHolder.context?.let { knownContexts?.add(it) }
+  }
+
+  /** Removes [reference] from its list. The reference queue calls it after the GC collects the pointer. */
+  @Synchronized
+  private fun removeReference(reference: PointerReference) {
+    when (reference) {
+      is SelfElementPointerReference -> selfInfoList.remove(reference)
+      is FilePointerReference -> fileInfoList.remove(reference)
+    }
+  }
+
+  /** Sorts the self-pointers by [MarkerCache.INFO_COMPARATOR] when an earlier change broke the order. */
+  private fun ensureSorted() {
+    if (mySorted) return
+    selfInfoList.sort { p1, p2 ->
+      MarkerCache.INFO_COMPARATOR.compare(p1.selfInfo, p2.selfInfo)
+    }
+    mySorted = true
+  }
+
+  /** Applies the document [events] to the cached range markers. [frozen] is the document state before the events. */
+  @JvmName("updateMarkers")
+  @Synchronized
+  internal fun updateMarkers(frozen: FrozenDocument, events: List<DocumentEvent>) {
+    val stillSorted = markerCache.updateMarkers(frozen, events)
+    if (!stillSorted) {
+      mySorted = false
+    }
+  }
+
+  /** Returns the range of [info] after the uncommitted document [events], or `null` when the range is gone. */
+  @JvmName("getUpdatedRange")
+  @Synchronized
+  internal fun getUpdatedRange(
+    info: SelfElementInfo,
+    document: FrozenDocument,
+    events: List<DocumentEvent>,
+  ): Segment? {
+    return markerCache.getUpdatedRange(info, document, events)
+  }
+
+  /** Moves the stub-based [info] to the range of the AST [element] and marks the cached ranges as changed. */
+  @JvmName("switchStubToAst")
+  @Synchronized
+  internal fun switchStubToAst(info: AnchorElementInfo, element: PsiElement) {
+    info.switchToTreeRange(element)
+    markerCache.rangeChanged()
+    mySorted = false
+  }
+
+  /** Prepares the self-pointers for a document commit. A stub-based pointer moves to the AST before the commit. */
+  @JvmName("fastenBelts")
+  @Synchronized
+  internal fun fastenBelts(manager: SmartPointerManagerEx) {
+    processQueue()
+    selfInfoList.processAlivePointers { pointer ->
+      pointer.selfInfo.fastenBelt(manager)
+      true
+    }
+  }
+
+  /** Checks the cached element of each element pointer after a reparse. A file range pointer stays as it is. */
+  @JvmName("updatePointerTargetsAfterReparse")
+  @Synchronized
+  internal fun updatePointerTargetsAfterReparse() {
+    selfInfoList.processAlivePointers { pointer ->
+      if (pointer !is SmartPsiFileRangePointerImpl) {
+        updatePointerTarget(pointer, pointer.psiRange)
+      }
+      true
+    }
+  }
+
+  /**
+   * Keeps the cached element of [pointer] when it is still valid at [pointerRange].
+   * Otherwise, restores the pointer and caches the result.
+   */
+  private fun <E : PsiElement> updatePointerTarget(
+    pointer: SmartPsiElementPointerImpl<E>,
+    pointerRange: Segment?,
+  ) {
+    val cachedElement = pointer.getCachedElement() ?: return
+
+    val cachedValid = cachedElement.isValid()
+    if (cachedValid) {
+      if (pointerRange == null) {
+        // document change could be damaging, but if PSI survived after reparse, let's point to it
+        pointer.selfInfo.switchToAnchor(cachedElement)
+        return
+      }
+
+      // after reparse and its complex tree diff, the element might have "moved" to other range
+      // but if an element of the same type can still be found at the old range, let's point there
+      if (pointerRange == cachedElement.getTextRange()) {
+        return
+      }
+    }
+
+    val actual = pointer.doRestoreElement()
+    if (actual == null && cachedValid && pointer.selfInfo.updateRangeToPsi(pointerRange!!, cachedElement)) {
+      return
+    }
+
+    if (actual !== cachedElement) {
+      pointer.cacheElement(actual)
+    }
+  }
+
+  /** Returns the self-pointer infos that have a range, sorted by [MarkerCache.INFO_COMPARATOR]. */
+  @JvmName("getSortedInfos")
+  @Synchronized
+  internal fun getSortedInfos(): List<SelfElementInfo> {
+    ensureSorted()
+
+    val infos = ArrayList<SelfElementInfo>(selfInfoList.size)
+    selfInfoList.processAlivePointers { pointer ->
+      val info = pointer.selfInfo
+      if (!info.hasRange()) return@processAlivePointers false
+
+      infos.add(info)
+      true
+    }
+    return infos
+  }
+
+  /** Returns the infos of all live pointers: the self-pointers, with or without a range, and the file pointers. */
+  @Synchronized
+  internal fun getContextAwareInfos(): List<ContextAwareInfo> = buildList(selfInfoList.size + fileInfoList.size) {
+    selfInfoList.processAlivePointers { pointer ->
+      add(pointer.selfInfo)
+      true
+    }
+    fileInfoList.processAlivePointers { pointer ->
+      add(pointer.elementInfo as FileElementInfo)
+      true
+    }
+  }
+
+  /** Returns the number of tracked self-pointers. */
+  @TestOnly
+  @Synchronized
+  fun getSize(): Int = selfInfoList.size
+
+  /**
+   * Puts [mapping] into the queue of the pending context mappings.
+   *
+   * A benchmark needs this entry point, because a real context change costs much more than the
+   * composition of the queued mappings. See `SmartPointerRevalidationPerformanceTest`.
+   */
+  @TestOnly
+  @Synchronized
+  fun pushContextMappingForTests(mapping: Map<CodeInsightContext, CodeInsightContext?>) {
+    pushContextMapping(mapping)
+  }
+
+  /**
+   * Returns `true` when a generation bump happened after the last [revalidate].
+   * The read takes no lock.
+   */
+  fun isPossiblyInvalidated(manager: SmartPointerManagerEx): Boolean =
+    manager.possiblyInvalidationModCounter.modificationCount > validationModCount
+
+  /**
+   * Queues a context mapping from `MultiverseFileViewProviderCache`.
+   * The next [revalidate] applies the queued mappings in order. A `null` value means that the context is gone.
+   */
+  @Synchronized
+  internal fun pushContextMapping(mapping: Map<CodeInsightContext, CodeInsightContext?>) {
+    pendingContextMappings.add(mapping)
+  }
+
+  /** Drops the queued mappings, the interned holders, and [knownContexts]. The pointer manager calls it when it is disposed. */
+  @JvmName("clearPendingState")
+  @Synchronized
+  internal fun clearPendingState() {
+    pendingContextMappings.clear()
+    holderCache.clear()
+    knownContexts = null
+  }
+
+  private val SmartPsiElementPointerImpl<*>.selfInfo: SelfElementInfo
+    get() = this.elementInfo as SelfElementInfo
+
+  /**
+   * Updates the contexts of the pointer holders after a generation bump. It does nothing when no bump happened since the last call.
+   * It applies the queued mappings when there are some. Otherwise, it drops the contexts that the file no longer has.
+   */
+  @Synchronized
+  fun revalidate(virtualFile: VirtualFile, manager: SmartPointerManagerEx) {
+    val currentModCount = manager.possiblyInvalidationModCounter.modificationCount
+    if (validationModCount >= currentModCount) return
+
+    validationModCount = currentModCount
+
+    if (pendingContextMappings.isNotEmpty()) {
+      val composedMapping = composeMappings(pendingContextMappings)
+      pendingContextMappings.clear()
+      remapContexts(virtualFile, composedMapping)
+    }
+    else {
+      dropDeadContexts(virtualFile, manager)
+    }
+  }
+
+  /**
+   * Moves each info whose context is a key of [composedMapping] to the mapped context, and refreshes [knownContexts].
+   * It skips the scan when [knownContexts] is known and holds no key of the mapping.
+   */
+  private fun remapContexts(virtualFile: VirtualFile, composedMapping: Map<CodeInsightContext, CodeInsightContext?>) {
+    val cached = knownContexts
+    if (cached == null || composedMapping.keys.any { it in cached }) {
+      val liveContexts = SmartHashSet<CodeInsightContext>()
+      for (info in getContextAwareInfos()) {
+        val ctx = info.fileHolder.context ?: continue
+        val newCtx = if (ctx in composedMapping) {
+          val mapped = composedMapping[ctx]
+          info.fileHolder = createFileHolderInterned(virtualFile, mapped)
+          mapped ?: continue
+        }
+        else {
+          ctx
+        }
+        liveContexts.add(newCtx)
+      }
+      knownContexts = liveContexts
+    }
+
+    for (oldCtx in composedMapping.keys) {
+      holderCache.remove(oldCtx)
+    }
+  }
+
+  /** Fallback for a generation bump with no stored mappings: drop the contexts the file no longer has. */
+  private fun dropDeadContexts(virtualFile: VirtualFile, manager: SmartPointerManagerEx) {
+    val cached = knownContexts
+    if (cached != null && cached.isEmpty()) {
+      return
+    }
+
+    val fileContexts = CodeInsightContextManager.getInstance(manager.project).getCodeInsightContexts(virtualFile)
+    if (cached != null && fileContexts.containsAll(cached)) {
+      return
+    }
+
+    val actualContexts = fileContexts.toSet()
+    val allInfos = getContextAwareInfos()
+    val oldContexts = collectContexts(allInfos)
+    knownContexts = oldContexts
+    val deadContexts = oldContexts.subtract(actualContexts)
+
+    if (deadContexts.isEmpty()) {
+      return
+    }
+
+    if (deadContexts.size == 1 && actualContexts.size == 1 && oldContexts.size == 1) {
+      val actualContext = actualContexts.single()
+      val deadContext = deadContexts.single()
+      val newHolder = createFileHolderInterned(virtualFile, actualContext)
+      for (info in allInfos) {
+        info.fileHolder = newHolder
+      }
+      holderCache.remove(deadContext)
+      holderCache[actualContext] = newHolder
+      knownContexts = SmartHashSet<CodeInsightContext>().apply { add(actualContext) }
+      return
+    }
+
+    for (info in allInfos) {
+      if (info.fileHolder.context in deadContexts) {
+        info.fileHolder = createFileHolderInterned(virtualFile, null)
+      }
+    }
+    for (deadContext in deadContexts) {
+      holderCache.remove(deadContext)
+    }
+    // knownContexts is initialized here and this method is run in synchronized block
+    knownContexts!!.removeAll(deadContexts)
+  }
+
+  /** The holders are interned, so consecutive infos usually share one; the identity check skips the context hashing. */
+  private fun collectContexts(infos: List<ContextAwareInfo>): MutableSet<CodeInsightContext> {
+    val contexts = SmartHashSet<CodeInsightContext>()
+    var lastHolder: FileHolder? = null
+    for (info in infos) {
+      val holder = info.fileHolder
+      if (holder === lastHolder) continue
+      lastHolder = holder
+      holder.context?.let { contexts.add(it) }
+    }
+    return contexts
+  }
+
+  /** Returns the one [FileHolder] of this tracker for [context]. A `null` context has its own holder. */
+  internal fun createFileHolderInterned(virtualFile: VirtualFile, context: CodeInsightContext?): FileHolder =
+    holderCache.computeIfAbsent(context ?: NullContext) { c -> FileHolder.create(c.takeUnless { it === NullContext }, virtualFile) }
+
+  private object NullContext: CodeInsightContext
+
+  /** Composes the queued [mappings] into one mapping. The later mappings apply to the results of the earlier ones. */
+  private fun composeMappings(
+    mappings: List<Map<CodeInsightContext, CodeInsightContext?>>,
+  ): Map<CodeInsightContext, CodeInsightContext?> {
+    val composed = mutableMapOf<CodeInsightContext, CodeInsightContext?>()
+    for (mapping in mappings) {
+      for (key in composed.keys) {
+        val value = composed[key]
+        if (value != null && value in mapping) {
+          composed[key] = mapping[value]
+        }
+      }
+      for ((key, value) in mapping) {
+        if (key !in composed) {
+          composed[key] = value
+        }
+      }
+    }
+    return composed
+  }
+
+  /**
+   * A weak reference to a `SmartPsiElementPointerImpl`.
+   * Is used for storing smart pointers in [WeakPointerReferenceList].
+   * Gets automatically removed from the list once the referent is garbage-collected.
+   *
+   * There are two subclasses:
+   * - [SelfElementPointerReference] for self-pointers
+   * - [FilePointerReference] for file-pointers
+   *
+   * We need them to be able to remove the reference from the corresponding list ([selfInfoList] or [fileInfoList]) when the referent is garbage-collected.
+   */
+  internal sealed class PointerReference(
+    pointer: SmartPsiElementPointerImpl<*>,
+    private val tracker: SmartPointerTracker
+  ) : WeakReference<SmartPsiElementPointerImpl<*>?>(pointer, ourQueue) {
+    var index = -2
+
+    init {
+      pointer.pointerReference = this
+    }
+
+    fun isPossiblyInvalidated(manager: SmartPointerManagerEx): Boolean =
+      tracker.isPossiblyInvalidated(manager)
+
+    fun delete() {
+      tracker.removeReference(this)
+    }
+  }
+
+  private class FilePointerReference(
+    pointer: SmartPsiElementPointerImpl<*>,
+    tracker: SmartPointerTracker
+  ) : PointerReference(pointer, tracker)
+
+  private class SelfElementPointerReference(
+    pointer: SmartPsiElementPointerImpl<*>,
+    tracker: SmartPointerTracker
+  ) : PointerReference(pointer, tracker)
+
+  /**
+   * Manages a list of weak references to `SmartPsiElementPointerImpl` objects.
+   *
+   * Works in collaboration with [PointerReference].
+   *
+   * Not synchronized.
+   */
+  private class WeakPointerReferenceList {
+    private var references = arrayOfNulls<PointerReference>(10)
+    private var nextAvailableIndex = 0
+
+    var size: Int = 0
+      private set
+
+    fun add(reference: PointerReference) {
+      if (needsExpansion() || isTooSparse()) {
+        resize()
+      }
+
+      if (references[nextAvailableIndex] != null) {
+        throw AssertionError(references[nextAvailableIndex])
+      }
+
+      storePointerReference(references, nextAvailableIndex++, reference)
+      size++
+    }
+
+    fun remove(reference: PointerReference) {
+      val index = reference.index
+      if (index < 0) return
+
+      if (reference != references[index]) {
+        throw AssertionError("At $index expected $reference, found ${references[index]}")
+      }
+      reference.index = -1
+      references[index] = null
+      size--
+    }
+
+    fun processAlivePointers(processor: Processor<in SmartPsiElementPointerImpl<*>>) {
+      for (i in 0..<nextAvailableIndex) {
+        val ref = references[i] ?: continue
+
+        val pointer = ref.get() ?: run {
+          remove(ref)
+          continue
+        }
+
+        if (!processor.process(pointer)) {
+          return
+        }
+      }
+    }
+
+    fun sort(comparator: Comparator<SmartPsiElementPointerImpl<*>>) {
+      val pointers = ArrayList<SmartPsiElementPointerImpl<*>>()
+      processAlivePointers(CommonProcessors.CollectProcessor(pointers))
+      if (size != pointers.size) throw AssertionError()
+
+      pointers.sortWith(comparator)
+
+      for (i in pointers.indices) {
+        storePointerReference(references, i, pointers[i].pointerReference!!)
+      }
+      Arrays.fill(references, pointers.size, nextAvailableIndex, null)
+      nextAvailableIndex = pointers.size
+    }
+
+    private fun needsExpansion(): Boolean =
+      nextAvailableIndex >= references.size
+
+    private fun isTooSparse(): Boolean =
+      nextAvailableIndex > size * 2
+
+    private fun resize() {
+      val newReferences = arrayOfNulls<PointerReference>(size * 3 / 2 + 1)
+      var index = 0
+      // don't use processAlivePointers/removeReference since it can unregister the whole pointer list, and we're not prepared to that
+      for (ref in references) {
+        if (ref != null) {
+          storePointerReference(newReferences, index++, ref)
+        }
+      }
+      assert(index == size) { "$index != $size" }
+      references = newReferences
+      nextAvailableIndex = index
+    }
+
+    private fun storePointerReference(references: Array<PointerReference?>, index: Int, ref: PointerReference) {
+      references[index] = ref
+      ref.index = index
+    }
+  }
+
+  companion object {
+    private val ourQueue = ReferenceQueue<SmartPsiElementPointerImpl<*>?>()
+
+    init {
+      val application = ApplicationManager.getApplication()
+      if (!application.isDisposed()) {
+        LowMemoryWatcher.register({ processQueue() }, application)
+      }
+    }
+
+    /** Removes the references to the pointers that the GC collected. */
+    @JvmStatic
+    @VisibleForTesting
+    fun processQueue() {
+      while (true) {
+        val reference = ourQueue.poll() as PointerReference? ?: break
+
+        check(reference.get() == null) { "Queued reference has referent!" }
+
+        reference.delete()
+      }
+    }
+  }
+}

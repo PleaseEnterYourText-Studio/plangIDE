@@ -1,0 +1,60 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.java.execution.impl.backend` start
+content_module_jar(module = ":backend")
+### auto-generated section `dev intellij.java.execution.impl.backend` end
+
+### auto-generated section `build intellij.java.execution.impl.backend` start
+jvm_library(
+    name = "backend",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.java.execution.impl.backend",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    runtime_deps = ["//platform/backend"],
+    deps = [
+        # do not sort,
+        "//libraries/kotlinx/serialization/core",
+        "//libraries/kotlinx/serialization/json",
+        "//java/execution/shared",
+        "//java/execution/impl",
+        "//platform/core-api:core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/execution-impl",
+        "//platform/kernel/rpc.backend",
+        "//platform/platform-api:ide",
+        "//platform/platform-impl/rpc",
+        "//platform/project/shared:project",
+        "//platform/lang-api:lang",
+        "//platform/lang-impl",
+        "//platform/buildView",
+        "//platform/projectModel-api:projectModel",
+        "//platform/smRunner",
+        "//platform/core-ui",
+        "//platform/execution",
+        "//platform/consoleView",
+        "//platform/testRunner",
+    ],
+)
+### auto-generated section `build intellij.java.execution.impl.backend` end
+
+### auto-generated section `iml intellij.java.execution.impl.backend` start
+exports_files(
+    [
+        "intellij.java.execution.impl.backend.iml",
+        "resources/intellij.java.execution.impl.backend.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.java.execution.impl.backend` end

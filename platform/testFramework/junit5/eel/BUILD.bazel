@@ -1,0 +1,117 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+jps_test(
+    name = "testFramework-junit5-eel-tests_test",
+    timeout = "moderate",
+    jvm_flags = ["-Djava.nio.file.spi.DefaultFileSystemProvider=com.intellij.platform.core.nio.fs.MultiRoutingFileSystemProvider"],
+    tags = ["community-aggregator"],
+    runtime_deps = [":testFramework-junit5-eel-tests_test_lib"],
+)
+### skip generation section `test intellij.platform.testFramework.junit5.eel.tests`
+
+### auto-generated section `build intellij.platform.testFramework.junit5.eel` start
+jvm_library(
+    name = "eel",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.testFramework.junit5.eel",
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//libraries/junit6-jupiter",
+        "//libraries/jetbrains/annotations",
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinx/coroutines/core",
+        "//libraries/junit6",
+        "//platform/core-api:core",
+        "//platform/core-nio-fs",
+        "//platform/eel-impl",
+        "//platform/eel-provider",
+        "//platform/ide-core",
+        "//platform/ide-core-impl",
+        "//platform/ijent",
+        "//platform/testFramework/junit5",
+        "//platform/util",
+        "//platform/util/coroutines",
+        "//platform/util-ex",
+        "//platform/projectModel-api:projectModel",
+        "//platform/eel-nioFs-impl",
+        "//platform/eel-impl-base",
+        "//platform/util/annotations",
+    ],
+)
+### auto-generated section `build intellij.platform.testFramework.junit5.eel` end
+
+### auto-generated section `iml intellij.platform.testFramework.junit5.eel` start
+exports_files(
+    [
+        "intellij.platform.testFramework.junit5.eel.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.testFramework.junit5.eel` end
+
+### auto-generated section `build intellij.platform.testFramework.junit5.eel.tests` start
+jvm_library(
+    name = "testFramework-junit5-eel-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "test/**/*.kt",
+            "test/**/*.java",
+            "test/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.testFramework.junit5.eel.tests",
+    resource_strip_prefix = "testResources",
+    resources = glob(
+        ["testResources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+        "//community-resources:customization",
+    ],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinx/coroutines/core",
+        "//libraries/junit6-params",
+        "//libraries/junit6",
+        "//libraries/junit5-pioneer",
+        "//platform/core-api:core",
+        "//platform/core-nio-fs",
+        "//platform/eel-impl",
+        "//platform/eel-provider",
+        "//platform/ide-core",
+        "//platform/ijent",
+        "//platform/testFramework",
+        "//platform/testFramework/junit5",
+        "//platform/util",
+        "//libraries/commons/compress",
+        "//platform/util/coroutines",
+        "//platform/util-ex",
+        "//platform/execution",
+        "//platform/projectModel-api:projectModel",
+        "//platform/testFramework/junit5/eel",
+    ],
+)
+### auto-generated section `build intellij.platform.testFramework.junit5.eel.tests` end
+
+### auto-generated section `iml intellij.platform.testFramework.junit5.eel.tests` start
+exports_files(
+    [
+        "intellij.platform.testFramework.junit5.eel.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.testFramework.junit5.eel.tests` end

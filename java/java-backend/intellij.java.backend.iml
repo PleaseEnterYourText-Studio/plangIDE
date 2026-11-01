@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" packagePrefix="com.intellij.java.backend" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module" module-name="intellij.java.syntax" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.java.frontback.psi" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.java.frontback.psi.impl" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.java.psi" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.java.psi.impl" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.java.frontback.impl" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.java.indexing" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.platform.uast" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.platform.uast.ide" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.java.uast" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.java.compiler" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.java.analysis" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.java" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.java.execution" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.jvm.analysis" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.java.debugger" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.java.codeserver.core" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.java.codeserver.highlighting" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.java.indexing.impl" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.java.indexing.serializers" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.java.analysis.impl" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.java.impl" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.java.impl.refactorings" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.java.impl.inspections" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.jvm.analysis.refactoring" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.jvm.analysis.quickFix" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.platform.testIntegration.ui" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.java.ui" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.java.uast.ide" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.platform.backend" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.platform.builtInServer.impl" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.regexp" scope="RUNTIME" />
+  </component>
+</module>

@@ -1,0 +1,71 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//build:compiler-options.bzl", "create_kotlinc_options")
+
+jps_test(
+    name = "tests_test",
+    timeout = "moderate",
+    tags = ["community-aggregator"],
+    runtime_deps = [":tests_test_lib"],
+)
+### skip generation section `test intellij.python.requirements.tests`
+
+### auto-generated section `build intellij.python.requirements.tests` start
+create_kotlinc_options(
+    name = "custom_tests",
+    warn = "error",
+    x_warning_level = ["DEPRECATION:warning"],
+)
+
+jvm_library(
+    name = "tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "testSrc/**/*.kt",
+            "testSrc/**/*.java",
+            "testSrc/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = ":custom_tests",
+    module_name = "intellij.python.requirements.tests",
+    resource_strip_prefix = "testResources",
+    resources = glob(
+        ["testResources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+        "//community-resources:customization",
+        "//xml/plugin",
+    ],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/jetbrains/annotations",
+        "//libraries/junit6",
+        "//libraries/junit6-params",
+        "//platform/core-api:core",
+        "//platform/core-impl",
+        "//platform/testFramework/common",
+        "//platform/testFramework/junit5",
+        "//platform/util",
+        "//python/openapi:community",
+        "//python/junit5Tests-framework:community-junit5Tests-framework_test_lib",
+        "//python/python-test-env/junit5:junit5_test_lib",
+        "//python/python-requirements/backend",
+        "//python/python-requirements/common",
+    ],
+)
+### auto-generated section `build intellij.python.requirements.tests` end
+
+### auto-generated section `iml intellij.python.requirements.tests` start
+exports_files(
+    [
+        "intellij.python.requirements.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.python.requirements.tests` end

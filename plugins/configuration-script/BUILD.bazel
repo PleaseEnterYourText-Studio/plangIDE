@@ -1,0 +1,205 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@community//platform/build-scripts/bazel-rules:ij_plugin.bzl", "ij_plugin")
+load("@jps_dynamic_deps_community//:targets.bzl", "dev_dist_plugin")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+jps_test(
+    name = "configurationScript-tests_test",
+    timeout = "moderate",
+    tags = ["community-aggregator"],
+    runtime_deps = [":configurationScript-tests_test_lib"],
+)
+### skip generation section `test intellij.configurationScript.tests`
+
+jps_test(
+    name = "configurationScript-test-java_test",
+    timeout = "moderate",
+    tags = ["community-aggregator"],
+    runtime_deps = [":configurationScript-test-java_test_lib"],
+)
+### skip generation section `test intellij.configurationScript.test.java`
+
+### auto-generated section `dev intellij.configurationScript` start
+dev_dist_plugin(
+    content_modules = [
+        # do not sort,
+        "intellij.configurationScript.backend",
+        "intellij.configurationScript.execution",
+    ],
+    descriptor = "resources/META-INF/plugin.xml",
+    jars = {
+        "lib/configurationScript.jar": ["intellij.configurationScript"],
+    },
+    main_module = "intellij.configurationScript",
+    mode_refused_content_modules = {
+        "frontend": ["intellij.configurationScript.backend"],
+    },
+)
+### auto-generated section `dev intellij.configurationScript` end
+
+### auto-generated section `build intellij.configurationScript` start
+jvm_library(
+    name = "configuration-script",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.configurationScript",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlin/reflect",
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//platform/projectModel-api:projectModel",
+        "//platform/util",
+        "//platform/util-ex",
+        "//platform/analysis-impl",
+        "//platform/core-impl",
+        "//platform/lang-api:lang",
+        "//platform/platform-impl:ide-impl",
+        "//platform/ide-core",
+        "//platform/workspace/jps",
+        "//platform/configuration-store-impl:configurationStore-impl",
+        "//platform/object-serializer",
+        "//platform/service-container",
+        "//libraries/snakeyaml-engine",
+        "//platform/util/jdom",
+    ],
+)
+### auto-generated section `build intellij.configurationScript` end
+
+### auto-generated section `plugin intellij.configurationScript` start
+ij_plugin(
+    name = "configuration-script_plugin",
+    descriptor_module = ":configuration-script",
+    content_modules = [
+        # do not sort,
+        "//plugins/configuration-script/backend",
+        "//plugins/configuration-script/execution",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `plugin intellij.configurationScript` end
+
+### auto-generated section `iml intellij.configurationScript` start
+exports_files(
+    [
+        "intellij.configurationScript.iml",
+        "resources/META-INF/plugin.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.configurationScript` end
+
+### auto-generated section `build intellij.configurationScript.test.java` start
+jvm_library(
+    name = "configurationScript-test-java_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "testJava/**/*.kt",
+            "testJava/**/*.java",
+            "testJava/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.configurationScript.test.java",
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//plugins/configuration-script",
+        "//java/execution/impl",
+        "@lib//:kotlin-stdlib",
+        "//platform/lang-core",
+        "//platform/execution",
+        "//platform/projectModel-api:projectModel",
+        "//platform/testFramework",
+        "//libraries/assertj-core",
+        "//platform/lang-impl",
+        "//platform/ide-core",
+        "//plugins/configuration-script:configurationScript-tests_test_lib",
+        "//libraries/junit4",
+    ],
+)
+### auto-generated section `build intellij.configurationScript.test.java` end
+
+### auto-generated section `iml intellij.configurationScript.test.java` start
+exports_files(
+    [
+        "intellij.configurationScript.test.java.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.configurationScript.test.java` end
+
+### auto-generated section `build intellij.configurationScript.tests` start
+jvm_library(
+    name = "configurationScript-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "test/**/*.kt",
+            "test/**/*.java",
+            "test/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    associates = ["//plugins/configuration-script"],
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+        "//community-resources:customization",
+        "//xml/plugin",
+    ],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/projectModel-api:projectModel",
+        "//platform/util",
+        "//platform/analysis-impl",
+        "//libraries/assertj-core",
+        "//platform/core-impl",
+        "//json/backend",
+        "//platform/lang-api:lang",
+        "//platform/platform-impl:ide-impl",
+        "//platform/testFramework",
+        "//platform/testFramework/extensions:testExtensions",
+        "//plugins/yaml/backend",
+        "//libraries/jackson3/jackson:libraries-jackson3",
+        "//libraries/snakeyaml-engine",
+        "//platform/execution",
+        "//plugins/configuration-script/execution",
+        "//libraries/junit4",
+        "//java/plugin",
+        "//aether-dependency-resolver/plugin",
+        "//java/java-backend:backend",
+        "//java/execution/impl",
+        "//platform/structure-view-impl/plugin",
+        "//platform/testRunner/plugin",
+        "//platform/todo/plugin",
+    ],
+)
+### auto-generated section `build intellij.configurationScript.tests` end
+
+### auto-generated section `iml intellij.configurationScript.tests` start
+exports_files(
+    [
+        "intellij.configurationScript.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.configurationScript.tests` end

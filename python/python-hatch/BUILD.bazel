@@ -1,0 +1,76 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//build:compiler-options.bzl", "create_kotlinc_options")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.python.hatch` start
+content_module_jar(module = ":hatch")
+### auto-generated section `dev intellij.python.hatch` end
+
+### auto-generated section `build intellij.python.hatch` start
+create_kotlinc_options(
+    name = "custom_hatch",
+    opt_in = [
+        "kotlin.time.ExperimentalTime",
+        "com.jetbrains.python.PyInternalExecApi",
+    ],
+    warn = "error",
+    x_warning_level = ["DEPRECATION:warning"],
+)
+
+jvm_library(
+    name = "hatch",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = ":custom_hatch",
+    module_name = "intellij.python.hatch",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//python/python-hatch/common",
+        "@lib//:kotlin-stdlib",
+        "//platform/util",
+        "//platform/platform-util-io:ide-util-io",
+        "//platform/eel-provider",
+        "//platform/core-api:core",
+        "//platform/execution",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/ide-core",
+        "//platform/projectModel-api:projectModel",
+        "//python/openapi:community",
+        "//python/python-exec-service:community-execService",
+        "//python/python-sdk/backend",
+        "//python/python-pyproject:pyproject",
+        "//python/python-pytools/backend",
+        "//python/python-pytools-runtime/backend:python-pytools-backend-runtime",
+        "//libraries/kotlinx/serialization/json",
+        "//libraries/kotlinx/serialization/core",
+        "//libraries/semver",
+        "//python/python-sdk/common",
+        "//python/common",
+        "//python/python-exec-service/execService.python",
+        "//python/services/system-python",
+        "//python/python-process-output/common",
+        "//platform/util/jdom",
+    ],
+)
+### auto-generated section `build intellij.python.hatch` end
+
+### auto-generated section `iml intellij.python.hatch` start
+exports_files(
+    [
+        "intellij.python.hatch.iml",
+        "resources/intellij.python.hatch.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.python.hatch` end

@@ -1,0 +1,60 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.platform.buildView.frontend` start
+content_module_jar(module = ":frontend")
+### auto-generated section `dev intellij.platform.buildView.frontend` end
+
+### auto-generated section `build intellij.platform.buildView.frontend` start
+jvm_library(
+    name = "frontend",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.buildView.frontend",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//fleet/rpc",
+        "//platform/buildView",
+        "//platform/core-api:core",
+        "//platform/platform-impl:ide-impl",
+        "//platform/lang-api:lang",
+        "//platform/lang-impl",
+        "//platform/core-ui",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/util/coroutines",
+        "//platform/platform-impl/rpc",
+        "//platform/ide-core-impl",
+        "//platform/ide-core",
+        "//platform/project/shared:project",
+        "//platform/platform-util-io:ide-util-io",
+        "//platform/execution",
+        "//platform/consoleView",
+        "//platform/execution-impl",
+        "//platform/util-ex",
+        "//platform/util:util-ui",
+        "//platform/execution-impl/frontend",
+    ],
+)
+### auto-generated section `build intellij.platform.buildView.frontend` end
+
+### auto-generated section `iml intellij.platform.buildView.frontend` start
+exports_files(
+    [
+        "intellij.platform.buildView.frontend.iml",
+        "resources/intellij.platform.buildView.frontend.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.buildView.frontend` end

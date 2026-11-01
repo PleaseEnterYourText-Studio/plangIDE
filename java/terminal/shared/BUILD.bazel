@@ -1,0 +1,47 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.java.terminal.shared` start
+content_module_jar(module = ":shared")
+### auto-generated section `dev intellij.java.terminal.shared` end
+
+### auto-generated section `build intellij.java.terminal.shared` start
+jvm_library(
+    name = "shared",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.java.terminal.shared",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//platform/core-api:core",
+        "//platform/projectModel-api:projectModel",
+        "//libraries/kotlinx/serialization/core",
+        "//libraries/kotlinx/serialization/json",
+        "//libraries/jetbrains/annotations",
+        "//platform/util",
+        "//platform/platform-impl:ide-impl",
+    ],
+)
+### auto-generated section `build intellij.java.terminal.shared` end
+
+### auto-generated section `iml intellij.java.terminal.shared` start
+exports_files(
+    [
+        "intellij.java.terminal.shared.iml",
+        "resources/intellij.java.terminal.shared.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.java.terminal.shared` end

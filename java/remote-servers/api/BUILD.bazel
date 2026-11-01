@@ -1,0 +1,46 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.java.remoteServers` start
+content_module_jar(module = ":java-remoteServers")
+### auto-generated section `dev intellij.java.remoteServers` end
+
+### auto-generated section `build intellij.java.remoteServers` start
+jvm_library(
+    name = "java-remoteServers",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.java.remoteServers",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/projectModel-api:projectModel",
+        "//platform/remote-servers/api:remoteServers",
+        "//platform/core-api:core",
+        "//platform/lang-api:lang",
+        "//platform/xdebugger-api:debugger",
+        "//java/execution/openapi:java-execution",
+        "//java/compiler/openapi:java-compiler",
+    ],
+)
+### auto-generated section `build intellij.java.remoteServers` end
+
+### auto-generated section `iml intellij.java.remoteServers` start
+exports_files(
+    [
+        "intellij.java.remoteServers.iml",
+        "resources/intellij.java.remoteServers.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.java.remoteServers` end

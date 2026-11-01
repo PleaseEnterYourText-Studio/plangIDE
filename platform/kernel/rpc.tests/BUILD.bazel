@@ -1,0 +1,62 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+jps_test(
+    name = "rpc.tests_test",
+    timeout = "moderate",
+    tags = ["community-aggregator"],
+    runtime_deps = [":rpc.tests_test_lib"],
+)
+
+### skip generation section `test intellij.platform.rpc.tests`
+
+### auto-generated section `build intellij.platform.rpc.tests` start
+jvm_library(
+    name = "rpc.tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "testSrc/**/*.kt",
+            "testSrc/**/*.java",
+            "testSrc/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.rpc.tests",
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+        "//community-resources:customization",
+    ],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//platform/kernel/rpc.backend",
+        "//platform/kernel/rpc.lite",
+        "//platform/remote-topics/shared:rpc-topics",
+        "//platform/remote-topics/backend",
+        "//platform/remote-topics/frontend",
+        "//platform/testFramework",
+        "//platform/testFramework/junit5",
+        "//platform/platform-impl:ide-impl",
+        "//platform/lang-impl",
+        "//platform/core-api:core",
+        "//platform/util/xmlDom",
+        "//libraries/junit6",
+        "//libraries/assertj-core",
+        "//libraries/kotlinx/coroutines/core",
+        "//libraries/kotlinx/serialization/core",
+        "//fleet/util/core",
+    ],
+)
+### auto-generated section `build intellij.platform.rpc.tests` end
+
+### auto-generated section `iml intellij.platform.rpc.tests` start
+exports_files(
+    [
+        "intellij.platform.rpc.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.rpc.tests` end

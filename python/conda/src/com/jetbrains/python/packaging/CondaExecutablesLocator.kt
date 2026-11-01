@@ -1,0 +1,77 @@
+@file:JvmName("CondaExecutablesLocator")
+
+package com.jetbrains.python.packaging
+
+import com.intellij.openapi.util.SystemInfo
+import com.intellij.openapi.vfs.StandardFileSystems
+import com.jetbrains.python.sdk.legacy.PythonSdkUtil
+import org.jetbrains.annotations.ApiStatus
+import java.nio.file.Files
+import java.nio.file.Path
+import kotlin.io.path.div
+
+private const val CONDA_ENVS_DIR = "envs"
+private const val CONDA_BAT_NAME = "conda.bat"
+private const val CONDA_BINARY_NAME = "conda"
+private const val WIN_CONDA_BIN_DIR_NAME = "condabin"
+private const val UNIX_CONDA_BIN_DIR_NAME = "bin"
+private const val PYTHON_EXE_NAME = "python.exe"
+private const val PYTHON_UNIX_BINARY_NAME = "python"
+
+@ApiStatus.Internal
+
+fun getCondaBasePython(systemCondaExecutable: String): String? {
+  val condaFile = StandardFileSystems.local().findFileByPath(systemCondaExecutable)
+  if (condaFile != null) {
+    val condaDir = if (SystemInfo.isWindows) condaFile.parent.parent else condaFile.parent
+    val python = condaDir.findChild(getPythonName())
+    if (python != null) {
+      return python.path
+    }
+  }
+  return null
+}
+
+private fun getPythonName(): String = if (SystemInfo.isWindows) PYTHON_EXE_NAME else PYTHON_UNIX_BINARY_NAME
+
+@ApiStatus.Internal
+
+fun findCondaExecutableRelativeToEnv(pyExecutable: Path): Path? {
+  if (!Files.exists(pyExecutable)) {
+    return null
+  }
+  val pyExecutableDir = pyExecutable.parent ?: return null
+  val isBaseConda = Files.exists(pyExecutableDir / CONDA_ENVS_DIR)
+  val condaName: String
+  val condaFolder: Path
+  if (SystemInfo.isWindows) {
+    condaName = CONDA_BAT_NAME
+    // On Windows python.exe is directly inside base interpreter/environment directory.
+    // On other systems executable normally resides in "bin" subdirectory.
+    condaFolder = pyExecutableDir
+  }
+  else {
+    condaName = CONDA_BINARY_NAME
+    condaFolder = pyExecutableDir.parent ?: return null
+  }
+
+  // XXX Do we still need to support this? When did they drop per-environment conda executable?
+  val localCondaName = if (SystemInfo.isWindows && !isBaseConda) CONDA_BAT_NAME else condaName
+  val immediateConda = findExecutable(localCondaName, condaFolder)
+  if (immediateConda != null) {
+    return immediateConda
+  }
+  val envsDir = condaFolder.parent ?: return null
+  if (!isBaseConda && envsDir.fileName?.toString() == CONDA_ENVS_DIR) {
+    val envsDirParent = envsDir.parent ?: return null
+    return findExecutable(condaName, envsDirParent)
+  }
+  return null
+}
+
+private fun findExecutable(condaName: String, condaFolder: Path): Path? {
+  val binFolderName = if (SystemInfo.isWindows) WIN_CONDA_BIN_DIR_NAME else UNIX_CONDA_BIN_DIR_NAME
+  val bin = condaFolder / binFolderName / condaName
+  if (!Files.exists(bin)) return null
+  return PythonSdkUtil.getExecutablePath(bin, condaName)
+}

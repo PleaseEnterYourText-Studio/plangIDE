@@ -1,0 +1,172 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+jps_test(
+    name = "configurationStore-tests_test",
+    timeout = "moderate",
+    tags = ["community-aggregator"],
+    runtime_deps = [":configurationStore-tests_test_lib"],
+)
+### skip generation section `test intellij.platform.configurationStore.tests`
+
+### auto-generated section `dev intellij.platform.configurationStore.impl` start
+content_module_jar(module = ":configurationStore-impl")
+### auto-generated section `dev intellij.platform.configurationStore.impl` end
+
+### auto-generated section `build intellij.platform.configurationStore.impl` start
+jvm_library(
+    name = "configurationStore-impl",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.configurationStore.impl",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//platform/util/concurrency",
+        "//platform/editor-ui-api:editor-ui",
+        "//jps/model-api:model",
+        "//jps/model-serialization",
+        "//platform/projectModel-api:projectModel",
+        "//platform/util",
+        "//platform/util:util-ui",
+        "//platform/core-api:core",
+        "//platform/platform-api:ide",
+        "//platform/projectModel-impl",
+        "//platform/core-impl",
+        "//platform/workspace/jps",
+        "//platform/platform-impl:ide-impl",
+        "//libraries/kotlinx/coroutines/core",
+        "//platform/analysis-api:analysis",
+        "//platform/object-serializer",
+        "//platform/service-container",
+        "//platform/ide-core-impl",
+        "//platform/ide-core",
+        "//libraries/snakeyaml-engine",
+        "//platform/statistics",
+        "//libraries/fastutil",
+        "//platform/diff-api:diff",
+        "//platform/core-ui",
+        "//libraries/aalto-xml",
+        "//platform/util/xmlDom",
+        "//platform/util/jdom",
+        "//platform/util-ex",
+        "//libraries/hash4j",
+        "//libraries/opentelemetry",
+        "//libraries/opentelemetry-semconv",
+        "//platform/diagnostic/telemetry",
+        "//platform/backend/workspace",
+        "//platform/settings",
+        "//libraries/kotlinx/serialization/core",
+        "//platform/workspace/storage",
+        "//libraries/kotlinx/serialization/json",
+        "//platform/platform-impl/initial-config-import",
+        "//platform/progress/shared:ide-progress",
+        "//platform/eel-provider",
+        "//platform/backend/observation",
+    ],
+)
+### auto-generated section `build intellij.platform.configurationStore.impl` end
+
+### auto-generated section `iml intellij.platform.configurationStore.impl` start
+exports_files(
+    [
+        "intellij.platform.configurationStore.impl.iml",
+        "resources/intellij.platform.configurationStore.impl.actions.xml",
+        "resources/intellij.platform.configurationStore.impl.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.configurationStore.impl` end
+
+### auto-generated section `build intellij.platform.configurationStore.tests` start
+jvm_library(
+    name = "configurationStore-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "testSrc/**/*.kt",
+            "testSrc/**/*.java",
+            "testSrc/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    associates = ["//platform/configuration-store-impl:configurationStore-impl"],
+    resource_strip_prefix = "testResources",
+    resources = glob(
+        ["testResources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//java/testFramework",
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+        "//community-resources:customization",
+    ],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//platform/analysis-api:analysis",
+        "//platform/code-style-api:codeStyle",
+        "//platform/core-api:core",
+        "//platform/core-impl",
+        "//platform/ide-core/plugins",
+        "//libraries/assertj-core",
+        "//jps/model-api:model",
+        "//jps/model-serialization",
+        "//platform/projectModel-api:projectModel",
+        "//platform/testFramework/extensions:testExtensions",
+        "//platform/testFramework",
+        "//platform/backend/observation",
+        "//platform/object-serializer",
+        "//platform/service-container",
+        "//platform/ide-core-impl",
+        "//platform/ide-core",
+        "//libraries/kotlinx/coroutines/core",
+        "//platform/statistics",
+        "//libraries/fastutil",
+        "//platform/util/jdom",
+        "//platform/util-ex",
+        "//platform/settings",
+        "//platform/settings-local",
+        "//platform/testFramework/junit5",
+        "//libraries/kotlinx/serialization/json",
+        "//libraries/kotlinx/serialization/core",
+        "//java/java-impl:impl",
+        "//plugins/groovy",
+        "//plugins/groovy-scripting",
+        "//plugins/properties/properties-common:properties",
+        "//plugins/properties:properties-backend",
+        "//platform/structuralsearch:structuralSearch",
+        "//platform/structuralsearch/plugin",
+        "//platform/lang-api:lang",
+        "//platform/vcs/plugin",
+        "//libraries/junit4",
+        "//libraries/junit6",
+        "//platform/structure-view-impl/plugin",
+        "//xml/plugin",
+        "//aether-dependency-resolver/plugin",
+        "//platform/testRunner/plugin",
+    ],
+)
+### auto-generated section `build intellij.platform.configurationStore.tests` end
+
+### auto-generated section `iml intellij.platform.configurationStore.tests` start
+exports_files(
+    [
+        "intellij.platform.configurationStore.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.configurationStore.tests` end

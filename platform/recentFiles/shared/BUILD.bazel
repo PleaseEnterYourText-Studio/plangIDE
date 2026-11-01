@@ -1,0 +1,60 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.platform.recentFiles` start
+content_module_jar(module = ":recentFiles")
+### auto-generated section `dev intellij.platform.recentFiles` end
+
+### auto-generated section `build intellij.platform.recentFiles` start
+jvm_library(
+    name = "recentFiles",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.recentFiles",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/kernel/rpc.lite",
+        "@lib//:kotlin-stdlib",
+        "//platform/core-api:core",
+        "//platform/project/shared:project",
+        "//platform/object-serializer",
+        "//libraries/kotlinx/serialization/core",
+        "//libraries/kotlinx/serialization/json",
+        "//libraries/jetbrains/annotations",
+        "//libraries/kotlinx/coroutines/core",
+        "//platform/platform-impl/rpc",
+        "//platform/platform-api:ide",
+        "//platform/core-ui",
+        "//platform/util:util-ui",
+        "//platform/platform-impl:ide-impl",
+        "//platform/analysis-api:analysis",
+        "//platform/ide-core-impl",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/ide-core",
+        "//platform/projectModel-api:projectModel",
+        "//platform/runtime/product",
+        "//platform/util/coroutines",
+    ],
+)
+### auto-generated section `build intellij.platform.recentFiles` end
+
+### auto-generated section `iml intellij.platform.recentFiles` start
+exports_files(
+    [
+        "intellij.platform.recentFiles.iml",
+        "resources/intellij.platform.recentFiles.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.recentFiles` end

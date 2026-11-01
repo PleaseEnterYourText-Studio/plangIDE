@@ -1,0 +1,120 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library", "jvm_provided_library")
+load("//build:compiler-options.bzl", "create_kotlinc_options")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.kotlin.jvm.debugger.core` start
+content_module_jar(module = ":core")
+### auto-generated section `dev intellij.kotlin.jvm.debugger.core` end
+
+### auto-generated section `build intellij.kotlin.jvm.debugger.core` start
+create_kotlinc_options(
+    name = "custom_core",
+    opt_in = [
+        "org.jetbrains.kotlin.psi.KtExperimentalApi",
+        "org.jetbrains.kotlin.psi.KtNonPublicApi",
+        "org.jetbrains.kotlin.psi.KtIdeApi",
+        "org.jetbrains.kotlin.analysis.api.KaExperimentalApi",
+        "org.jetbrains.kotlin.analysis.api.KaIdeApi",
+        "org.jetbrains.kotlin.analysis.api.KaPlatformInterface",
+        "org.jetbrains.kotlin.analysis.api.fir.diagnostics.KaUnstableDiagnosticApi",
+        "org.jetbrains.kotlin.analysis.api.KaNonPublicApi",
+        "org.jetbrains.kotlin.analysis.api.KaContextParameterApi",
+        "org.jetbrains.kotlin.analysis.api.permissions.KaAllowProhibitedAnalyzeFromWriteAction",
+    ],
+    x_context_parameters = True,
+)
+
+jvm_provided_library(
+    name = "java_rt_provided",
+    lib = "//java/java-runtime:rt",
+)
+
+jvm_library(
+    name = "core",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = ":custom_core",
+    module_name = "intellij.kotlin.jvm.debugger.core",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    runtime_deps = ["//plugins/kotlin/kotlin.ide"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//plugins/kotlin/references",
+        "//libraries/kotlinc/kotlin-compiler-common:libraries-kotlinc-kotlin-compiler-common",
+        "//libraries/kotlinc/analysis-api:libraries-kotlinc-analysis-api",
+        "//libraries/kotlinc/analysis-api-impl-base:libraries-kotlinc-analysis-api-impl-base",
+        "//libraries/kotlinc/symbol-light-classes:libraries-kotlinc-symbol-light-classes",
+        "//libraries/asm",
+        "//java/debugger/jb-jdi:java-debugger-libraries-jb-jdi",
+        "//platform/analysis-api:analysis",
+        "//platform/util/concurrency",
+        "//platform/core-api:core",
+        "//platform/lang-api:lang",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/indexing-api:indexing",
+        "//platform/projectModel-api:projectModel",
+        "//plugins/kotlin/base/util",
+        "//plugins/kotlin/base/plugin",
+        "//plugins/kotlin/base/psi",
+        "//plugins/kotlin/base/indices",
+        "//plugins/kotlin/base/facet",
+        "//plugins/kotlin/base/project-structure",
+        "//plugins/kotlin/base/analysis",
+        "//plugins/kotlin/base/code-insight",
+        "//plugins/kotlin/jvm-debugger/base/util",
+        "//platform/core-ui",
+        "//platform/core-impl",
+        "//platform/xdebugger-impl:debugger-impl",
+        "//platform/xdebugger-impl/shared",
+        "//platform/xdebugger-impl/ui",
+        "//platform/projectModel-impl",
+        "//platform/util:util-ui",
+        "//platform/platform-impl:ide-impl",
+        "//java/debugger/openapi:java-debugger",
+        "//platform/lang-impl",
+        "//platform/platform-util-io-impl:ide-util-io-impl",
+        "//platform/ide-core",
+        "//platform/progress/shared:ide-progress",
+        "//java/openapi:java",
+        "//java/java-psi-api:psi",
+        "//platform/util/progress",
+        "//java/execution/openapi:java-execution",
+        "//java/debugger/impl",
+        "//java/java-psi-impl:psi-impl",
+        "//plugins/kotlin/code-insight/utils",
+        "//platform/statistics",
+        "//platform/util",
+        "//plugins/kotlin/base/resources:kotlin-base-resources",
+        "//libraries/gson",
+        "//java/debugger/shared",
+        "//platform/util/jdom",
+        "//libraries/kotlin/metadata",
+        "//platform/execution",
+        "//platform/consoleView",
+        "//platform/forms_rt:java-guiForms-rt",
+        "//java/java-frontback-psi-api:frontback-psi",
+        ":java_rt_provided",
+    ],
+)
+### auto-generated section `build intellij.kotlin.jvm.debugger.core` end
+
+### auto-generated section `iml intellij.kotlin.jvm.debugger.core` start
+exports_files(
+    [
+        "intellij.kotlin.jvm.debugger.core.iml",
+        "resources/intellij.kotlin.jvm.debugger.core.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.kotlin.jvm.debugger.core` end

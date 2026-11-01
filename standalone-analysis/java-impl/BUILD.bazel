@@ -1,0 +1,40 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `build intellij.standaloneAnalysis.java.impl` start
+jvm_library(
+    name = "standaloneAnalysis-java-impl",
+    srcs = glob(
+        [],
+        allow_empty = True,
+    ),
+    module_name = "intellij.standaloneAnalysis.java.impl",
+    visibility = ["//visibility:public"],
+    exports = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//standalone-analysis/java-api:standaloneAnalysis-java",
+        "//standalone-analysis/platform-impl:standaloneAnalysis-platform-impl",
+        "//java/java-psi-impl:psi-impl",
+        "//java/java-frontback-psi-impl:frontback-psi-impl",
+        "//java/java-indexing-serializers:indexing-serializers",
+    ],
+    runtime_deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//standalone-analysis/java-api:standaloneAnalysis-java",
+        "//standalone-analysis/platform-impl:standaloneAnalysis-platform-impl",
+        "//java/java-psi-impl:psi-impl",
+        "//java/java-frontback-psi-impl:frontback-psi-impl",
+        "//java/java-indexing-serializers:indexing-serializers",
+    ],
+)
+### auto-generated section `build intellij.standaloneAnalysis.java.impl` end
+
+### auto-generated section `iml intellij.standaloneAnalysis.java.impl` start
+exports_files(
+    [
+        "intellij.standaloneAnalysis.java.impl.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.standaloneAnalysis.java.impl` end

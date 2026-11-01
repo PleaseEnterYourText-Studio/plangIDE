@@ -1,0 +1,56 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `build intellij.platform.testExtensions` start
+jvm_library(
+    name = "testExtensions",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.testExtensions",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//platform/util/concurrency",
+        "//platform/core-api:core",
+        "//platform/core-impl",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/execution-impl",
+        "//platform/projectModel-api:projectModel",
+        "//platform/util",
+        "//platform/util-ex",
+        "//platform/execution",
+        "//platform/projectModel-impl",
+        "//platform/testFramework",
+        "//platform/util/jdom",
+        "//libraries/memoryfilesystem",
+        "//libraries/junit4",
+        "//libraries/assertj-core",
+        "//libraries/snakeyaml",
+        "//libraries/fastutil",
+        "//platform/core-ui",
+        "//platform/ide-core",
+        "//libraries/junit6",
+        "//java/java-runtime:rt",
+    ],
+)
+### auto-generated section `build intellij.platform.testExtensions` end
+
+### auto-generated section `iml intellij.platform.testExtensions` start
+exports_files(
+    [
+        "intellij.platform.testExtensions.iml",
+        "resources/intellij.platform.testExtensions.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.testExtensions` end

@@ -1,0 +1,67 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.platform.searchEverywhere` start
+content_module_jar(module = ":searchEverywhere")
+### auto-generated section `dev intellij.platform.searchEverywhere` end
+
+### auto-generated section `build intellij.platform.searchEverywhere` start
+jvm_library(
+    name = "searchEverywhere",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.searchEverywhere",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    exports = ["//platform/lang-impl"],
+    deps = [
+        # do not sort,
+        "//platform/kernel/rpc.lite",
+        "//libraries/jetbrains/annotations",
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinx/coroutines/core",
+        "//platform/core-api:core",
+        "//platform/core-impl",
+        "//platform/project/shared:project",
+        "//libraries/kotlinx/serialization/core",
+        "//platform/platform-api:ide",
+        "//platform/lang-impl",
+        "//platform/platform-impl:ide-impl",
+        "//platform/core-ui",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/platform-impl/rpc",
+        "//platform/ide-core",
+        "//platform/util:util-ui",
+        "//platform/util/text-matching",
+        "//platform/usageView",
+        "//platform/usageView-impl",
+        "//platform/progress/shared:ide-progress",
+        "//platform/statistics",
+        "//platform/scopes",
+        "//platform/lang-api:lang",
+        "//platform/projectModel-api:projectModel",
+        "//platform/refactoring",
+        "//platform/indexing-api:indexing",
+        "//platform/welcome-screen",
+    ],
+)
+### auto-generated section `build intellij.platform.searchEverywhere` end
+
+### auto-generated section `iml intellij.platform.searchEverywhere` start
+exports_files(
+    [
+        "intellij.platform.searchEverywhere.iml",
+        "resources/intellij.platform.searchEverywhere.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.searchEverywhere` end

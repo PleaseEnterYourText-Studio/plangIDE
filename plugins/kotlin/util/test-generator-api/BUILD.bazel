@@ -1,0 +1,54 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `build kotlin.util.test-generator-api` start
+jvm_library(
+    name = "test-generator-api_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "test/**/*.kt",
+            "test/**/*.java",
+            "test/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "kotlin.util.test-generator-api",
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/core-api:core",
+        "@lib//:kotlin-stdlib",
+        "//java/testFramework",
+        "//libraries/kotlin/reflect",
+        "//libraries/kotlinc/kotlin-compiler-common:libraries-kotlinc-kotlin-compiler-common",
+        "@lib//:kotlinc-kotlin-compiler-tests",
+        "//plugins/kotlin/base/plugin",
+        "//plugins/kotlin/tests-common:common-tests_test_lib",
+        "//platform/testFramework",
+        "//plugins/kotlin/base/testFramework",
+        "//plugins/kotlin/test-framework:test-framework_test_lib",
+        "//platform/util/jdom",
+        "//java/java-runtime:rt",
+        "//plugins/kotlin/base/pluginTestFramework:kotlin-base-plugin-testFramework",
+        "//libraries/junit4",
+        "//libraries/junit6",
+    ],
+)
+### auto-generated section `build kotlin.util.test-generator-api` end
+
+### auto-generated section `iml kotlin.util.test-generator-api` start
+exports_files(
+    [
+        "kotlin.util.test-generator-api.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml kotlin.util.test-generator-api` end
+
+### auto-generated section `test kotlin.util.test-generator-api` start
+jps_test(
+    name = "test-generator-api_test",
+    runtime_deps = [":test-generator-api_test_lib"],
+)
+### auto-generated section `test kotlin.util.test-generator-api` end

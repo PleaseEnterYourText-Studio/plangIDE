@@ -1,0 +1,73 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.java.frontback.impl` start
+content_module_jar(module = ":frontback-impl")
+### auto-generated section `dev intellij.java.frontback.impl` end
+
+### auto-generated section `build intellij.java.frontback.impl` start
+jvm_library(
+    name = "frontback-impl",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.java.frontback.impl",
+    resource_strip_prefix = "resource",
+    resources = glob(
+        ["resource/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    exports = ["//java/java-frontback-psi-impl:frontback-psi-impl"],
+    deps = [
+        # do not sort,
+        "//java/java-frontback-psi-api:frontback-psi",
+        "//java/java-frontback-psi-impl:frontback-psi-impl",
+        "//platform/analysis-api:analysis",
+        "//platform/code-style-api:codeStyle",
+        "//platform/core-impl",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/ide-core-impl",
+        "//platform/ide-core",
+        "//platform/lang-impl",
+        "//platform/platform-impl:ide-impl",
+        "//platform/analysis-impl",
+        "//platform/core-ui",
+        "//platform/projectModel-api:projectModel",
+        "//platform/refactoring",
+        "//platform/util:util-ui",
+        "//xml/xml-parser:parser",
+        "//platform/core-api:core",
+        "//platform/util/jdom",
+        "//platform/syntax/syntax-psi:psi",
+        "//platform/syntax/syntax-util:util",
+        "//java/java-psi-api:psi",
+        "//java/java-psi-impl:psi-impl",
+        "//java/java-syntax:syntax",
+        "//platform/statistics",
+        "//platform/threadDumpParser",
+        "//platform/code-style-impl:codeStyle-impl",
+        "//libraries/kotlinx/serialization/core",
+        "//libraries/kotlinx/serialization/json",
+        "//platform/consoleView",
+        "//platform/consoleView/impl",
+        "//platform/lang-api:lang",
+        "//libraries/kotlinx/collections-immutable:libraries-kotlinx-collections-immutable",
+        "//platform/util/concurrency",
+    ],
+)
+### auto-generated section `build intellij.java.frontback.impl` end
+
+### auto-generated section `iml intellij.java.frontback.impl` start
+exports_files(
+    [
+        "intellij.java.frontback.impl.iml",
+        "resource/intellij.java.frontback.impl.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.java.frontback.impl` end

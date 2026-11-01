@@ -1,0 +1,66 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//build:compiler-options.bzl", "create_kotlinc_options")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.platform.ijent.community.impl` start
+content_module_jar(module = ":impl")
+### auto-generated section `dev intellij.platform.ijent.community.impl` end
+
+### auto-generated section `build intellij.platform.ijent.community.impl` start
+create_kotlinc_options(
+    name = "custom_impl",
+    opt_in = ["com.intellij.platform.eel.channels.EelDelicateApi"],
+)
+
+jvm_library(
+    name = "impl",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = ":custom_impl",
+    module_name = "intellij.platform.ijent.community.impl",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinx/coroutines/core",
+        "//platform/util",
+        "//libraries/opentelemetry",
+        "//platform/core-api:core",
+        "//platform/core-nio-fs",
+        "//platform/diagnostic/telemetry",
+        "//platform/ijent",
+        "//platform/eel-provider",
+        "//platform/core-impl",
+        "//platform/eel-nioFs-impl",
+        "//platform/eel-impl-base",
+        "//platform/platform-api:ide",
+        "//platform/ide-core",
+        "//platform/progress/shared:ide-progress",
+        "//platform/core-ui",
+        "//platform/diagnostic",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/statistics",
+        "//platform/util/annotations",
+    ],
+)
+### auto-generated section `build intellij.platform.ijent.community.impl` end
+
+### auto-generated section `iml intellij.platform.ijent.community.impl` start
+exports_files(
+    [
+        "intellij.platform.ijent.community.impl.iml",
+        "resources/intellij.platform.ijent.community.impl.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.ijent.community.impl` end

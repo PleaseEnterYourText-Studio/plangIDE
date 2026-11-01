@@ -1,0 +1,105 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.java.execution.impl` start
+content_module_jar(module = ":impl")
+### auto-generated section `dev intellij.java.execution.impl` end
+
+### auto-generated section `build intellij.java.execution.impl` start
+jvm_library(
+    name = "impl",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.java.execution.impl",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    exports = ["//java/execution/openapi:java-execution"],
+    deps = [
+        # do not sort,
+        "//java/openapi:java",
+        "//platform/analysis-api:analysis",
+        "//java/java-psi-api:psi",
+        "//platform/util/concurrency",
+        "//platform/core-api:core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/execution-impl",
+        "//platform/platform-impl:ide-impl",
+        "//platform/lang-api:lang",
+        "//platform/buildView",
+        "//java/execution/openapi:java-execution",
+        "//java/java-runtime:rt",
+        "//java/debugger/impl",
+        "//platform/indexing-api:indexing",
+        "//jps/model-api:model",
+        "//jps/model-serialization",
+        "//platform/lang-core",
+        "//platform/projectModel-api:projectModel",
+        "//platform/testRunner",
+        "//platform/usageView",
+        "//platform/ide-core-impl",
+        "//platform/ide-core",
+        "//platform/progress/shared:ide-progress",
+        "//java/compiler/openapi:java-compiler",
+        "//java/debugger/openapi:java-debugger",
+        "//java/java-impl:impl",
+        "//java/java-indexing-api:indexing",
+        "//java/java-syntax:syntax",
+        "//platform/smRunner",
+        "//libraries/test-discovery",
+        "//platform/external-system-api:externalSystem",
+        "//platform/external-system-impl:externalSystem-impl",
+        "//libraries/gson",
+        "//libraries/jackson3/jackson:libraries-jackson3",
+        "//libraries/miglayout-swing",
+        "//platform/util/nanoxml",
+        "//libraries/jackson3/databind",
+        "//platform/xdebugger-impl:debugger-impl",
+        "//libraries/fastutil",
+        "//platform/statistics",
+        "//platform/util-class-loader:util-classLoader",
+        "//platform/diff-api:diff",
+        "//platform/core-ui",
+        "//platform/core-impl",
+        "//platform/platform-util-io-impl:ide-util-io-impl",
+        "//platform/platform-util-io:ide-util-io",
+        "//platform/util/jdom",
+        "//platform/util:util-ui",
+        "//platform/util-ex",
+        "//platform/util/coroutines",
+        "//platform/threadDumpParser",
+        "//platform/eel-provider",
+        "//java/debugger/shared",
+        "//platform/platform-impl/concurrency",
+        "//java/codeserver/core",
+        "//platform/execution",
+        "//platform/consoleView",
+        "//platform/consoleView/impl",
+        "//platform/forms_rt:java-guiForms-rt",
+        "//java/java-frontback-impl:frontback-impl",
+        "//java/java-frontback-psi-api:frontback-psi",
+        "//libraries/kotlinx/collections-immutable:libraries-kotlinx-collections-immutable",
+        "//platform/eel-nioFs",
+    ],
+)
+### auto-generated section `build intellij.java.execution.impl` end
+
+### auto-generated section `iml intellij.java.execution.impl` start
+exports_files(
+    [
+        "intellij.java.execution.impl.iml",
+        "resources/META-INF/RegistryKeysExecutionImpl.xml",
+        "resources/intellij.java.execution.impl.analyzer.xml",
+        "resources/intellij.java.execution.impl.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.java.execution.impl` end

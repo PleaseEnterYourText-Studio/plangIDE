@@ -1,0 +1,78 @@
+load("@jps_dynamic_deps_community//:targets.bzl", "dev_dist_plugin")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.json` start
+content_module_jar(module = ":json")
+
+dev_dist_plugin(
+    content_modules = [
+        # do not sort,
+        "intellij.json.backend",
+        "intellij.json.networknt.wrapper",
+        "intellij.json.backend.regexp",
+        "intellij.json.spellchecker",
+        "intellij.json.structureView",
+        "intellij.json.syntax",
+        "intellij.libraries.jsonSchemaValidator",
+        "intellij.libraries.joni",
+    ],
+    main_module = "intellij.json",
+)
+### auto-generated section `dev intellij.json` end
+
+### auto-generated section `build intellij.json` start
+jvm_library(
+    name = "json",
+    srcs = glob(
+        [
+            "gen/**/*.kt",
+            "gen/**/*.java",
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.json",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    exports = ["//json/syntax"],
+    deps = [
+        # do not sort,
+        "//platform/analysis-api:analysis",
+        "//platform/code-style-api:codeStyle",
+        "//platform/core-api:core",
+        "//platform/platform-impl:ide-impl",
+        "//platform/ide-core",
+        "//platform/core-impl",
+        "//platform/analysis-impl",
+        "//platform/lang-api:lang",
+        "//platform/projectModel-api:projectModel",
+        "//platform/util:util-ui",
+        "//platform/core-ui",
+        "//platform/lang-impl",
+        "@lib//:kotlin-stdlib",
+        "//platform/editor-ui-api:editor-ui",
+        "//libraries/caffeine",
+        "//json/syntax",
+        "//platform/syntax/syntax-psi:psi",
+        "//platform/syntax/syntax-util:util",
+        "//libraries/kotlinx/collections-immutable:libraries-kotlinx-collections-immutable",
+    ],
+)
+### auto-generated section `build intellij.json` end
+
+### auto-generated section `iml intellij.json` start
+exports_files(
+    [
+        "intellij.json.iml",
+        "resources/META-INF/plugin.xml",
+        "resources/intellij.json.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.json` end

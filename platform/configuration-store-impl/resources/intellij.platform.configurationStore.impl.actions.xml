@@ -1,0 +1,7 @@
+<idea-plugin>
+  <actions>
+    <action id="ImportSettings" class="com.intellij.configurationStore.ImportSettingsAction"/>
+    <action id="ExportSettings" class="com.intellij.configurationStore.ExportSettingsAction"/>
+    <action id="RestoreDefaultSettings" class="com.intellij.configurationStore.defaults.RestoreDefaultSettingsAction"/>
+  </actions>
+</idea-plugin>

@@ -1,0 +1,162 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+jps_test(
+    name = "collaborationTools-tests_test",
+    timeout = "moderate",
+    tags = ["community-aggregator"],
+    runtime_deps = [":collaborationTools-tests_test_lib"],
+)
+
+### skip generation section `test intellij.platform.collaborationTools.tests`
+
+### auto-generated section `dev intellij.platform.collaborationTools` start
+content_module_jar(module = ":collaboration-tools")
+### auto-generated section `dev intellij.platform.collaborationTools` end
+
+### auto-generated section `build intellij.platform.collaborationTools` start
+jvm_library(
+    name = "collaboration-tools",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.collaborationTools",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    exports = ["//platform/collaboration-tools/shared"],
+    deps = [
+        # do not sort,
+        "//platform/analysis-api:analysis",
+        "//platform/code-style-api:codeStyle",
+        "//platform/util/concurrency",
+        "//platform/credential-store",
+        "//platform/lang-api:lang",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/util-ex",
+        "//platform/core-impl",
+        "//platform/platform-api:ide",
+        "//platform/projectModel-api:projectModel",
+        "//platform/util/diff",
+        "//platform/vcs-log/impl",
+        "//platform/platform-impl:ide-impl",
+        "//platform/ide-core-impl",
+        "//platform/ide-core",
+        "//platform/vcs-api:vcs",
+        "//platform/observable",
+        "//platform/core-api:core",
+        "//platform/core-ui",
+        "//platform/editor-ui-ex:editor-ex",
+        "//platform/lang-impl",
+        "//libraries/miglayout-swing",
+        "@lib//:kotlin-stdlib",
+        "//platform/diff-api:diff",
+        "//libraries/fastutil",
+        "//platform/diff-impl",
+        "//platform/credential-store-ui:credentialStore-ui",
+        "//platform/vcs-impl",
+        "//platform/platform-util-io:ide-util-io",
+        "//platform/progress/shared:ide-progress",
+        "//platform/vcs-log/api:vcs-log",
+        "//libraries/caffeine",
+        "//libraries/kotlinx/coroutines/core",
+        "//libraries/markdown",
+        "//platform/dvcs-impl:vcs-dvcs-impl",
+        "//platform/util/coroutines",
+        "//platform/credential-store-impl:credentialStore-impl",
+        "//platform/dvcs-impl/shared",
+        "//libraries/http-client",
+        "//platform/vcs-impl/shared",
+        "//platform/util:util-ui",
+        "//platform/collaboration-tools/shared",
+    ],
+)
+### auto-generated section `build intellij.platform.collaborationTools` end
+
+### auto-generated section `iml intellij.platform.collaborationTools` start
+exports_files(
+    [
+        "intellij.platform.collaborationTools.iml",
+        "resources/intellij.platform.collaborationTools.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.collaborationTools` end
+
+### auto-generated section `build intellij.platform.collaborationTools.tests` start
+jvm_library(
+    name = "collaborationTools-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "test/**/*.kt",
+            "test/**/*.java",
+            "test/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    associates = ["//platform/collaboration-tools"],
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/analysis-api:analysis",
+        "//platform/code-style-api:codeStyle",
+        "//platform/util/concurrency",
+        "//platform/credential-store",
+        "//platform/lang-api:lang",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/util-ex",
+        "//platform/core-impl",
+        "//platform/platform-api:ide",
+        "//platform/projectModel-api:projectModel",
+        "//platform/util/diff",
+        "//platform/platform-impl:ide-impl",
+        "//platform/ide-core-impl",
+        "//platform/ide-core",
+        "//platform/vcs-api:vcs",
+        "//platform/core-api:core",
+        "//platform/core-ui",
+        "//platform/editor-ui-ex:editor-ex",
+        "//platform/lang-impl",
+        "@lib//:kotlin-stdlib",
+        "//platform/diff-api:diff",
+        "//platform/diff-impl",
+        "//libraries/junit4",
+        "//platform/testFramework",
+        "//platform/vcs-impl",
+        "//platform/platform-util-io:ide-util-io",
+        "//libraries/kotlinx/coroutines/core",
+        "//libraries/kotlin/test:libraries-kotlinTest",
+        "//libraries/kotlinx/coroutines/test",
+        "//platform/util/coroutines",
+        "//libraries/mockk",
+        "//libraries/mockk/jvm",
+        "//libraries/mockito",
+        "@lib//:app-cash-turbine-jvm",
+        "//libraries/assertj-core",
+        "//platform/vcs-impl/shared",
+        "//libraries/junit6",
+        "//platform/testFramework/junit5",
+        "//libraries/jackson3/jackson:libraries-jackson3",
+        "//libraries/jackson3/databind",
+        "//libraries/jackson3/module-kotlin:libraries-jackson3-module-kotlin",
+    ],
+)
+### auto-generated section `build intellij.platform.collaborationTools.tests` end
+
+### auto-generated section `iml intellij.platform.collaborationTools.tests` start
+exports_files(
+    [
+        "intellij.platform.collaborationTools.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.collaborationTools.tests` end

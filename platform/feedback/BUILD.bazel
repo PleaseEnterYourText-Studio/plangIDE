@@ -1,0 +1,57 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.platform.feedback` start
+content_module_jar(module = ":feedback")
+### auto-generated section `dev intellij.platform.feedback` end
+
+### auto-generated section `build intellij.platform.feedback` start
+jvm_library(
+    name = "feedback",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.feedback",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/core-api:core",
+        "//platform/projectModel-api:projectModel",
+        "//platform/util",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/lang-api:lang",
+        "//platform/core-impl",
+        "//platform/ide-core-impl",
+        "//platform/ide-core",
+        "//libraries/kotlinx/serialization/core",
+        "//platform/observable",
+        "//libraries/kotlinx/serialization/json",
+        "//platform/platform-impl:ide-impl",
+        "//libraries/kotlinx/datetime",
+        "//platform/util/xmlDom",
+        "//platform/statistics",
+        "//platform/core-ui",
+        "//platform/util:util-ui",
+        "//platform/progress/shared:ide-progress",
+    ],
+)
+### auto-generated section `build intellij.platform.feedback` end
+
+### auto-generated section `iml intellij.platform.feedback` start
+exports_files(
+    [
+        "intellij.platform.feedback.iml",
+        "resources/intellij.platform.feedback.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.feedback` end

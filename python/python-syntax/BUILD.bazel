@@ -1,0 +1,62 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.python.syntax` start
+content_module_jar(module = ":syntax")
+### auto-generated section `dev intellij.python.syntax` end
+
+### auto-generated section `build intellij.python.syntax` start
+jvm_library(
+    name = "syntax",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.python.syntax",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/analysis-api:analysis",
+        "//platform/code-style-api:codeStyle",
+        "//platform/core-api:core",
+        "//platform/projectModel-api:projectModel",
+        "//python/python-parser:parser",
+        "//platform/editor-ui-api:editor-ui",
+        "//python/python-syntax-core:syntax-core",
+        "//platform/platform-impl:ide-impl",
+        "//platform/ide-core",
+        "//python/python-ast:ast",
+        "//platform/lang-impl",
+        "//platform/editor-ui-ex:editor-ex",
+        "//platform/core-ui",
+        "//platform/forms_rt:java-guiForms-rt",
+        "//platform/code-style-impl:codeStyle-impl",
+        "//platform/util:util-ui",
+        "//libraries/fastutil",
+        "//libraries/guava",
+        "//libraries/kotlinx/serialization/core",
+        "//platform/core-impl",
+        "//platform/lang-api:lang",
+        "//libraries/kotlinx/collections-immutable:libraries-kotlinx-collections-immutable",
+        "//platform/util/concurrency",
+    ],
+)
+### auto-generated section `build intellij.python.syntax` end
+
+### auto-generated section `iml intellij.python.syntax` start
+exports_files(
+    [
+        "intellij.python.syntax.iml",
+        "resources/intellij.python.syntax.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.python.syntax` end

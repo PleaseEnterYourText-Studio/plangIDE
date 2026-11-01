@@ -1,0 +1,414 @@
+// Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+package com.intellij.openapi.vfs.newvfs.persistent;
+
+import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.platform.util.io.storages.intmultimaps.IntToMultiLongMap;
+import com.intellij.platform.util.io.storages.intmultimaps.extendiblehashmap.ExtendibleHashMap;
+import com.intellij.platform.util.io.storages.intmultimaps.extendiblehashmap.ExtendibleHashMapInt32ToInt64;
+import com.intellij.platform.util.io.storages.intmultimaps.extendiblehashmap.ExtendibleHashMapStorageOverMMappedFile;
+import com.intellij.platform.util.io.storages.intmultimaps.extendiblehashmap.ExtendibleMapFactory;
+import com.intellij.platform.util.io.storages.mmapped.MMappedFileStorageFactory;
+import com.intellij.util.io.AbstractIntToIntBtree;
+import com.intellij.util.io.FilePageCacheLockFree;
+import com.intellij.util.io.IntToIntBtree;
+import com.intellij.util.io.IntToIntBtreeLockFree;
+import com.intellij.util.io.PageCacheUtils;
+import com.intellij.util.io.StorageLockContext;
+import com.intellij.util.io.pagecache.impl.PageContentLockingStrategy;
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.BenchmarkMode;
+import org.openjdk.jmh.annotations.Fork;
+import org.openjdk.jmh.annotations.Measurement;
+import org.openjdk.jmh.annotations.Mode;
+import org.openjdk.jmh.annotations.OperationsPerInvocation;
+import org.openjdk.jmh.annotations.OutputTimeUnit;
+import org.openjdk.jmh.annotations.Param;
+import org.openjdk.jmh.annotations.Scope;
+import org.openjdk.jmh.annotations.Setup;
+import org.openjdk.jmh.annotations.State;
+import org.openjdk.jmh.annotations.TearDown;
+import org.openjdk.jmh.annotations.Threads;
+import org.openjdk.jmh.annotations.Warmup;
+import org.openjdk.jmh.runner.Runner;
+import org.openjdk.jmh.runner.RunnerException;
+import org.openjdk.jmh.runner.options.Options;
+import org.openjdk.jmh.runner.options.OptionsBuilder;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
+
+import static com.intellij.platform.util.io.storages.intmultimaps.IntToMultiLongMap.NO_VALUE;
+import static com.intellij.platform.util.io.storages.intmultimaps.extendiblehashmap.ExtendibleHashMapInt32ToInt64.DEFAULT_SEGMENT_SIZE;
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
+
+/**
+ * Compare persistent [int->int] map implementations: BTree-based vs ExtendibleHashMap based on memory-mapped files
+ */
+@BenchmarkMode({Mode.AverageTime, Mode.SampleTime})
+@OutputTimeUnit(NANOSECONDS)
+@Warmup(iterations = 3, time = 2, timeUnit = SECONDS)
+@Measurement(iterations = 5, time = 5, timeUnit = SECONDS)
+@Fork(1)
+@Threads(1)
+public class IntToIntMapsBenchmark {
+
+  private static final int TREE_PAGE_SIZE = 32_768;
+
+  private static final int TOTAL_KEYS = 1 << 23;
+
+  private static final int SAMPLES = 16;
+
+
+  @State(Scope.Benchmark)
+  public static class BTreeContext {
+    @Param({"legacy", "lock-free"})
+    public String btreeImplementation;
+
+    public File file;
+
+    public AbstractIntToIntBtree bTree;
+
+    public StorageLockContext lockContext = new StorageLockContext(true, true, true);
+    public FilePageCacheLockFree pageCache;
+
+    public Int2IntOpenHashMap generatedKeyValues;
+    public int[] generatedKeys;
+
+    public int[] result = {0};
+
+    @Setup
+    public void setup() throws Exception {
+      file = FileUtil.createTempFile("IntToIntBtree", "tst", /*deleteOnExit: */ true);
+      if (btreeImplementation.equals("legacy")) {
+        bTree = new IntToIntBtree(
+          TREE_PAGE_SIZE,
+          file.toPath(),
+          lockContext,
+          /*createAnew: */ true
+        );
+      }
+      else if (btreeImplementation.equals("lock-free")) {
+        pageCache = new FilePageCacheLockFree(PageCacheUtils.FILE_PAGE_CACHES_TOTAL_CAPACITY_BYTES);
+        bTree = new IntToIntBtreeLockFree(
+          TREE_PAGE_SIZE,
+          file.toPath(),
+          lockContext,
+          pageCache,
+          /*createAnew: */ true, new PageContentLockingStrategy.SharedLockLockingStrategy()
+        );
+      }
+      else {
+        throw new IllegalStateException(
+          "Unrecognized btreeImplementation(=" + btreeImplementation + ") -- must be 'legacy' or 'lock-free'");
+      }
+
+
+      generatedKeyValues = generateKeyValues(TOTAL_KEYS);
+      for (Map.Entry<Integer, Integer> e : generatedKeyValues.int2IntEntrySet()) {
+        bTree.put(e.getKey(), e.getValue());
+      }
+      generatedKeys = generatedKeyValues.keySet().toIntArray();
+    }
+
+    @TearDown
+    public void tearDown() throws Exception {
+      if (bTree != null) {
+        bTree.doClose();
+      }
+      if (pageCache != null) {
+        pageCache.close();
+      }
+      if (file != null) {
+        file.delete();
+      }
+    }
+  }
+
+  @State(Scope.Benchmark)
+  public static class ExtendibleHashMapContext {
+
+    public File file;
+
+    public ExtendibleHashMap map;
+
+    public Int2IntOpenHashMap generatedKeyValues;
+    public int[] generatedKeys;
+
+    @Setup
+    public void setup() throws Exception {
+      file = FileUtil.createTempFile("IntToIntBtree", "tst", /*deleteOnExit: */ true);
+      map = ExtendibleMapFactory.largeSize().open(file.toPath());
+
+
+      generatedKeyValues = generateKeyValues(TOTAL_KEYS);
+      for (Map.Entry<Integer, Integer> e : generatedKeyValues.int2IntEntrySet()) {
+        map.put(e.getKey(), e.getValue());
+      }
+      generatedKeys = generatedKeyValues.keySet().toIntArray();
+    }
+
+    @TearDown
+    public void tearDown() throws Exception {
+      if (map != null) {
+        map.close();
+      }
+      if (file != null) {
+        file.delete();
+      }
+    }
+  }
+
+  @State(Scope.Benchmark)
+  public static class ExtendibleHashMap64Context {
+
+    public File file;
+
+    public ExtendibleHashMapInt32ToInt64 map;
+
+    public int[] generatedKeys;
+
+    @Setup
+    public void setup() throws Exception {
+      file = FileUtil.createTempFile("ExtendibleHashMapInt32ToInt64", "tst", /*deleteOnExit: */ true);
+      map = MMappedFileStorageFactory.withDefaults()
+        .pageSize(DEFAULT_SEGMENT_SIZE * 32)
+        .wrapStorageSafely(
+          file.toPath(),
+          mappedStorage -> new ExtendibleHashMapInt32ToInt64(
+            new ExtendibleHashMapStorageOverMMappedFile(
+              mappedStorage, ExtendibleHashMapInt32ToInt64.REQUIRED_HEADER_SIZE, DEFAULT_SEGMENT_SIZE
+            )
+          )
+        );
+
+      Int2IntMap generatedKeyValues = generateKeyValues(TOTAL_KEYS);
+      for (Map.Entry<Integer, Integer> e : generatedKeyValues.int2IntEntrySet()) {
+        map.put(e.getKey(), e.getValue());
+      }
+      generatedKeys = generatedKeyValues.keySet().toIntArray();
+    }
+
+    @TearDown
+    public void tearDown() throws Exception {
+      if (map != null) {
+        map.close();
+      }
+      if (file != null) {
+        file.delete();
+      }
+    }
+  }
+
+  private static Int2IntOpenHashMap generateKeyValues(int keysCount) {
+    //noinspection SSBasedInspection
+    Int2IntOpenHashMap keyValues = new Int2IntOpenHashMap(keysCount);
+    ThreadLocalRandom rnd = ThreadLocalRandom.current();
+    for (int i = 0; i < keysCount; i++) {
+      int key;
+      do {
+        key = rnd.nextInt();
+      }
+      while (key == 0);
+
+      int value;
+      do {
+        value = rnd.nextInt();
+      }
+      while (value == 0);
+
+      keyValues.put(key, value);
+    }
+    return keyValues;
+  }
+
+
+  @Benchmark
+  @OperationsPerInvocation(SAMPLES)
+  public void lookupRandomExistentKey_BTree(BTreeContext context) throws IOException {
+    int[] keys = context.generatedKeys;
+    int[] result = context.result;
+    AbstractIntToIntBtree bTree = context.bTree;
+    ThreadLocalRandom rnd = ThreadLocalRandom.current();
+
+    for (int i = 0; i < SAMPLES; i++) {
+      int index = rnd.nextInt(keys.length);
+      int key = keys[index];
+      bTree.get(key, result);
+    }
+  }
+
+  @Benchmark
+  @OperationsPerInvocation(SAMPLES)
+  public void updateRandomExistingKey_BTree(BTreeContext context) throws IOException {
+    int[] keys = context.generatedKeys;
+    AbstractIntToIntBtree bTree = context.bTree;
+    ThreadLocalRandom rnd = ThreadLocalRandom.current();
+
+    for (int i = 0; i < SAMPLES; i++) {
+      int index = rnd.nextInt(keys.length);
+      int key = keys[index];
+      bTree.put(key, key + index);
+    }
+  }
+
+
+  @Benchmark
+  @OperationsPerInvocation(SAMPLES)
+  public void lookupRandomExistentKey_EMap(ExtendibleHashMapContext context) throws IOException {
+    int[] keys = context.generatedKeys;
+    ExtendibleHashMap map = context.map;
+    ThreadLocalRandom rnd = ThreadLocalRandom.current();
+
+    for (int i = 0; i < SAMPLES; i++) {
+      int index = rnd.nextInt(keys.length);
+      int key = keys[index];
+      map.lookup(key, value -> true);
+    }
+  }
+
+  @Benchmark
+  @OperationsPerInvocation(SAMPLES)
+  public void updateRandomExistingKey_EMap(ExtendibleHashMapContext context) throws IOException {
+    int[] keys = context.generatedKeys;
+    ExtendibleHashMap map = context.map;
+    ThreadLocalRandom rnd = ThreadLocalRandom.current();
+
+    for (int i = 0; i < SAMPLES; i++) {
+      int index = rnd.nextInt(keys.length);
+      int key = keys[index];
+      map.replace(key, key, key + index);  //multimap.put will grow map
+    }
+  }
+
+
+  @Benchmark
+  @OperationsPerInvocation(SAMPLES)
+  public void lookupRandomExistentKey_EMap64(ExtendibleHashMap64Context context) throws IOException {
+    int[] keys = context.generatedKeys;
+    ExtendibleHashMapInt32ToInt64 map = context.map;
+    ThreadLocalRandom rnd = ThreadLocalRandom.current();
+
+    for (int i = 0; i < SAMPLES; i++) {
+      int index = rnd.nextInt(keys.length);
+      int key = keys[index];
+      map.lookup(key, _ -> true);
+    }
+  }
+
+  @Benchmark
+  @OperationsPerInvocation(SAMPLES)
+  public void updateRandomExistingKey_EMap64(ExtendibleHashMap64Context context) throws IOException {
+    int[] keys = context.generatedKeys;
+    ExtendibleHashMapInt32ToInt64 map = context.map;
+    ThreadLocalRandom rnd = ThreadLocalRandom.current();
+
+    for (int i = 0; i < SAMPLES; i++) {
+      int index = rnd.nextInt(keys.length);
+      int key = keys[index];
+      map.replace(key, key, key + index);  //multimap.put will grow map
+    }
+  }
+
+  @Benchmark
+  @OperationsPerInvocation(SAMPLES)
+  public void lookupAndModifyRandomExistingKey_EMap64(ExtendibleHashMap64Context context) throws IOException {
+    int[] keys = context.generatedKeys;
+    ExtendibleHashMapInt32ToInt64 map = context.map;
+    ThreadLocalRandom rnd = ThreadLocalRandom.current();
+
+    for (int i = 0; i < SAMPLES; i++) {
+      int index = rnd.nextInt(keys.length);
+      int key = keys[index];
+      map.lookupAndModify(key, (oldValue, newValueRef) -> {
+        if (oldValue == NO_VALUE) {
+          //insertion: insert only a minor fraction
+          if (index % 1024 != 0) {
+            return false;
+          }
+          newValueRef.set(key);
+        }
+        else {
+          newValueRef.set(oldValue + 1);
+        }
+        return true;
+      });
+    }
+  }
+
+  @Benchmark
+  @OperationsPerInvocation(SAMPLES)
+  public void lookupAndModifyUnoptimizedRandomExistingKey_EMap64(ExtendibleHashMap64Context context) throws IOException {
+    record Modification(long oldValue, long newValue) { }
+    int[] keys = context.generatedKeys;
+    ExtendibleHashMapInt32ToInt64 map = context.map;
+    ThreadLocalRandom rnd = ThreadLocalRandom.current();
+
+    for (int i = 0; i < SAMPLES; i++) {
+      int index = rnd.nextInt(keys.length);
+      int key = keys[index];
+      IntToMultiLongMap.ValueProcessor processor = (oldValue, newValueRef) -> {
+        if (oldValue == NO_VALUE) {
+          //insertion: insert only a minor fraction
+          if ((index % 1024) != 42) {
+            return false;
+          }
+          newValueRef.set(key);
+        }
+        else {
+          newValueRef.set(oldValue + 1);
+        }
+        return true;
+      };
+      var modifications = new ArrayList<Modification>();
+      var newValueRef = new IntToMultiLongMap.MutableLongRef(NO_VALUE);
+      long stoppedAt = map.lookup(key, oldValue -> {
+        newValueRef.set(oldValue);
+        boolean shouldContinue = processor.process(oldValue, newValueRef);
+        long newValue = newValueRef.get();
+        if (newValue != oldValue) {
+          modifications.add(new Modification(oldValue, newValue));
+        }
+        return !shouldContinue;
+      });
+      if (stoppedAt == NO_VALUE) {
+        newValueRef.set(NO_VALUE);
+        processor.process(NO_VALUE, newValueRef);
+        long newValue = newValueRef.get();
+        if (newValue != NO_VALUE) {
+          modifications.add(new Modification(NO_VALUE, newValue));
+        }
+      }
+
+      for (var modification : modifications) {
+        long oldValue = modification.oldValue();
+        long newValue = modification.newValue();
+        if (oldValue == NO_VALUE) {
+          map.put(key, newValue);
+        }
+        else if (newValue == NO_VALUE) {
+          map.remove(key, oldValue);
+        }
+        else {
+          map.replace(key, oldValue, newValue);
+        }
+      }
+    }
+  }
+
+
+  static void main(String[] args) throws RunnerException {
+    final Options opt = new OptionsBuilder()
+      .mode(Mode.SampleTime)
+      .include(IntToIntMapsBenchmark.class.getSimpleName() + ".*")
+      .threads(1)
+      .build();
+
+    new Runner(opt).run();
+  }
+}

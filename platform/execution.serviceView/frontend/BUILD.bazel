@@ -1,0 +1,50 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.platform.execution.serviceView.frontend` start
+content_module_jar(module = ":frontend")
+### auto-generated section `dev intellij.platform.execution.serviceView.frontend` end
+
+### auto-generated section `build intellij.platform.execution.serviceView.frontend` start
+jvm_library(
+    name = "frontend",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.execution.serviceView.frontend",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//platform/lang-impl",
+        "//platform/execution.serviceView",
+        "//platform/core-impl",
+        "//platform/core-ui",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/kernel/rpc",
+        "//platform/platform-impl/rpc",
+        "//platform/core-api:core",
+        "//platform/lang-api:lang",
+        "//platform/util:util-ui",
+    ],
+)
+### auto-generated section `build intellij.platform.execution.serviceView.frontend` end
+
+### auto-generated section `iml intellij.platform.execution.serviceView.frontend` start
+exports_files(
+    [
+        "intellij.platform.execution.serviceView.frontend.iml",
+        "resources/intellij.platform.execution.serviceView.frontend.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.execution.serviceView.frontend` end

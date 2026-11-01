@@ -1,0 +1,11 @@
+// COMPILER_ARGUMENTS: -Xcontext-parameters -Xcallable-references-to-contextual
+
+interface Context
+
+val Context.prop: Int
+    get() = 0
+
+context(_: Context)
+fun test() {
+    print(contextOf<Context>()::prop)
+}

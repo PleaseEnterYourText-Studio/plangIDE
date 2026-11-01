@@ -1,0 +1,68 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+jps_test(
+    name = "tests_test",
+    timeout = "moderate",
+    tags = ["community-aggregator"],
+    runtime_deps = [":tests_test_lib"],
+)
+### skip generation section `test intellij.mcpserver.terminal.tests`
+
+### auto-generated section `build intellij.mcpserver.terminal.tests` start
+jvm_library(
+    name = "tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "testSrc/**/*.kt",
+            "testSrc/**/*.java",
+            "testSrc/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.mcpserver.terminal.tests",
+    resource_strip_prefix = "testResources",
+    resources = glob(
+        ["testResources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/jetbrains/annotations",
+        "//plugins/mcp-server:mcpserver",
+        "//plugins/mcp-server/mcpserver.plugin",
+        "//plugins/mcp-server/mcpserver.terminal",
+        "//plugins/mcp-server/mcpserver.testFramework",
+        "//plugins/mcp-server/tests:tests_test_lib",
+        "//platform/core-api:core",
+        "//platform/testFramework",
+        "//platform/testFramework/junit5",
+        "//libraries/junit6",
+        "//libraries/assertj-core",
+        "//plugins/terminal",
+        "//platform/platform-api:ide",
+        "//platform/ide-core",
+        "//platform/platform-impl:ide-impl",
+        "//platform/execution",
+        "//platform/execution-impl",
+        "//platform/lang-impl",
+        "//platform/projectModel-api:projectModel",
+        "//platform/editor-ui-api:editor-ui",
+        "//libraries/kotlinx/coroutines/core",
+        "//libraries/kotlinx/serialization/core",
+        "//libraries/kotlinx/serialization/json",
+        "//platform/util:util-ui",
+    ],
+)
+### auto-generated section `build intellij.mcpserver.terminal.tests` end
+
+### auto-generated section `iml intellij.mcpserver.terminal.tests` start
+exports_files(
+    [
+        "intellij.mcpserver.terminal.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.mcpserver.terminal.tests` end

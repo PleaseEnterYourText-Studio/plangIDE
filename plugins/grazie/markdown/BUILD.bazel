@@ -1,0 +1,46 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.grazie.markdown` start
+content_module_jar(module = ":markdown")
+### auto-generated section `dev intellij.grazie.markdown` end
+
+### auto-generated section `build intellij.grazie.markdown` start
+jvm_library(
+    name = "markdown",
+    srcs = glob(
+        [
+            "src/main/kotlin/**/*.kt",
+            "src/main/kotlin/**/*.java",
+            "src/main/kotlin/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.grazie.markdown",
+    resource_strip_prefix = "src/main/resources",
+    resources = glob(
+        ["src/main/resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//plugins/grazie/src:core",
+        "//plugins/markdown/core:markdown",
+        "//platform/core-api:core",
+        "//platform/core-impl",
+        "//platform/util",
+        "//platform/util-ex",
+    ],
+)
+### auto-generated section `build intellij.grazie.markdown` end
+
+### auto-generated section `iml intellij.grazie.markdown` start
+exports_files(
+    [
+        "intellij.grazie.markdown.iml",
+        "src/main/resources/intellij.grazie.markdown.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.grazie.markdown` end

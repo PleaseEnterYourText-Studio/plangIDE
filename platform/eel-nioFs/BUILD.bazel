@@ -1,0 +1,40 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `build intellij.platform.eel.nioFs` start
+jvm_library(
+    name = "eel-nioFs",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = "@community//:k8",
+    module_name = "intellij.platform.eel.nioFs",
+    visibility = ["//visibility:public"],
+    exports = ["//platform/eel"],
+    deps = [
+        # do not sort,
+        "//libraries/fastutil",
+        "//platform/eel",
+        "//platform/util-rt",
+        "//libraries/kotlinx/coroutines/core",
+        "@lib//:kotlin-stdlib",
+        "//libraries/jetbrains/annotations",
+        "//platform/util/base",
+        "//platform/util/base/multiplatform",
+        "//platform/util/annotations",
+    ],
+)
+### auto-generated section `build intellij.platform.eel.nioFs` end
+
+### auto-generated section `iml intellij.platform.eel.nioFs` start
+exports_files(
+    [
+        "intellij.platform.eel.nioFs.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.eel.nioFs` end

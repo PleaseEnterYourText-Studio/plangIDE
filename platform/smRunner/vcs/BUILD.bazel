@@ -1,0 +1,62 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.platform.smRunner.vcs` start
+content_module_jar(module = ":vcs")
+### auto-generated section `dev intellij.platform.smRunner.vcs` end
+
+### auto-generated section `build intellij.platform.smRunner.vcs` start
+jvm_library(
+    name = "vcs",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.smRunner.vcs",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/execution-impl",
+        "//platform/projectModel-api:projectModel",
+        "//platform/smRunner",
+        "@lib//:kotlin-stdlib",
+        "//platform/vcs-api:vcs",
+        "//platform/platform-impl:ide-impl",
+        "//platform/lang-api:lang",
+        "//platform/core-ui",
+        "//platform/platform-util-io:ide-util-io",
+        "//platform/vcs-impl",
+        "//libraries/kotlinx/coroutines/core",
+        "//platform/ide-core-impl",
+        "//platform/ide-core",
+        "//platform/util/progress",
+        "//platform/util:util-ui",
+        "//platform/lang-impl",
+        "//platform/buildView",
+        "//platform/execution",
+        "//platform/consoleView",
+        "//platform/testRunner",
+    ],
+)
+### auto-generated section `build intellij.platform.smRunner.vcs` end
+
+### auto-generated section `iml intellij.platform.smRunner.vcs` start
+exports_files(
+    [
+        "intellij.platform.smRunner.vcs.iml",
+        "resources/intellij.platform.smRunner.vcs.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.smRunner.vcs` end

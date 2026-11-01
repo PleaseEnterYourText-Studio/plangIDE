@@ -1,0 +1,55 @@
+load("@community//fleet/build:fleet.bzl", "fleet_wasmjs_module")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+fleet_wasmjs_module(
+    name = "wasmjs_module",
+    kotlinc_opts = "@rules_jvm//:default-kotlinc-opts",
+    module_name = "fleet.test.runtime",
+    visibility = ["//visibility:public"],
+    exports = ["@kmp_deps_wasmjs//:org_jetbrains_kotlin_kotlin_test"],
+)
+
+### auto-generated section `build fleet.test.runtime` start
+jvm_library(
+    name = "test-runtime",
+    srcs = glob(
+        [],
+        allow_empty = True,
+    ),
+    module_name = "fleet.test.runtime",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    exports = [
+        # do not sort,
+        "//libraries/junit6",
+        "//libraries/junit6-params",
+        "@lib//:fleet-test-runtime-_j_unit6_jupiter",
+        "//libraries/junit6-launcher",
+        "//libraries/hamcrest",
+        "@lib//:kotlin-test-junit5",
+        "//libraries/kotlin/test:libraries-kotlinTest",
+    ],
+    runtime_deps = [
+        # do not sort,
+        "//libraries/junit6",
+        "//libraries/junit6-params",
+        "@lib//:fleet-test-runtime-_j_unit6_jupiter",
+        "//libraries/junit6-launcher",
+        "//libraries/hamcrest",
+        "@lib//:kotlin-test-junit5",
+        "//libraries/kotlin/test:libraries-kotlinTest",
+    ],
+)
+### auto-generated section `build fleet.test.runtime` end
+
+### auto-generated section `iml fleet.test.runtime` start
+exports_files(
+    [
+        "fleet.test.runtime.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml fleet.test.runtime` end

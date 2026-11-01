@@ -1,0 +1,68 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//build:compiler-options.bzl", "create_kotlinc_options")
+
+### auto-generated section `build intellij.python.uv.tests` start
+create_kotlinc_options(
+    name = "custom_tests",
+    warn = "error",
+    x_warning_level = ["DEPRECATION:warning"],
+)
+
+jvm_library(
+    name = "tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "testSrc/**/*.kt",
+            "testSrc/**/*.java",
+            "testSrc/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    associates = ["//python/python-uv/backend"],
+    kotlinc_opts = ":custom_tests",
+    resource_strip_prefix = "testResources",
+    resources = glob(
+        ["testResources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/jetbrains/annotations",
+        "//libraries/junit6",
+        "//libraries/kotlinx/coroutines/core",
+        "//platform/core-api:core",
+        "//platform/eel-provider",
+        "//platform/testFramework/common",
+        "//platform/testFramework/junit5",
+        "//platform/util",
+        "//python/common",
+        "//python/openapi:community",
+        "//python/python-exec-service:community-execService",
+        "//python/junit5Tests-framework:community-junit5Tests-framework_test_lib",
+        "//python/python-test-env/junit5:junit5_test_lib",
+        "//python/python-pyproject:pyproject",
+        "//python/python-pytools/backend",
+        "//python/python-pytools-runtime/backend:python-pytools-backend-runtime",
+        "//python/python-sdk/backend",
+    ],
+)
+### auto-generated section `build intellij.python.uv.tests` end
+
+### auto-generated section `iml intellij.python.uv.tests` start
+exports_files(
+    [
+        "intellij.python.uv.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.python.uv.tests` end
+
+### auto-generated section `test intellij.python.uv.tests` start
+jps_test(
+    name = "tests_test",
+    runtime_deps = [":tests_test_lib"],
+)
+### auto-generated section `test intellij.python.uv.tests` end

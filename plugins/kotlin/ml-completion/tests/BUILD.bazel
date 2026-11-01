@@ -1,0 +1,44 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `build intellij.kotlin.completion.ml.tests` start
+jvm_library(
+    name = "tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "test/**/*.kt",
+            "test/**/*.java",
+            "test/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.kotlin.completion.ml.tests",
+    visibility = ["//visibility:public"],
+    runtime_deps = ["//plugins/kotlin:kotlin-plugin-community-main"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/junit6",
+        "//plugins/kotlin/ml-completion:completion-ml",
+        "//platform/platform-impl/internal",
+        "//platform/scratch/plugin",
+    ],
+)
+### auto-generated section `build intellij.kotlin.completion.ml.tests` end
+
+### auto-generated section `iml intellij.kotlin.completion.ml.tests` start
+exports_files(
+    [
+        "intellij.kotlin.completion.ml.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.kotlin.completion.ml.tests` end
+
+### auto-generated section `test intellij.kotlin.completion.ml.tests` start
+jps_test(
+    name = "tests_test",
+    runtime_deps = [":tests_test_lib"],
+)
+### auto-generated section `test intellij.kotlin.completion.ml.tests` end

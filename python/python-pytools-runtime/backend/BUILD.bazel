@@ -1,0 +1,58 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//build:compiler-options.bzl", "create_kotlinc_options")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.python.pytools.backend.runtime` start
+content_module_jar(module = ":python-pytools-backend-runtime")
+### auto-generated section `dev intellij.python.pytools.backend.runtime` end
+
+### auto-generated section `build intellij.python.pytools.backend.runtime` start
+create_kotlinc_options(
+    name = "custom_python-pytools-backend-runtime",
+    opt_in = ["com.jetbrains.python.PyInternalExecApi"],
+    warn = "error",
+)
+
+jvm_library(
+    name = "python-pytools-backend-runtime",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = ":custom_python-pytools-backend-runtime",
+    module_name = "intellij.python.pytools.backend.runtime",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//platform/util",
+        "//platform/core-api:core",
+        "//platform/execution",
+        "//platform/eel",
+        "//platform/eel-provider",
+        "//python/openapi:community",
+        "//python/python-exec-service:community-execService",
+        "//python/python-pytools/backend",
+        "//python/python-sdk/backend",
+        "//python/python-pyproject:pyproject",
+    ],
+)
+### auto-generated section `build intellij.python.pytools.backend.runtime` end
+
+### auto-generated section `iml intellij.python.pytools.backend.runtime` start
+exports_files(
+    [
+        "intellij.python.pytools.backend.runtime.iml",
+        "resources/intellij.python.pytools.backend.runtime.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.python.pytools.backend.runtime` end

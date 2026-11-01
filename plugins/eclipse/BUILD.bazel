@@ -1,0 +1,173 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@jps_dynamic_deps_community//:targets.bzl", "dev_dist_plugin")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+jps_test(
+    name = "eclipse-tests_test",
+    timeout = "moderate",
+    tags = ["community-aggregator"],
+    runtime_deps = [":eclipse-tests_test_lib"],
+)
+### skip generation section `test intellij.eclipse.tests`
+
+### auto-generated section `dev intellij.eclipse` start
+dev_dist_plugin(
+    content_modules = [
+        # do not sort,
+        "intellij.eclipse.common",
+        "intellij.eclipse.jps",
+    ],
+    descriptor = "resources/META-INF/plugin.xml",
+    jars = {
+        "lib/eclipse.jar": ["intellij.eclipse"],
+        "lib/eclipse-jps.jar": ["intellij.eclipse.jps"],
+        "lib/eclipse-common.jar": ["intellij.eclipse.common"],
+    },
+    main_module = "intellij.eclipse",
+)
+### auto-generated section `dev intellij.eclipse` end
+
+### auto-generated section `build intellij.eclipse` start
+jvm_library(
+    name = "eclipse",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+            "gen/**/*.kt",
+            "gen/**/*.java",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.eclipse",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/analysis-api:analysis",
+        "//platform/code-style-api:codeStyle",
+        "//platform/util/concurrency",
+        "//platform/core-api:core",
+        "//platform/editor-ui-api:editor-ui",
+        "//jps/model-api:model",
+        "//jps/model-serialization",
+        "//platform/lang-core",
+        "//platform/projectModel-api:projectModel",
+        "//platform/util/jdom",
+        "//platform/util:util-ui",
+        "//platform/util-ex",
+        "//java/openapi:java",
+        "//platform/platform-impl:ide-impl",
+        "//java/java-syntax:syntax",
+        "//java/java-psi-api:psi",
+        "//platform/diff-api:diff",
+        "//java/compiler/openapi:java-compiler",
+        "//platform/ide-core-impl",
+        "//platform/ide-core",
+        "//java/idea-ui:ui",
+        "//java/java-impl:impl",
+        "//plugins/eclipse/jps-plugin:jps",
+        "//plugins/eclipse/common-eclipse-util:common",
+        "//platform/editor-ui-ex:editor-ex",
+        "//platform/core-ui",
+        "//platform/core-impl",
+        "//platform/workspace/jps",
+        "//platform/workspace/storage",
+        "//platform/statistics",
+        "//libraries/kotlin/reflect",
+        "//platform/backend/workspace",
+        "//xml/xml-psi-impl:psi-impl",
+        "//platform/execution",
+        "//platform/forms_rt:java-guiForms-rt",
+        "//java/java-frontback-psi-api:frontback-psi",
+        "//platform/welcome-screen-impl:welcomeScreen-impl",
+        "//libraries/kotlinx/collections-immutable:libraries-kotlinx-collections-immutable",
+    ],
+)
+### auto-generated section `build intellij.eclipse` end
+
+### auto-generated section `iml intellij.eclipse` start
+exports_files(
+    [
+        "intellij.eclipse.iml",
+        "resources/META-INF/plugin.xml",
+        "resources/org/jetbrains/idea/eclipse/conversion/template.empty.project.xml",
+        "resources/org/jetbrains/idea/eclipse/conversion/template.project.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.eclipse` end
+
+### auto-generated section `build intellij.eclipse.tests` start
+jvm_library(
+    name = "eclipse-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "testSources/**/*.kt",
+            "testSources/**/*.java",
+            "testSources/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    associates = ["//plugins/eclipse"],
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+        "//community-resources:customization",
+        "//xml/plugin",
+    ],
+    deps = [
+        # do not sort,
+        "//platform/analysis-api:analysis",
+        "//platform/code-style-api:codeStyle",
+        "//platform/util/concurrency",
+        "//platform/core-api:core",
+        "//platform/editor-ui-api:editor-ui",
+        "//jps/model-serialization",
+        "//platform/lang-core",
+        "//platform/projectModel-api:projectModel",
+        "//platform/util:util-ui",
+        "//platform/util-ex",
+        "//java/openapi:java",
+        "//platform/platform-impl:ide-impl",
+        "//platform/testFramework",
+        "//libraries/junit4",
+        "//java/testFramework",
+        "//platform/ide-core-impl",
+        "//platform/ide-core",
+        "//java/idea-ui:ui",
+        "//java/java-impl:impl",
+        "//plugins/eclipse/jps-plugin:jps",
+        "//plugins/eclipse/common-eclipse-util:common",
+        "//platform/testFramework/extensions:testExtensions",
+        "//platform/editor-ui-ex:editor-ex",
+        "//platform/core-ui",
+        "//platform/core-impl",
+        "//libraries/kotlinx/coroutines/core",
+        "//libraries/junit6",
+        "//platform/testFramework/junit5",
+        "//xml/xml-psi-impl:psi-impl",
+        "//platform/execution",
+        "//java/java-frontback-psi-api:frontback-psi",
+        "//platform/welcome-screen-impl:welcomeScreen-impl",
+        "//platform/structure-view-impl/plugin",
+        "//platform/todo/plugin",
+        "//aether-dependency-resolver/plugin",
+    ],
+)
+### auto-generated section `build intellij.eclipse.tests` end
+
+### auto-generated section `iml intellij.eclipse.tests` start
+exports_files(
+    [
+        "intellij.eclipse.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.eclipse.tests` end

@@ -1,0 +1,62 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.vcs.github.git` start
+content_module_jar(module = ":vcs-github-git")
+### auto-generated section `dev intellij.vcs.github.git` end
+
+### auto-generated section `build intellij.vcs.github.git` start
+jvm_library(
+    name = "vcs-github-git",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.vcs.github.git",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinx/coroutines/core",
+        "//libraries/caffeine",
+        "//platform/core-api:core",
+        "//platform/platform-api:ide",
+        "//platform/projectModel-api:projectModel",
+        "//platform/util",
+        "//plugins/github/github-core:vcs-github",
+        "//platform/platform-impl:ide-impl",
+        "//plugins/git4idea:vcs-git",
+        "//plugins/git4idea/backend",
+        "//plugins/git4idea/hosting",
+        "//platform/util/coroutines",
+        "//platform/util/progress",
+        "//platform/ide-core",
+        "//platform/progress/shared:ide-progress",
+        "//platform/dvcs-impl:vcs-dvcs-impl",
+        "//platform/core-ui",
+        "//platform/vcs-api:vcs",
+        "//platform/vcs-impl",
+        "//plugins/git4idea/shared",
+        "//platform/collaboration-tools",
+        "//platform/editor-ui-api:editor-ui",
+    ],
+)
+### auto-generated section `build intellij.vcs.github.git` end
+
+### auto-generated section `iml intellij.vcs.github.git` start
+exports_files(
+    [
+        "intellij.vcs.github.git.iml",
+        "resources/intellij.vcs.github.git.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.vcs.github.git` end

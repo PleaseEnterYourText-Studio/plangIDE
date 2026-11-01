@@ -1,0 +1,41 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `build intellij.compose.ide.plugin.resources.android` start
+jvm_library(
+    name = "ide-plugin-resources-android",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.compose.ide.plugin.resources.android",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//plugins/compose/intellij.compose.ide.plugin.resources:ide-plugin-resources",
+        "@lib//:studio-platform-provided",
+        "//platform/util",
+        "//android/android-npw:newProjectWizard",
+        "//platform/core-ui",
+        "//platform/platform-api:ide",
+    ],
+)
+### auto-generated section `build intellij.compose.ide.plugin.resources.android` end
+
+### auto-generated section `iml intellij.compose.ide.plugin.resources.android` start
+exports_files(
+    [
+        "intellij.compose.ide.plugin.resources.android.iml",
+        "resources/intellij.compose.ide.plugin.resources.android.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.compose.ide.plugin.resources.android` end

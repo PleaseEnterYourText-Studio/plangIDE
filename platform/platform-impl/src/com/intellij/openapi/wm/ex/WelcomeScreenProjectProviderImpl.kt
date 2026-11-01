@@ -1,0 +1,56 @@
+// Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+package com.intellij.openapi.wm.ex
+
+import com.intellij.diagnostic.WindowsDefenderChecker
+import com.intellij.ide.RecentProjectsManager
+import com.intellij.ide.RecentProjectsManagerBase
+import com.intellij.ide.impl.OpenProjectTask
+import com.intellij.ide.util.TipAndTrickManager
+import com.intellij.openapi.components.serviceAsync
+import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.project.Project
+import com.intellij.platform.PlatformProjectOpenProcessor
+import com.intellij.platform.PlatformProjectOpenProcessor.Companion.configureToOpenDotIdeaOrCreateNewIfNotExists
+import java.nio.file.Path
+
+private val LOG = logger<WelcomeScreenProjectSupportImpl>()
+
+internal class WelcomeScreenProjectSupportImpl : WelcomeScreenProjectSupport {
+  override suspend fun createOrOpenWelcomeScreenProject(
+    extension: WelcomeScreenProjectProvider,
+    projectToClose: Project?,
+    forceOpenInNewFrame: Boolean,
+  ): Project {
+    val simpleProject = extension.createSimpleProject(projectToClose, forceOpenInNewFrame)
+    if (simpleProject != null) {
+      return simpleProject
+    }
+
+    val projectPath = extension.getWelcomeScreenProjectPathForInternalUsage()
+
+    // the path is a system path, so TrustedProjects trusts it implicitly, without a persistent record
+    serviceAsync<WindowsDefenderChecker>().markProjectPath(projectPath, /*skip =*/ true)
+
+    val project = extension.doCreateOrOpenWelcomeScreenProjectForInternalUsage(projectPath, projectToClose, forceOpenInNewFrame)
+    LOG.info("Opened the welcome screen project at $projectPath")
+    LOG.debug("Project: ", project)
+
+    val recentProjectsManager = serviceAsync<RecentProjectsManager>() as RecentProjectsManagerBase
+    recentProjectsManager.setProjectHidden(project, true)
+    TipAndTrickManager.DISABLE_TIPS_FOR_PROJECT.set(project, true)
+
+    return project
+  }
+
+  override suspend fun openProject(path: Path, name: String, forceOpenInNewFrame: Boolean): Project {
+    val options = OpenProjectTask {
+      configureToOpenDotIdeaOrCreateNewIfNotExists(path, null)
+      projectName = name
+      this.forceOpenInNewFrame = forceOpenInNewFrame
+      // a fresh sandbox creates the welcome project anew, and its frame content should not wait until the project is registered as open
+      initFrameEarlyForNewProject = true
+    }
+    return PlatformProjectOpenProcessor.openProjectAsync(path, options)
+           ?: throw IllegalStateException("Cannot open project at $path (not expected that user can cancel welcome-project loading)")
+  }
+}

@@ -1,0 +1,135 @@
+// Copyright 2000-2019 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
+package com.intellij.util.keyFMap;
+
+import com.intellij.openapi.util.Key;
+import com.intellij.util.ArrayUtil;
+import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+public class KeyFMapTest {
+  private static final List<Key<Object>> KEYS =
+    IntStream.range(0, 20).mapToObj(i -> Key.create("Key#"+i)).collect(Collectors.toList());
+
+  private static KeyFMap createKeyFMap(List<? extends Key<Object>> keys, List<Object> values) {
+    KeyFMap map = KeyFMap.EMPTY_MAP;
+
+    for (int i = 0; i < keys.size(); i++) {
+      map = map.plus(keys.get(i), values.get(i));
+    }
+
+    return map;
+  }
+
+  private static void doTestGetKeys(int size) {
+    List<Object> values = new ArrayList<>();
+    for (int i = 0; i < size; i++) {
+      values.add("Value#" + i);
+    }
+
+    KeyFMap map = createKeyFMap(KEYS.subList(0, size), values);
+
+    Key[] actualKeys = map.getKeys();
+
+    assertEquals(size, actualKeys.length);
+
+    for (Key key : KEYS.subList(0, size)) {
+      assertTrue(ArrayUtil.contains(key, actualKeys), "Key not found: " + key);
+    }
+  }
+
+  @Test
+  public void testHashCodeEquals() {
+    Random r = new Random(1);
+    for(int n=0; n<15; n++) {
+      Map<Key<Object>, Object> hashMap = new HashMap<>();
+      KeyFMap fMap = KeyFMap.EMPTY_MAP;
+
+      for(int i=0; i<n; i++) {
+        Object value = "Value#" + i;
+        Key<Object> key;
+        while (true) {
+          key = KEYS.get(r.nextInt(KEYS.size()));
+          if (hashMap.putIfAbsent(key, value) == null) break;
+        }
+        KeyFMap newFMap = fMap.plus(key, value);
+        assertNotSame(fMap, newFMap); // new key is added: must be not same
+        fMap = newFMap;
+      }
+      assertEquals(hashMap.hashCode(), fMap.hashCode(), hashMap + ":" + fMap);
+      KeyFMap fMap2 = KeyFMap.EMPTY_MAP;
+      for (Map.Entry<Key<Object>, Object> entry : hashMap.entrySet()) {
+        fMap2 = fMap2.plus(entry.getKey(), entry.getValue());
+      }
+      assertEquals(fMap, fMap2);
+      Iterator<Key<Object>> iterator = hashMap.keySet().iterator();
+      while(iterator.hasNext()) {
+        Key<Object> key = iterator.next();
+        iterator.remove();
+        assertEquals(fMap, fMap2);
+        fMap = fMap.minus(key);
+        assertFalse(fMap.equals(fMap2));
+        fMap2 = fMap2.minus(key);
+        assertEquals(fMap, fMap2);
+        assertEquals(fMap.hashCode(), fMap2.hashCode());
+      }
+      assertTrue(fMap.isEmpty());
+    }
+  }
+
+  @Test
+  public void testIdentityHashCode() {
+    KeyFMap map = KeyFMap.EMPTY_MAP;
+    for(int i=0; i<15; i++) {
+      String val1 = "Value#"+i;
+      String val2 = "Value#"+i;
+      KeyFMap map1 = map.plus(KEYS.get(i), val1);
+      KeyFMap map2 = map.plus(KEYS.get(i), val2);
+      assertEquals(map1.hashCode(), map2.hashCode());
+      assertEquals(map1, map2);
+      assertFalse(map1.getValueIdentityHashCode() == map2.getValueIdentityHashCode());
+      assertFalse(map1.equalsByReference(map2));
+      map2 = map.plus(KEYS.get(i), val1);
+      assertTrue(map1.getValueIdentityHashCode() == map2.getValueIdentityHashCode());
+      assertTrue(map1.equalsByReference(map2));
+      map = map1;
+    }
+  }
+
+  @Test
+  public void testGetKeysOnEmptyFMap() {
+    doTestGetKeys(0);
+  }
+
+  @Test
+  public void testGetKeysOnOneElementFMap() {
+    doTestGetKeys(1);
+  }
+
+  @Test
+  public void testGetKeysOnTwoElementFMap() {
+    doTestGetKeys(2);
+  }
+
+  @Test
+  public void testGetKeysOnArrayBackedFMap() {
+    doTestGetKeys(5);
+  }
+
+  @Test
+  public void testGetKeysOnMapBackedFMap() {
+    doTestGetKeys(15);
+  }
+}

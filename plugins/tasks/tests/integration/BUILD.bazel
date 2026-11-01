@@ -1,0 +1,102 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `build intellij.tasks.tests.integration` start
+jvm_library(
+    name = "integration_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "test/**/*.kt",
+            "test/**/*.java",
+            "test/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.tasks.tests.integration",
+    resource_strip_prefix = "testResources",
+    resources = glob(
+        ["testResources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//spellchecker",
+        "//platform/tasks-platform-impl/plugin",
+        "//platform/vcs/plugin",
+        "//platform/credential-store-impl:credentialStore-impl",
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+        "//community-resources:customization",
+        "//xml/plugin",
+    ],
+    deps = [
+        # do not sort,
+        "//platform/tasks-platform-impl/tasks.impl.bookmarks",
+        "//platform/tasks-platform-impl/tasks.impl.debugger",
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/projectModel-api:projectModel",
+        "//platform/lang-api:lang",
+        "//plugins/tasks/tasks-api:tasks",
+        "//plugins/tasks/tests/base:tasks-tests_test_lib",
+        "//plugins/tasks/tasks-core:core",
+        "//plugins/tasks/tasks-java:java",
+        "//java/debugger/impl",
+        "//plugins/tasks/tasks-compatibility:compatibility",
+        "//platform/vcs-api:vcs",
+        "//libraries/junit4",
+        "//platform/ide-core-impl",
+        "//platform/ide-core",
+        "//platform/dvcs-impl:vcs-dvcs-impl",
+        "//java/testFramework",
+        "//platform/vcs-impl",
+        "//libraries/xml-rpc",
+        "//java/debugger/openapi:java-debugger",
+        "//platform/xdebugger-impl:debugger-impl",
+        "//libraries/gson",
+        "//plugins/tasks/tasks-core/jira",
+        "//platform/testFramework",
+        "//plugins/git4idea/backend",
+        "//plugins/hg4idea:vcs-hg",
+        "//platform/vcs-tests:vcs-testFramework",
+        "//platform/tasks-platform-api:tasks",
+        "//platform/tasks-platform-impl:tasks-impl",
+        "@lib//:easymock",
+        "//libraries/objenesis",
+        "//libraries/http-client",
+        "//libraries/assertj-core",
+        "//libraries/stream",
+        "//platform/core-ui",
+        "//platform/core-impl",
+        "//platform/util/jdom",
+        "//platform/util:util-ui",
+        "//platform/bookmarks",
+        "//plugins/git4idea/shared",
+        "//platform/dvcs-impl/shared",
+        "//plugins/tasks/tasks-core/trac",
+        "//libraries/kotlinx/collections-immutable:libraries-kotlinx-collections-immutable",
+        "//platform/code-style-api:codeStyle",
+        "//platform/util/concurrency",
+        "//platform/lang-core",
+        "//plugins/git4idea/testFramework:testFramework_test_lib",
+        "//plugins/hg4idea:vcs-hg-tests_test_lib",
+    ],
+)
+### auto-generated section `build intellij.tasks.tests.integration` end
+
+### auto-generated section `iml intellij.tasks.tests.integration` start
+exports_files(
+    [
+        "intellij.tasks.tests.integration.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.tasks.tests.integration` end
+
+### auto-generated section `test intellij.tasks.tests.integration` start
+jps_test(
+    name = "integration_test",
+    runtime_deps = [":integration_test_lib"],
+)
+### auto-generated section `test intellij.tasks.tests.integration` end

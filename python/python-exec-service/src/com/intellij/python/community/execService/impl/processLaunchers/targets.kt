@@ -1,0 +1,443 @@
+// Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+@file:Suppress("UsePlatformProcessAwaitExit")
+
+package com.intellij.python.community.execService.impl.processLaunchers
+
+import com.intellij.execution.ExecutionException
+import com.intellij.execution.Platform
+import com.intellij.execution.process.LocalPtyOptions
+import com.intellij.execution.target.FullPathOnTarget
+import com.intellij.execution.target.HostPort
+import com.intellij.execution.target.PathMapping
+import com.intellij.execution.target.TargetEnvironment
+import com.intellij.execution.target.TargetEnvironmentRequest
+import com.intellij.execution.target.TargetProgressIndicator
+import com.intellij.execution.target.TargetedCommandLine
+import com.intellij.execution.target.TargetedCommandLineBuilder
+import com.intellij.execution.target.findPathVariants
+import com.intellij.execution.target.getTargetPaths
+import com.intellij.execution.target.local.LocalTargetPtyOptions
+import com.intellij.openapi.diagnostic.ControlFlowException
+import com.intellij.openapi.diagnostic.debug
+import com.intellij.openapi.diagnostic.fileLogger
+import com.intellij.openapi.progress.coroutineToIndicator
+import com.intellij.openapi.project.ProjectManager
+import com.intellij.openapi.util.NlsSafe
+import com.intellij.platform.eel.EelOsFamily
+import com.intellij.platform.eel.impl.base.ProcessFunctions
+import com.intellij.platform.eel.impl.base.bindProcessToScopeImpl
+import com.intellij.python.community.execService.BinOnTarget
+import com.intellij.python.community.execService.DownloadConfig
+import com.intellij.python.community.execService.ExecuteGetProcessError
+import com.intellij.python.community.execService.UploadConfig
+import com.intellij.python.community.execService.impl.Arg
+import com.intellij.python.community.execService.impl.PathMapper
+import com.intellij.python.community.execService.impl.PyExecBundle
+import com.intellij.python.community.execService.impl.TargetEnvironmentRequestHandler
+import com.intellij.python.community.execService.impl.Uploader
+import com.intellij.python.community.execService.impl.toMap
+import com.intellij.python.community.execService.impl.resolveAgainst
+import com.intellij.util.concurrency.annotations.RequiresBackgroundThread
+import com.jetbrains.python.Result
+import com.jetbrains.python.errorProcessing.Exe
+import com.jetbrains.python.errorProcessing.ExecErrorReason
+import com.jetbrains.python.errorProcessing.MessageError
+import com.jetbrains.python.venvReader.Directory
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
+import org.jetbrains.annotations.ApiStatus
+import java.io.IOException
+import java.nio.file.Path
+import kotlin.io.path.pathString
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.measureTime
+
+private val logger = fileLogger()
+
+internal suspend fun createProcessLauncherOnTarget(
+  binOnTarget: BinOnTarget,
+  launchRequest: LaunchRequest,
+): Result<ProcessLauncher, ExecuteGetProcessError.EnvironmentError> = withContext(Dispatchers.IO) {
+  val target = binOnTarget.target
+
+  val request = run {
+    val projectMan = ProjectManager.getInstance() // Broken Targets API doesn't work without project
+    try {
+      target.createEnvironmentRequest(projectMan.openProjects.firstOrNull() ?: projectMan.defaultProject)
+    }
+    catch (e: CancellationException) {
+      throw e
+    }
+    catch (e: Exception) {
+      // A target implementation reports a failure with its own exception type. This module must not depend on that type.
+      if (e is ControlFlowException) throw e
+      return@withContext Result.failure(ExecuteGetProcessError.EnvironmentError(MessageError(e.localizedMessage ?: e.toString())))
+    }
+  }
+
+  // Targets API maps local roots as directories; callers may still restrict which files are uploaded below.
+  val workingDir = binOnTarget.workingDir?.takeIf { it.pathString.isNotBlank() }
+  val dirsToMap = buildSet {
+    for (localArg in launchRequest.args.localArgs) {
+      when (localArg) {
+        is Arg.FileArg -> add(localArg.file.parent)
+        is Arg.DirArg -> add(localArg.root)
+      }
+    }
+    workingDir?.also {
+      add(it)
+    }
+  }
+  val uploadRoots = TargetEnvironmentRequestHandler.mapUploadRoots(request, dirsToMap, workingDir)
+  request.uploadVolumes.addAll(uploadRoots.map { it.value.root })
+
+  // Setup download roots if download is requested
+  val downloadConfig = launchRequest.downloadConfig
+  val dirsToDownload = launchRequest.args.localArgs.mapNotNullTo(mutableSetOf()) { localArg ->
+    when (localArg) {
+      is Arg.FileArg -> null
+      is Arg.DirArg -> localArg.root.takeIf { localArg.download }
+    }
+  }
+  val localDirsToDownload = dirsToDownload + setOfNotNull(workingDir.takeIf { downloadConfig != null })
+  if (localDirsToDownload.isNotEmpty()) {
+    // Two directories can be in one upload root. One download root is sufficient for them.
+    val downloadRoots = mapDownloadRoots(request.uploadVolumes, localDirsToDownload).distinctBy { it.localRootPath }
+    request.downloadVolumes.addAll(downloadRoots)
+  }
+
+  for (port in launchRequest.portsToForward) {
+    request.targetPortBindings += TargetEnvironment.TargetPortBinding(null, port.toInt())
+  }
+
+  val targetEnv = try {
+    request.prepareEnvironment(TargetProgressIndicator.EMPTY)
+  }
+  catch (e: RuntimeException) { // some types like DockerRemoteRequest throw base RuntimeException instead of anything meaningful, need to change platform code first
+    fileLogger().warn("Failed to start $target", e) // TODO: i18n
+    return@withContext Result.failure(ExecuteGetProcessError.EnvironmentError(MessageError("Failed to start environment due to ${e.localizedMessage}")))
+  }
+  catch (e: ExecutionException) {
+    fileLogger().warn("Failed to start $target", e) // TODO: i18n
+    return@withContext Result.failure(ExecuteGetProcessError.EnvironmentError(MessageError("Failed to start environment due to ${e.localizedMessage}")))
+  }
+  val workingDirOnTarget = workingDir?.let { targetEnv.getTargetPaths(it.pathString).firstOrNull() ?: it.pathString }
+  val forwardedPorts = launchRequest.portsToForward.associateWith { port ->
+    // A target that shares the network of the IDE, such as the local one, does not bind the port. Then the port stays as it is.
+    targetEnv.targetPortBindings[TargetEnvironment.TargetPortBinding(null, port.toInt())]?.localEndpoint
+    ?: HostPort(LOOPBACK_ADDRESS, port.toInt())
+  }
+  val uploadConfig = launchRequest.uploadConfig
+  if (uploadConfig?.ensureWorkingDirectoryExists == true && workingDirOnTarget != null) {
+    ensureTargetDirectoryExists(targetEnv, request, workingDirOnTarget).getOr { failure ->
+      targetEnv.shutdown()
+      return@withContext failure
+    }
+  }
+  for (volume in targetEnv.uploadVolumes.values) {
+    val skipUploading = uploadRoots[volume.localRoot]?.uploadVolumeExplicitly == false
+    if (!skipUploading) { // Volume explicitly marked as non-uploadable, i.e.: helpers (they are uploaded by handlers)
+      uploadVolume(volume, workingDir, uploadConfig, launchRequest.args.localArgs)
+    }
+  }
+
+  // Helpers resolve to the copy the handler deployed. `getTargetPaths` lists the mounts of an `ExternallySynchronized`
+  // environment first, so WSL would name them through `/mnt/c` instead. Any other path keeps that mount: a working
+  // directory on a Windows drive must stay the project itself, not a copy.
+  val helperVolumes = targetEnv.uploadVolumes.values.filter { uploadRoots[it.localRoot]?.uploadVolumeExplicitly == false }
+  fun getRemotePath(localPath: Path): FullPathOnTarget {
+    val helperMapping = helperVolumes.find { localPath.startsWith(it.localRoot) }?.let { PathMapping(it.localRoot.pathString, it.targetRoot) }
+    return helperMapping?.let {
+      findPathVariants(listOf(it), localPath.pathString, PathMapping::localPath, Platform.current().fileSeparator,
+                       PathMapping::targetPath, targetEnv.targetPlatform.platform.fileSeparator).firstOrNull()
+    } ?: targetEnv.getTargetPaths(localPath.pathString).first()
+  }
+
+  val (args, env) = launchRequest.args.getArgsAndEnv(object : Uploader {
+    override suspend fun uploadFile(localFile: Path): Result<FullPathOnTarget, MessageError> =
+      Result.success(getRemotePath(localFile))
+
+    override suspend fun uploadDir(localDir: Directory): Result<PathMapper, MessageError> = Result.success(PathMapper { entry ->
+      getRemotePath(entry.resolveAgainst(localDir))
+    })
+  }).getOr { return@withContext Result.failure(ExecuteGetProcessError.EnvironmentError(it.error)) }
+
+  val exePath: FullPathOnTarget
+  val cmdLine = TargetedCommandLineBuilder(request).also { commandLineBuilder ->
+    binOnTarget.configureTargetCmdLine(commandLineBuilder)
+    // exe path is always fixed (pre-presolved) promise. It can't be obtained directly because of Targets API limitation
+    exePath = commandLineBuilder.exePath.localValue.blockingGet(1000) ?: error("Exe path not set: $binOnTarget is broken")
+    // Map working directory through upload volumes if it's a local path
+    if (workingDirOnTarget != null) {
+      // Try to resolve through upload volumes (in case workingDir is a local path that needs mapping)
+      commandLineBuilder.setWorkingDirectory(workingDirOnTarget)
+    }
+    launchRequest.usePty?.let {
+      val ptyOptions = LocalPtyOptions
+        .defaults()
+        .builder()
+        .initialRows(it.rows.toInt())
+        .initialColumns(it.cols.toInt())
+        .build()
+      commandLineBuilder.ptyOptions = LocalTargetPtyOptions(ptyOptions)
+    }
+
+    commandLineBuilder.addParameters(args)
+    val osFamily = when (targetEnv.targetPlatform.platform) {
+      Platform.UNIX -> EelOsFamily.Posix
+      Platform.WINDOWS -> EelOsFamily.Windows
+    }
+    for ((k, v) in (launchRequest.env + env).toMap(osFamily)) {
+      commandLineBuilder.addEnvironmentVariable(k, v)
+    }
+  }.build()
+  return@withContext Result.success(ProcessLauncher(exeForError = Exe.OnTarget(exePath),
+                                                    args = args,
+                                                    processCommands = TargetProcessCommands(launchRequest.scopeToBind,
+                                                                                            exePath,
+                                                                                            targetEnv,
+                                                                                            cmdLine,
+                                                                                            downloadConfig,
+                                                                                            dirsToDownload),
+                                                    forwardedPorts = forwardedPorts))
+}
+
+private fun uploadVolume(
+  volume: TargetEnvironment.UploadableVolume,
+  workingDir: Path?,
+  uploadConfig: UploadConfig?,
+  localArgs: List<Arg.LocalArg>,
+) {
+  if (uploadConfig != null && workingDir != null && volume.localRoot == workingDir) {
+    // Upload only the files and the directories that the process needs, not the full working directory.
+    val localPathsInWorkingDir = localArgs.mapNotNull { localArg ->
+      when (localArg) {
+        is Arg.FileArg -> localArg.file.takeIf { it.parent == workingDir }
+        is Arg.DirArg -> localArg.root.takeIf { it.startsWith(workingDir) }
+      }
+    }
+    val localRelativePaths = localPathsInWorkingDir.map { workingDir.relativize(it).pathString.ifEmpty { "." } }
+    val pathsToUpload = (uploadConfig.relativePaths + localRelativePaths).distinct()
+    for (path in pathsToUpload) {
+      volume.uploadMeasureTime(path, TargetProgressIndicator.EMPTY, "execService")
+    }
+  }
+  else {
+    volume.uploadMeasureTime(".", TargetProgressIndicator.EMPTY, "execService")
+  }
+}
+
+private fun ensureTargetDirectoryExists(
+  targetEnv: TargetEnvironment,
+  request: TargetEnvironmentRequest,
+  directory: FullPathOnTarget,
+): Result<Unit, ExecuteGetProcessError.EnvironmentError> {
+  when (request.targetPlatform.platform) {
+    Platform.UNIX -> Unit
+    Platform.WINDOWS -> {
+      val error = MessageError(PyExecBundle.message("py.exec.target.working.directory.create.unsupported", directory))
+      return Result.failure(ExecuteGetProcessError.EnvironmentError(error))
+    }
+  }
+
+  val cmdLine = createMkdirCommandLine(request, directory)
+  val process = try {
+    targetEnv.createProcess(cmdLine)
+  }
+  catch (e: ExecutionException) {
+    val error = MessageError(PyExecBundle.message("py.exec.target.working.directory.create.error", directory, e.localizedMessage))
+    return Result.failure(ExecuteGetProcessError.EnvironmentError(error))
+  }
+
+  val exitCode = try {
+    process.waitFor()
+  }
+  catch (_: InterruptedException) {
+    process.destroyForcibly()
+    Thread.currentThread().interrupt()
+    val error = MessageError(PyExecBundle.message("py.exec.target.working.directory.create.interrupted", directory))
+    return Result.failure(ExecuteGetProcessError.EnvironmentError(error))
+  }
+
+  return if (exitCode == 0) {
+    Result.success(Unit)
+  }
+  else {
+    val error = MessageError(PyExecBundle.message("py.exec.target.working.directory.create.exitCode", directory, exitCode))
+    Result.failure(ExecuteGetProcessError.EnvironmentError(error))
+  }
+}
+
+private fun createMkdirCommandLine(request: TargetEnvironmentRequest, directory: FullPathOnTarget): TargetedCommandLine {
+  val commandLineBuilder = TargetedCommandLineBuilder(request)
+  commandLineBuilder.setExePath("/bin/mkdir")
+  commandLineBuilder.addParameters("-p", directory)
+  return commandLineBuilder.build()
+}
+
+private class TargetProcessCommands(
+  override val scopeToBind: CoroutineScope,
+  private val exePath: FullPathOnTarget,
+  private val targetEnv: TargetEnvironment,
+  private val cmdLine: TargetedCommandLine,
+  private val downloadConfig: DownloadConfig?,
+  /**
+   * Local directories from [com.intellij.python.community.execService.DirScope.downloadAfterExecution].
+   */
+  private val dirsToDownload: Set<Directory>,
+) : ProcessCommands {
+  override val info: ProcessCommandsInfo
+    get() = ProcessCommandsInfo(
+      env = cmdLine.environmentVariables,
+      cwd = cmdLine.workingDirectory,
+      target = targetEnv.request.configuration?.displayName ?: PyExecBundle.message("py.exec.target.name.default")
+    )
+
+  private var process: Process? = null
+
+  override val processFunctions: ProcessFunctions =
+    ProcessFunctions(waitForExit = { // `waitForExit` seems to be broken in Targets API, hence polling
+      while (process?.isAlive == true) {
+        delay(100.milliseconds)
+      }
+      downloadAfterExecution()
+      downloadDirs()
+      targetEnv.shutdown()
+    }, killProcess = {
+      process?.destroyForcibly()
+      targetEnv.shutdown()
+    })
+
+  private suspend fun downloadAfterExecution() {
+    if (downloadConfig == null) return
+    val workingDirOnTarget = info.cwd ?: return
+
+    targetEnv.downloadVolumes.forEach { (_, volume) ->
+      if (!workingDirOnTarget.startsWith(volume.targetRoot)) return@forEach
+      val downloadRelativeDir = computeDownloadRelativeDir(workingDirOnTarget, volume.targetRoot)
+      val paths = downloadConfig.relativePaths.takeIf { it.isNotEmpty() } ?: listOf(".")
+      for (path in paths) {
+        volume.downloadAndLogError(downloadRelativeDir + path)
+      }
+    }
+  }
+
+  /**
+   * Download each directory of [dirsToDownload] from the download volume that has it.
+   */
+  private suspend fun downloadDirs() {
+    for (localDir in dirsToDownload) {
+      val volume = targetEnv.downloadVolumes.values.find { localDir.startsWith(it.localRoot) }
+      if (volume == null) {
+        logger.warn("No download volume for $localDir")
+        continue
+      }
+      // `download` takes a path relative to the volume root with the separator of the target.
+      val relativePath = volume.localRoot.relativize(localDir).joinToString("/").ifEmpty { "." }
+      volume.downloadAndLogError(relativePath)
+    }
+  }
+
+  private suspend fun TargetEnvironment.DownloadableVolume.downloadAndLogError(relativePath: String) {
+    coroutineToIndicator {
+      try {
+        download(relativePath, it)
+      }
+      catch (e: IOException) {
+        fileLogger().warn("Could not download $relativePath: ${e.message}")
+      }
+      catch (e: RuntimeException) { // TODO: Unfortunately even though download is documented to throw IOException, in practice other random exceptions are possible for SSH at least
+        fileLogger().warn("Could not download $relativePath: ${e.message}")
+      }
+    }
+  }
+
+  override suspend fun start(): Result<Process, ExecErrorReason.CantStart> {
+
+    try {
+      val process = targetEnv.createProcess(cmdLine)
+      this.process = process
+      scopeToBind.bindProcessToScopeImpl(warn = { logger.warn(it) }, processNameForDebug = exePath, processFunctions = processFunctions)
+      return Result.success(process)
+    }
+    catch (e: ExecutionException) {
+      return e.asCantStart()
+    }
+  }
+}
+
+private fun ExecutionException.asCantStart(): Result.Failure<ExecErrorReason.CantStart> =
+  Result.failure(ExecErrorReason.CantStart(null, localizedMessage))
+
+/**
+ * Temporary function to [upload] from [localRoot] + [relativePath] to [targetRoot], much like [upload]
+ * but also reports time using [logger] if `debug` enabled.
+ */
+@ApiStatus.Internal
+@Throws(IOException::class)
+@RequiresBackgroundThread(generateAssertion = false /* IJPL-115548 */)
+fun TargetEnvironment.UploadableVolume.uploadMeasureTime(
+  relativePath: String,
+  targetProgressIndicator: TargetProgressIndicator,
+  @NlsSafe reason: String,
+) {
+  measureUploadTime(
+    upload = {
+      upload(relativePath, targetProgressIndicator)
+    },
+    genMessage = {
+      "$reason: ${this.localRoot} -> ${targetRoot}"
+    }
+  )
+}
+
+/**
+ * Measures time for [upload] and reports it along with [genMessage] if `debug` enabled using [logger]
+ */
+@ApiStatus.Internal
+@RequiresBackgroundThread(generateAssertion = false /* IJPL-115548 */)
+fun measureUploadTime(@RequiresBackgroundThread upload: () -> Unit, genMessage: () -> @NlsSafe String) {
+  val duration = measureTime { upload() }
+  logger.debug { "upload ${genMessage()} : $duration" }
+}
+
+/**
+ * Path of [workingDirOnTarget] relative to [targetRoot], formatted for prepending to the
+ * relative paths passed to [TargetEnvironment.DownloadableVolume.download], whose argument must be
+ * relative to [targetRoot] (see the [TargetEnvironment.Volume] contract).
+ *
+ * Returns an empty string when the working dir *is* the volume root (the common single-module
+ * case) so `download` receives just the plain relative path (e.g. `pyproject.toml`); otherwise the
+ * subpath with a trailing `/`. Never returns an absolute path.
+ */
+internal fun computeDownloadRelativeDir(workingDirOnTarget: String, targetRoot: String): String =
+  if (workingDirOnTarget == targetRoot) ""
+  else workingDirOnTarget.substringAfter("$targetRoot/") + "/"
+
+/**
+ * Maps download roots using existing upload roots.
+ * This allows downloading files modified on the target back to the local machine.
+ *
+ * @param uploadRoots set of upload roots
+ * @param localDirs local directories that were uploaded and may need to be downloaded
+ * @return list of download roots, empty by default
+ */
+private fun mapDownloadRoots(
+  uploadRoots: Set<TargetEnvironment.UploadRoot>,
+  localDirs: Set<Path>,
+): List<TargetEnvironment.DownloadRoot> = localDirs.mapNotNull { localDir ->
+  val matchingUpload = uploadRoots.find { localDir.startsWith(it.localRootPath) }
+
+  if (matchingUpload != null) {
+    TargetEnvironment.DownloadRoot(
+      localRootPath = matchingUpload.localRootPath,
+      targetRootPath = matchingUpload.targetRootPath,
+    )
+  }
+  else {
+    null // No matching upload, skip download
+  }
+}

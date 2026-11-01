@@ -1,0 +1,66 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//build:compiler-options.bzl", "create_kotlinc_options")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.python.testing.codeInsight` start
+content_module_jar(module = ":testing-codeInsight")
+### auto-generated section `dev intellij.python.testing.codeInsight` end
+
+### auto-generated section `build intellij.python.testing.codeInsight` start
+create_kotlinc_options(
+    name = "custom_testing-codeInsight",
+    warn = "error",
+    x_warning_level = ["DEPRECATION:warning"],
+)
+
+jvm_library(
+    name = "testing-codeInsight",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = ":custom_testing-codeInsight",
+    module_name = "intellij.python.testing.codeInsight",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/jetbrains/annotations",
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//platform/core-impl",
+        "//platform/core-ui",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/extensions",
+        "//platform/ide-core",
+        "//platform/indexing-api:indexing",
+        "//platform/lang-api:lang",
+        "//platform/lang-impl",
+        "//platform/projectModel-api:projectModel",
+        "//platform/util",
+        "//platform/util:util-ui",
+        "//python/python-ast:ast",
+        "//python/python-psi-api:psi",
+        "//python/python-psi-impl:psi-impl",
+        "//python/python-sdk/backend",
+    ],
+)
+### auto-generated section `build intellij.python.testing.codeInsight` end
+
+### auto-generated section `iml intellij.python.testing.codeInsight` start
+exports_files(
+    [
+        "intellij.python.testing.codeInsight.iml",
+        "resources/intellij.python.testing.codeInsight.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.python.testing.codeInsight` end

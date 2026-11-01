@@ -1,0 +1,39 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `build intellij.platform.statistics.testFramework` start
+jvm_library(
+    name = "testFramework",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.statistics.testFramework",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//platform/util",
+        "//platform/statistics",
+        "//platform/core-api:core",
+        "//platform/statistics/uploader",
+    ],
+)
+### auto-generated section `build intellij.platform.statistics.testFramework` end
+
+### auto-generated section `iml intellij.platform.statistics.testFramework` start
+exports_files(
+    [
+        "intellij.platform.statistics.testFramework.iml",
+        "resources/intellij.platform.statistics.testFramework.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.statistics.testFramework` end

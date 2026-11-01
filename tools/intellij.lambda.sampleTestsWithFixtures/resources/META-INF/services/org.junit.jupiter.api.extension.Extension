@@ -1,0 +1,2 @@
+com.intellij.lambda.sampleTestsWithFixtures.util.CleanApplicationStateExtension
+com.intellij.lambda.testFramework.junit.SetErrorIgnorerExtension

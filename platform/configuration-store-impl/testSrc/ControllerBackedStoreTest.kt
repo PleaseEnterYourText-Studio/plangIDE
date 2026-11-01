@@ -1,0 +1,773 @@
+// Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+@file:Suppress("ReplaceGetOrSet", "ReplacePutWithAssignment")
+@file:OptIn(SettingsInternalApi::class)
+
+package com.intellij.configurationStore
+
+import com.intellij.codeWithMe.ClientId
+import com.intellij.codeWithMe.asContextElement
+import com.intellij.configurationStore.schemeManager.ROOT_CONFIG
+import com.intellij.ide.plugins.PluginManagerCore
+import com.intellij.openapi.Disposable
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.impl.ApplicationImpl
+import com.intellij.openapi.client.ClientAppSession
+import com.intellij.openapi.client.ClientAppSessionImpl
+import com.intellij.openapi.client.ClientSessionsManager
+import com.intellij.openapi.client.ClientType
+import com.intellij.openapi.components.ComponentManagerEx
+import com.intellij.openapi.components.RoamingType
+import com.intellij.openapi.components.SerializablePersistentStateComponent
+import com.intellij.openapi.components.State
+import com.intellij.openapi.components.Storage
+import com.intellij.openapi.components.StoragePathMacros
+import com.intellij.openapi.components.service
+import com.intellij.openapi.util.JDOMUtil
+import com.intellij.platform.settings.DelegatedSettingsController
+import com.intellij.platform.settings.GetResult
+import com.intellij.platform.settings.NonShareableTag
+import com.intellij.platform.settings.OldLocalValueSupplierTag
+import com.intellij.platform.settings.PersistenceStateComponentPropertyTag
+import com.intellij.platform.settings.SetResult
+import com.intellij.platform.settings.SettingDescriptor
+import com.intellij.platform.settings.SettingsController
+import com.intellij.platform.settings.local.SettingsControllerMediator
+import com.intellij.testFramework.assertions.Assertions.assertThat
+import com.intellij.testFramework.common.timeoutRunBlocking
+import com.intellij.testFramework.junit5.RegistryKey
+import com.intellij.testFramework.junit5.TestApplication
+import com.intellij.testFramework.junit5.TestDisposable
+import com.intellij.testFramework.rules.InMemoryFsExtension
+import com.intellij.util.io.write
+import com.intellij.util.xmlb.SettingsInternalApi
+import com.intellij.util.xmlb.annotations.Attribute
+import com.intellij.util.xmlb.annotations.Property
+import com.intellij.util.xmlb.annotations.Tag
+import com.intellij.util.xmlb.annotations.Text
+import com.intellij.util.xmlb.annotations.XCollection
+import com.intellij.util.xmlb.jdomToJson
+import com.intellij.util.xmlb.jsonDomToXml
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.encodeToJsonElement
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import org.intellij.lang.annotations.Language
+import org.jdom.Element
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
+import java.nio.file.Path
+import kotlin.properties.Delegates
+
+@TestApplication
+class ControllerBackedStoreTest {
+  @RegisterExtension
+  @JvmField
+  val fsRule = InMemoryFsExtension()
+
+  private var appConfig: Path by Delegates.notNull()
+
+  private val data = HashMap<String, JsonElement?>()
+
+  @BeforeEach
+  fun setUp() {
+    appConfig = fsRule.fs.getPath("/app-config")
+  }
+
+  @Test
+  fun get() = runBlocking<Unit>(Dispatchers.Default) {
+    val store = createStore { key ->
+      if (data.containsKey(key.key)) {
+        val data = data.get(key.key)
+        assertThat(key.tags.first { it is PersistenceStateComponentPropertyTag && it.componentName == "TestState" })
+
+        if (key.key == "TestState.list") {
+          return@createStore GetResult.resolved(data!!)
+        }
+
+        return@createStore GetResult.resolved(data)
+      }
+
+      GetResult.inapplicable()
+    }
+
+    val component = ControllerTestComponent()
+    store.initComponent(component = component, serviceDescriptor = null, pluginId = PluginManagerCore.CORE_ID)
+
+    assertThat(component.state.foo).isEmpty()
+    assertThat(component.state.bar).isEmpty()
+
+    component.state = ControllerTestState(bar = "42")
+
+    store.initComponent(component = component, serviceDescriptor = null, pluginId = PluginManagerCore.CORE_ID)
+    assertThat(component.state.bar).isEmpty()
+
+    component.state = ControllerTestState(list = listOf("d", "c"))
+    store.save(forceSavingAllSettings = true)
+
+    // https://youtrack.jetbrains.com/issue/IJPL-753/NPE-when-calling-IComponentStore.reloadStatesSetString
+    store.reloadStates(setOf("TestState"))
+
+    val propertyName = "bar"
+    data.put("TestState.$propertyName", encodePrimitiveValue("12"))
+    data.put("TestState.text", encodePrimitiveValue("a long sad story"))
+    data.put("TestState.list", Json.encodeToJsonElement(listOf("a", "b")))
+
+    store.initComponent(component = component, serviceDescriptor = null, pluginId = PluginManagerCore.CORE_ID)
+    assertThat(component.state.bar).isEqualTo("12")
+    assertThat(component.state.text).isEqualTo("a long sad story")
+    assertThat(component.state.list).containsExactlyElementsOf(listOf("a", "b"))
+  }
+
+  private fun encodePrimitiveValue(v: String) = JsonPrimitive(v)
+
+  @Test
+  @RegistryKey(key = "store.save.use.modificationCount", value = "true")
+  fun `remote save preserves a pending new component`(): Unit = timeoutRunBlocking(context = ClientId.localId.asContextElement()) {
+    val store = createRemoteSaveStore()
+    val component = ControllerTestComponent()
+    store.initComponent(component, serviceDescriptor = null, pluginId = PluginManagerCore.CORE_ID)
+    val file = appConfig.resolve(TEST_COMPONENT_FILE_NAME)
+    for (value in listOf("first", "latest")) {
+      component.update(ControllerTestState(foo = value))
+      withContext(ClientId("remote-save-test").asContextElement()) {
+        store.save(forceSavingAllSettings = true)
+      }
+      assertThat(file).doesNotExist()
+      assertThat(data.get("TestState.foo")).isEqualTo(JsonPrimitive(value))
+    }
+
+    store.save(forceSavingAllSettings = false)
+    assertThat(JDOMUtil.load(file)).isEqualTo("""
+      <application>
+        <component name="TestState" foo="latest" />
+      </application>
+    """.trimIndent())
+
+    data.clear()
+    withContext(ClientId("remote-save-test").asContextElement()) {
+      store.save(forceSavingAllSettings = true)
+    }
+    assertThat(data).isEmpty()
+  }
+
+  @Test
+  @RegistryKey(key = "store.save.use.modificationCount", value = "true")
+  fun `remote save preserves pending changes to an existing component`(): Unit = timeoutRunBlocking(context = ClientId.localId.asContextElement()) {
+    val store = createRemoteSaveStore()
+    val component = ControllerTestComponent()
+    store.initComponent(component, serviceDescriptor = null, pluginId = PluginManagerCore.CORE_ID)
+    component.update(ControllerTestState(foo = "backend"))
+    store.save(forceSavingAllSettings = false)
+
+    component.update(ControllerTestState(foo = "backend", bar = "frontend"))
+    withContext(ClientId("remote-save-test").asContextElement()) {
+      store.save(forceSavingAllSettings = true)
+    }
+
+    val file = appConfig.resolve(TEST_COMPONENT_FILE_NAME)
+    assertThat(JDOMUtil.load(file)).isEqualTo("""
+      <application>
+        <component name="TestState" foo="backend" />
+      </application>
+    """.trimIndent())
+    assertThat(data.get("TestState.bar")).isEqualTo(JsonPrimitive("frontend"))
+
+    store.save(forceSavingAllSettings = false)
+    val reloadedComponent = ControllerTestComponent()
+    createStore { GetResult.inapplicable() }.initComponent(reloadedComponent, serviceDescriptor = null, pluginId = PluginManagerCore.CORE_ID)
+    assertThat(reloadedComponent.state.foo).isEqualTo("backend")
+    assertThat(reloadedComponent.state.bar).isEqualTo("frontend")
+  }
+
+  @Test
+  @RegistryKey(key = "store.save.use.modificationCount", value = "true")
+  fun `remote save preserves a pending reset to defaults`(): Unit = timeoutRunBlocking(context = ClientId.localId.asContextElement()) {
+    val store = createRemoteSaveStore()
+    val component = ControllerTestComponent()
+    store.initComponent(component, serviceDescriptor = null, pluginId = PluginManagerCore.CORE_ID)
+    component.update(ControllerTestState(foo = "backend"))
+    store.save(forceSavingAllSettings = false)
+
+    component.update(ControllerTestState())
+    withContext(ClientId("remote-save-test").asContextElement()) {
+      store.save(forceSavingAllSettings = true)
+    }
+
+    val file = appConfig.resolve(TEST_COMPONENT_FILE_NAME)
+    assertThat(file).exists()
+    assertThat(data).containsEntry("TestState.foo", null)
+
+    store.save(forceSavingAllSettings = false)
+    assertThat(file).doesNotExist()
+  }
+
+  @Test
+  @RegistryKey(key = "store.save.use.modificationCount", value = "true")
+  fun `a remote save does not postpone a pending non-roamable local save`(): Unit = timeoutRunBlocking(context = ClientId.localId.asContextElement()) {
+    @State(name = "TestState", storages = [Storage(value = TEST_COMPONENT_FILE_NAME, roamingType = RoamingType.DISABLED)], allowLoadInTests = true)
+    class NonRoamableComponent : SerializablePersistentStateComponent<ControllerTestState>(ControllerTestState()) {
+      fun update(value: String) {
+        updateState { ControllerTestState(foo = value) }
+      }
+    }
+
+    val store = createRemoteSaveStore()
+    val component = NonRoamableComponent()
+    store.initComponent(component, serviceDescriptor = null, pluginId = PluginManagerCore.CORE_ID)
+    val info = store.getComponents().getValue("TestState")
+    info.lastSaved = 0
+    component.update("pending")
+    withContext(ClientId("remote-save-test").asContextElement()) {
+      store.save(forceSavingAllSettings = true)
+    }
+    assertThat(data.get("TestState.foo")).isEqualTo(JsonPrimitive("pending"))
+    store.save(forceSavingAllSettings = false)
+    val file = appConfig.resolve(TEST_COMPONENT_FILE_NAME)
+    assertThat(file).exists()
+    assertThat(JDOMUtil.load(file)).isEqualTo("""
+      <application>
+        <component name="TestState" foo="pending" />
+      </application>
+    """.trimIndent())
+    assertThat(info.lastSaved).isGreaterThan(0)
+
+    component.update("next")
+    store.save(forceSavingAllSettings = false)
+    assertThat(JDOMUtil.load(file).getChild("component").getAttributeValue("foo")).isEqualTo("pending")
+    store.save(forceSavingAllSettings = true)
+    assertThat(JDOMUtil.load(file).getChild("component").getAttributeValue("foo")).isEqualTo("next")
+  }
+
+  @Test
+  @RegistryKey(key = "store.save.use.modificationCount", value = "true")
+  fun `a remote save selects the per-client instance`(@TestDisposable disposable: Disposable): Unit =
+    timeoutRunBlocking(context = ClientId.localId.asContextElement()) {
+      val application = ApplicationManager.getApplication() as ApplicationImpl
+      val clientId = ClientId("per-client-save-test")
+      val session = object : ClientAppSessionImpl(clientId, ClientType.CONTROLLER, application) {
+        override val name: String = "Settings test"
+      }
+      service<ClientSessionsManager<ClientAppSession>>().registerSession(disposable, session)
+      val remoteComponent = PerClientTestComponent()
+      session.replaceServiceInstance(PerClientTestComponent::class.java, remoteComponent, disposable)
+
+      val store = createRemoteSaveStore()
+      val hostComponent = PerClientTestComponent()
+      store.initComponent(hostComponent, serviceDescriptor = null, pluginId = PluginManagerCore.CORE_ID)
+      hostComponent.update("host")
+      remoteComponent.update("remote")
+      withContext(clientId.asContextElement()) {
+        assertThat(application.getService(PerClientTestComponent::class.java)).isSameAs(remoteComponent)
+        store.save(forceSavingAllSettings = true)
+      }
+      assertThat(data.get("TestState.foo")).isEqualTo(JsonPrimitive("remote"))
+      assertThat(appConfig.resolve(TEST_COMPONENT_FILE_NAME)).doesNotExist()
+
+      store.save(forceSavingAllSettings = false)
+      assertThat(JDOMUtil.load(appConfig.resolve(TEST_COMPONENT_FILE_NAME)).getChild("component").getAttributeValue("foo")).isEqualTo("host")
+    }
+
+  @Test
+  fun `pass Element`() = runBlocking<Unit>(Dispatchers.Default) {
+    var isRequested = false
+    var requested: JsonObject? = null
+    var saved: JsonObject? = null
+
+    var toReturn: JsonObject? = null
+
+    @Suppress("UNCHECKED_CAST")
+    val store = createStore(object : DelegatedSettingsController {
+      override fun <T : Any> getItem(key: SettingDescriptor<T>): GetResult<T?> {
+        toReturn?.let {
+          return GetResult.resolved(it as T)
+        }
+
+        if (key.key == "TestState") {
+          isRequested = true
+          requested = key.tags.asSequence().filterIsInstance<OldLocalValueSupplierTag>().first().value?.jsonObject
+        }
+        return GetResult.inapplicable()
+      }
+
+      override fun <T : Any> setItem(key: SettingDescriptor<T>, value: T?): SetResult {
+        if (value != null) {
+          saved = value as JsonObject
+        }
+        return SetResult.inapplicable()
+      }
+  })
+
+    @State(name = "TestState", storages = [Storage(value = StoragePathMacros.NON_ROAMABLE_FILE)])
+    class TestComponentWithElementState : SerializablePersistentStateComponent<Element>(Element("test")) {
+
+      fun update(newState: Element) {
+        updateState { newState }
+      }
+    }
+
+    val component = TestComponentWithElementState()
+    store.initComponent(component = component, serviceDescriptor = null, pluginId = PluginManagerCore.CORE_ID)
+
+    assertThat(isRequested).isTrue()
+    // no old local value
+    assertThat(requested).isNull()
+    assertThat(component.state.isEmpty).isTrue()
+
+    @Language("xml")
+    val testElementXml = """
+      <test answer="42" foo="bar">
+        <text>hello</text>
+      </test>
+    """.trimIndent()
+    component.update(JDOMUtil.load(testElementXml))
+    store.save(forceSavingAllSettings = true)
+
+    assertThat(jsonDomToXml(saved!!)).isEqualTo(testElementXml)
+    assertThat(saved.get("name")?.jsonPrimitive?.content).isEqualTo("test")
+    assertThat(saved.get("attributes")?.jsonObject?.toString()).isEqualTo("""{"answer":"42","foo":"bar"}""")
+    assertThat(saved.get("children")!!.jsonArray.get(0).jsonObject.get("content")!!.jsonPrimitive.content).isEqualTo("hello")
+    assertThat(saved).hasSize(3)
+
+    toReturn = saved
+    store.initComponent(component = component, serviceDescriptor = null, pluginId = PluginManagerCore.CORE_ID)
+    assertThat(JDOMUtil.write(component.state)).isEqualTo(testElementXml)
+  }
+
+  @Test
+  fun `override Element`() = runBlocking<Unit>(Dispatchers.Default) {
+    val store = createStore {
+      GetResult.resolved(jdomToJson(JDOMUtil.load("""<state foo="42" />""")))
+    }
+
+    @State(name = "TestState", storages = [Storage(value = StoragePathMacros.NON_ROAMABLE_FILE)])
+    class TestComponentWithElementState : SerializablePersistentStateComponent<Element>(Element("test"))
+
+    val component = TestComponentWithElementState()
+    store.initComponent(component = component, serviceDescriptor = null, pluginId = PluginManagerCore.CORE_ID)
+
+    assertThat(component.state.getAttributeValue("foo")).isEqualTo("42")
+  }
+
+  @Test
+  fun `NonShareableTag is set if RoamingType DISABLED`() = runBlocking<Unit>(Dispatchers.Default) {
+    var checked = false
+    val store = createStore { descriptor ->
+      assertThat(descriptor.key == "TestState")
+      assertThat(descriptor.tags.any { it == NonShareableTag })
+      checked = true
+      GetResult.inapplicable()
+    }
+
+    @State(name = "TestState", storages = [Storage(value = StoragePathMacros.NON_ROAMABLE_FILE)])
+    class TestComponentWithElementState : SerializablePersistentStateComponent<Element>(Element("test"))
+
+    val component = TestComponentWithElementState()
+    store.initComponent(component = component, serviceDescriptor = null, pluginId = PluginManagerCore.CORE_ID)
+
+    assertThat(checked).isTrue()
+  }
+
+  // null is not set - it means "don't use any value and instead use the initial value of the field"
+  @Test
+  fun `set primitive to null`() = runBlocking(Dispatchers.Default) {
+    val store = createStore { key ->
+      if (data.containsKey(key.key)) {
+        GetResult.resolved(data.get(key.key))
+      }
+      else {
+        GetResult.inapplicable()
+      }
+    }
+
+    val component = ControllerTestComponent()
+    store.initComponent(component = component, serviceDescriptor = null, pluginId = PluginManagerCore.CORE_ID)
+    assertThat(component.state.bar).isEmpty()
+
+    data.put("TestState.bar", null)
+    store.initComponent(component = component, serviceDescriptor = null, pluginId = PluginManagerCore.CORE_ID)
+    assertThat(component.state.bar).isEmpty()
+  }
+
+  @Test
+  fun `not applicable`() = runBlocking<Unit>(Dispatchers.Default) {
+    val store = ControllerBackedTestComponentStore(
+      testAppConfigPath = appConfig,
+      controller = SettingsControllerMediator(isPersistenceStateComponentProxy = true),
+    )
+
+    val oldContent = """
+      <application>
+        <component name="TestState" foo="old"/>
+      </application>
+      """
+    writeConfig(TEST_COMPONENT_FILE_NAME, oldContent)
+
+    val component = ControllerTestComponent()
+    store.initComponent(component = component, serviceDescriptor = null, pluginId = PluginManagerCore.CORE_ID)
+
+    assertThat(component.state.foo).isEqualTo("old")
+    assertThat(component.state.bar).isEmpty()
+
+    component.update(ControllerTestState(bar = "42"))
+    store.save(forceSavingAllSettings = true)
+
+    store.initComponent(component = component, serviceDescriptor = null, pluginId = PluginManagerCore.CORE_ID)
+    assertThat(component.state.bar).isEqualTo("42")
+  }
+
+  @Test
+  fun `use one property from local data, another one from SC`() = runBlocking<Unit>(Dispatchers.Default) {
+    val store = createStore { key ->
+      when (key.key) {
+        "TestState.bar" -> GetResult.resolved(JsonPrimitive("sc"))
+        "TestState.foo" -> {
+          assertThat((key.tags.first { it is OldLocalValueSupplierTag } as OldLocalValueSupplierTag).value!!.jsonPrimitive.content).isEqualTo("old")
+          GetResult.inapplicable()
+        }
+        else -> GetResult.inapplicable()
+      }
+    }
+
+    val oldContent = """
+      <application>
+        <component name="TestState" foo="old"/>
+      </application>
+      """.trimIndent()
+    writeConfig(TEST_COMPONENT_FILE_NAME, oldContent)
+
+    val component = ControllerTestComponent()
+    store.initComponent(component = component, serviceDescriptor = null, pluginId = PluginManagerCore.CORE_ID)
+
+    assertThat(component.state.foo).isEqualTo("old")
+    assertThat(component.state.bar).isEqualTo("sc")
+  }
+
+  @Test
+  fun old_value_for_bean() = runBlocking<Unit>(Dispatchers.Default) {
+    val store = createStore { key ->
+      when (key.key) {
+        "TestState.bean" -> {
+          assertThat(Json.encodeToString((key.tags.first { it is OldLocalValueSupplierTag } as OldLocalValueSupplierTag).value!!)).isEqualTo("""{"foo":"test"}""")
+          GetResult.inapplicable()
+        }
+        "TestState.list" -> {
+          assertThat(Json.encodeToString((key.tags.first { it is OldLocalValueSupplierTag } as OldLocalValueSupplierTag).value!!)).isEqualTo("""["a","b","c"]""")
+          GetResult.inapplicable()
+        }
+        else -> GetResult.inapplicable()
+      }
+    }
+
+    data class SubState(@JvmField @Attribute val foo: String = "")
+
+    data class TestState(
+      @JvmField var bean: SubState = SubState(),
+      @JvmField @XCollection val list: List<String> = emptyList(),
+    )
+
+    @State(name = "TestState", storages = [Storage(value = TEST_COMPONENT_FILE_NAME)], allowLoadInTests = true)
+    class TestComponent : SerializablePersistentStateComponent<TestState>(TestState()) {
+      override fun noStateLoaded() {
+        loadState(TestState())
+      }
+    }
+
+    val oldContent = """
+      <application>
+        <component name="TestState">
+          <option name="bean">
+            <SubState foo="test" />
+          </option>
+          <option name="list">
+            <option value="a" />
+            <option value="b" />
+            <option value="c" />
+          </option>
+        </component>
+      </application>
+      """.trimIndent()
+    writeConfig(TEST_COMPONENT_FILE_NAME, oldContent)
+
+    val component = TestComponent()
+    store.initComponent(component = component, serviceDescriptor = null, pluginId = PluginManagerCore.CORE_ID)
+
+    assertThat(component.state.bean.foo).isEqualTo("test")
+  }
+
+  @Test
+  fun `a controller can use a local collection without a wrapper`(): Unit = timeoutRunBlocking {
+    @State(name = "TestState", storages = [Storage(TEST_COMPONENT_FILE_NAME)], allowLoadInTests = true)
+    class ListComponent : SerializablePersistentStateComponent<UnwrappedListState>(UnwrappedListState())
+
+    for (hasLocalItems in listOf(false, true)) {
+      if (hasLocalItems) {
+        writeConfig(TEST_COMPONENT_FILE_NAME, """
+          <application>
+            <component name="TestState">
+              <item name="a" enabled="true" />
+              <item name="b" />
+            </component>
+          </application>
+        """.trimIndent())
+      }
+      val expectedLocalValue = if (hasLocalItems) Json.parseToJsonElement("""[{"name":"a","enabled":true},{"name":"b"}]""") else null
+      var localValueRequested = false
+      var receivedLocalValue: JsonElement? = null
+      val store = createStore { key ->
+        val localValue = key.tags.filterIsInstance<OldLocalValueSupplierTag>().single().value
+        localValueRequested = true
+        receivedLocalValue = localValue
+        GetResult.resolved(localValue)
+      }
+      val component = ListComponent()
+      store.initComponent(component, serviceDescriptor = null, pluginId = PluginManagerCore.CORE_ID)
+
+      assertThat(localValueRequested).isTrue()
+      assertThat(receivedLocalValue).isEqualTo(expectedLocalValue)
+      assertThat(component.state.items).isEqualTo(
+        if (hasLocalItems) listOf(ControllerListItem(name = "a", enabled = true), ControllerListItem(name = "b")) else emptyList(),
+      )
+    }
+  }
+
+  @Suppress("unused")
+  @Test
+  fun kotlinx_serialization() = runBlocking<Unit>(Dispatchers.Default) {
+    @Serializable
+    class TestState(var foo: String = "", var bar: String = "")
+
+    var saved: JsonElement? = null
+
+    val store = createStore(object : DelegatedSettingsController {
+      override fun <T : Any> getItem(key: SettingDescriptor<T>): GetResult<T?> {
+        @Suppress("UNCHECKED_CAST")
+        return when (key.key) {
+          "TestState" -> {
+            GetResult.resolved(Json.encodeToJsonElement<TestState>(TestState(foo = "hello", bar = "test2")))
+          }
+          else -> GetResult.inapplicable()
+        } as GetResult<T>
+      }
+
+      override fun <T : Any> setItem(key: SettingDescriptor<T>, value: T?): SetResult {
+        if (key.key == "TestState") {
+          saved = value as JsonElement
+        }
+        return SetResult.inapplicable()
+      }
+    })
+
+    @State(name = "TestState", storages = [Storage(value = TEST_COMPONENT_FILE_NAME)], allowLoadInTests = true)
+    class TestComponent : SerializablePersistentStateComponent<TestState>(TestState()) {
+      override fun noStateLoaded() {
+        loadState(TestState())
+      }
+
+      fun update(newState: TestState) {
+        updateState { newState }
+      }
+    }
+
+    val component = TestComponent()
+    store.initComponent(component = component, serviceDescriptor = null, pluginId = PluginManagerCore.CORE_ID)
+
+    assertThat(component.state.foo).isEqualTo("hello")
+
+    component.state.foo = "newValue"
+    component.update(component.state)
+    store.save(forceSavingAllSettings = true)
+    assertThat(Json.encodeToString(saved)).isEqualTo("""{"foo":"newValue","bar":"test2"}""")
+  }
+
+
+  @Suppress("unused")
+  @Test
+  fun substitute_value_on_set() = runBlocking<Unit>(Dispatchers.Default) {
+    data class TestState(var foo: String = "", var bar: String = "")
+
+    val store = createStore(object : DelegatedSettingsController {
+      override fun <T : Any> getItem(key: SettingDescriptor<T>): GetResult<T?> = GetResult.inapplicable()
+
+      override fun <T : Any> setItem(key: SettingDescriptor<T>, value: T?): SetResult {
+        if (key.key == "TestState.foo") {
+          return SetResult.substituted(JsonPrimitive("overridden"))
+        }
+        else {
+          return SetResult.inapplicable()
+        }
+      }
+    })
+
+    @State(name = "TestState", storages = [Storage(value = TEST_COMPONENT_FILE_NAME)], allowLoadInTests = true)
+    class TestComponent : SerializablePersistentStateComponent<TestState>(TestState()) {
+      override fun noStateLoaded() {
+        loadState(TestState())
+      }
+
+      fun update(newState: TestState) {
+        updateState { newState }
+      }
+    }
+
+    val component = TestComponent()
+    store.initComponent(component = component, serviceDescriptor = null, pluginId = PluginManagerCore.CORE_ID)
+
+    assertThat(component.state.foo).isEmpty()
+
+    component.state.foo = "newValue"
+    component.update(component.state)
+    store.save(forceSavingAllSettings = true)
+    assertThat(component.state.foo).isEqualTo("newValue")
+
+    // but the new value on disk
+    assertThat(JDOMUtil.load(appConfig.resolve(TEST_COMPONENT_FILE_NAME))).isEqualTo("""
+      <application>
+        <component name="TestState">
+          <option name="foo" value="overridden" />
+        </component>
+      </application>
+    """.trimIndent())
+
+    store.reloadStates(setOf("TestState"))
+    // and after reload, the new value is applied to the component
+    assertThat(component.state.foo).isEqualTo("overridden")
+  }
+
+  @Suppress("unused")
+  @Test
+  fun cache_storage() = runBlocking<Unit>(Dispatchers.Default) {
+    data class TestState(var foo: String = "", var bar: String = "")
+
+    val store = ControllerBackedTestComponentStore(
+      testAppConfigPath = appConfig,
+      controller = SettingsControllerMediator(),
+    )
+
+    @State(name = "TestCacheState", storages = [Storage(value = StoragePathMacros.CACHE_FILE)], allowLoadInTests = true)
+    class TestComponent : SerializablePersistentStateComponent<TestState>(TestState()) {
+      override fun noStateLoaded() {
+        loadState(TestState())
+      }
+      fun update(newState: TestState) {
+        updateState { newState }
+      }
+    }
+
+    val component = TestComponent()
+    store.initComponent(component = component, serviceDescriptor = null, pluginId = PluginManagerCore.CORE_ID)
+
+    component.state.foo = "hello"
+    component.update(component.state)
+    store.save(forceSavingAllSettings = true)
+
+    store.reloadStates(setOf("TestCacheState"))
+
+    assertThat(component.state.foo).isEqualTo("hello")
+  }
+
+  @Suppress("SameParameterValue")
+  private fun writeConfig(fileName: String, @Language("XML") data: String): Path {
+    val file = appConfig.resolve(fileName)
+    file.write(data)
+    return file
+  }
+
+  private fun createStore(controller: DelegatedSettingsController): ControllerBackedTestComponentStore {
+    return ControllerBackedTestComponentStore(
+      testAppConfigPath = appConfig,
+      controller = SettingsControllerMediator(
+        controllers = listOf(controller),
+        isPersistenceStateComponentProxy = true,
+      ),
+    )
+  }
+
+  private fun createRemoteSaveStore(): ControllerBackedTestComponentStore = createStore(object : DelegatedSettingsController {
+    override fun <T : Any> getItem(key: SettingDescriptor<T>): GetResult<T?> = GetResult.inapplicable()
+
+    override fun <T : Any> setItem(key: SettingDescriptor<T>, value: T?): SetResult {
+      if (ClientId.isCurrentlyUnderLocalId) {
+        return SetResult.inapplicable()
+      }
+
+      data.put(key.key, value as JsonElement?)
+      return SetResult.done()
+    }
+  })
+
+  private fun createStore(supplier: (SettingDescriptor<JsonElement>) -> GetResult<JsonElement?>): ControllerBackedTestComponentStore {
+    return createStore(object : DelegatedSettingsController {
+      override fun <T : Any> getItem(key: SettingDescriptor<T>): GetResult<T?> {
+        @Suppress("UNCHECKED_CAST")
+        return supplier(key as SettingDescriptor<JsonElement>) as GetResult<T>
+      }
+
+      override fun <T : Any> setItem(key: SettingDescriptor<T>, value: T?): SetResult = SetResult.inapplicable()
+    })
+  }
+}
+
+private class ControllerBackedTestComponentStore(
+  testAppConfigPath: Path,
+  controller: SettingsController,
+) : ComponentStoreWithExtraComponents() {
+  override val serviceContainer: ComponentManagerEx
+    get() = ApplicationManager.getApplication() as ComponentManagerEx
+
+  override val storageManager = ApplicationStateStorageManager(pathMacroManager = null, controller = controller)
+
+  init {
+    setPath(testAppConfigPath)
+  }
+
+  override fun setPath(path: Path) {
+    // yes, in tests APP_CONFIG equals to ROOT_CONFIG (as ICS does)
+    storageManager.setMacros(listOf(Macro(APP_CONFIG, path), Macro(ROOT_CONFIG, path), Macro(StoragePathMacros.CACHE_FILE, path)))
+  }
+}
+
+private const val TEST_COMPONENT_FILE_NAME = "controllerBackedTest.xml"
+
+@State(name = "TestState", storages = [Storage(value = TEST_COMPONENT_FILE_NAME)], allowLoadInTests = true)
+private class ControllerTestComponent : SerializablePersistentStateComponent<ControllerTestState>(ControllerTestState()) {
+  override fun noStateLoaded() {
+    loadState(ControllerTestState())
+  }
+
+  fun update(newState: ControllerTestState) {
+    updateState { newState }
+  }
+}
+
+private data class ControllerTestState(
+  @JvmField @Attribute var foo: String = "",
+  @JvmField @Attribute var bar: String? = "",
+  @JvmField @Text var text: String = "",
+  @JvmField @XCollection val list: List<String> = emptyList(),
+)
+
+private data class UnwrappedListState(
+  @JvmField @Property(surroundWithTag = false) @XCollection var items: List<ControllerListItem> = emptyList(),
+)
+
+@Tag("item")
+private data class ControllerListItem(
+  @JvmField @Attribute var name: String = "",
+  @JvmField @Attribute var enabled: Boolean = false,
+)
+
+@State(name = "TestState", storages = [Storage(TEST_COMPONENT_FILE_NAME)], perClient = true, allowLoadInTests = true)
+private class PerClientTestComponent : SerializablePersistentStateComponent<ControllerTestState>(ControllerTestState()) {
+  fun update(value: String) {
+    updateState { ControllerTestState(foo = value) }
+  }
+}

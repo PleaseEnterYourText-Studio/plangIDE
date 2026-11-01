@@ -1,0 +1,84 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.gradle.java.groovy` start
+content_module_jar(module = ":groovy")
+### auto-generated section `dev intellij.gradle.java.groovy` end
+
+### auto-generated section `build intellij.gradle.java.groovy` start
+jvm_library(
+    name = "groovy",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.gradle.java.groovy",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/jetbrains/annotations",
+        "//libraries/kotlinx/coroutines/core",
+        "//plugins/gradle/java",
+        "//platform/core-api:core",
+        "//platform/lang-api:lang",
+        "//platform/lang-core",
+        "//platform/core-impl",
+        "//platform/util",
+        "//platform/analysis-api:analysis",
+        "//platform/indexing-api:indexing",
+        "//plugins/groovy/groovy-psi:psi",
+        "//java/java-psi-api:psi",
+        "//java/idea-ui:ui",
+        "//platform/util:util-ui",
+        "//platform/util-ex",
+        "//platform/projectModel-api:projectModel",
+        "//plugins/groovy",
+        "//plugins/groovy/jps-plugin:jps",
+        "//platform/external-system-impl:externalSystem-impl",
+        "//java/java-impl:impl",
+        "//platform/platform-impl:ide-impl",
+        "//platform/platform-impl/playback",
+        "//java/execution/openapi:java-execution",
+        "//java/execution/impl",
+        "//platform/execution",
+        "//platform/execution-impl",
+        "//java/java-indexing-api:indexing",
+        "//plugins/properties/properties-psi-api:psi",
+        "//platform/usageView",
+        "//platform/observable",
+        "//platform/core-ui",
+        "//platform/code-style-api:codeStyle",
+        "//libraries/gson",
+        "//platform/editor-ui-api:editor-ui",
+        "//java/compiler/impl",
+        "//java/java-frontback-psi-api:frontback-psi",
+        "//platform/smRunner",
+        "//jps/jps-builders:build",
+        "//jps/model-api:model",
+        "//plugins/gradle/jps-plugin:jps",
+        "//platform/platform-util-io:ide-util-io",
+        "//platform/ide-core",
+        "//platform/testRunner",
+        "//plugins/gradle/properties",
+    ],
+)
+### auto-generated section `build intellij.gradle.java.groovy` end
+
+### auto-generated section `iml intellij.gradle.java.groovy` start
+exports_files(
+    [
+        "intellij.gradle.java.groovy.iml",
+        "resources/intellij.gradle.java.groovy.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.gradle.java.groovy` end

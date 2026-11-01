@@ -1,0 +1,1719 @@
+// Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+package com.intellij.openapi.wm.impl.status
+
+import com.intellij.accessibility.AccessibilityUtils
+import com.intellij.codeWithMe.ClientId
+import com.intellij.ide.HelpTooltipManager
+import com.intellij.ide.IdeEventQueue
+import com.intellij.ide.impl.ProjectUtil
+import com.intellij.ide.soundSignals.ProgressSoundSignalTracker
+import com.intellij.ide.welcomeScreen.WelcomeUtils
+import com.intellij.internal.statistic.eventLog.events.FusInputEvent
+import com.intellij.internal.statistic.service.fus.collectors.UIEventLogger
+import com.intellij.internal.statistic.service.fus.collectors.UIEventLogger.StatusBarPopupShown
+import com.intellij.openapi.Disposable
+import com.intellij.openapi.actionSystem.ActionPlaces
+import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.actionSystem.DataKey
+import com.intellij.openapi.actionSystem.DataSink
+import com.intellij.openapi.actionSystem.PlatformDataKeys
+import com.intellij.openapi.actionSystem.UiDataProvider
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.EDT
+import com.intellij.openapi.application.ModalityState
+import com.intellij.openapi.application.UiWithModelAccess
+import com.intellij.openapi.application.WriteIntentReadAction
+import com.intellij.openapi.application.asContextElement
+import com.intellij.openapi.application.impl.InternalUICustomization
+import com.intellij.openapi.components.service
+import com.intellij.openapi.components.serviceAsync
+import com.intellij.openapi.diagnostic.debug
+import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.extensions.LoadingOrder
+import com.intellij.openapi.extensions.LoadingOrder.Orderable
+import com.intellij.openapi.fileEditor.FileEditor
+import com.intellij.openapi.progress.ProgressModel
+import com.intellij.openapi.progress.TaskInfo
+import com.intellij.openapi.progress.impl.BridgeTaskSupport
+import com.intellij.openapi.progress.impl.PerProjectTaskInfoEntityCollector
+import com.intellij.openapi.project.DumbAwareAction
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.MessageType
+import com.intellij.openapi.ui.popup.BalloonHandler
+import com.intellij.openapi.ui.popup.JBPopup
+import com.intellij.openapi.ui.popup.PopupCornerType
+import com.intellij.openapi.util.Disposer
+import com.intellij.openapi.util.Key
+import com.intellij.openapi.util.NlsContexts
+import com.intellij.openapi.util.SystemInfoRt
+import com.intellij.openapi.util.text.Strings
+import com.intellij.openapi.wm.CustomStatusBarWidget
+import com.intellij.openapi.wm.IconLikeCustomStatusBarWidget
+import com.intellij.openapi.wm.IconWidgetPresentation
+import com.intellij.openapi.wm.IdeFocusManager
+import com.intellij.openapi.wm.IdeFrame
+import com.intellij.openapi.wm.IdeGlassPaneUtil
+import com.intellij.openapi.wm.StatusBar
+import com.intellij.openapi.wm.StatusBarListener
+import com.intellij.openapi.wm.StatusBarWidget
+import com.intellij.openapi.wm.StatusBarWidget.IconPresentation
+import com.intellij.openapi.wm.StatusBarWidget.MultipleTextValuesPresentation
+import com.intellij.openapi.wm.StatusBarWidget.TextPresentation
+import com.intellij.openapi.wm.StatusBarWidgetFactory
+import com.intellij.openapi.wm.TextWidgetPresentation
+import com.intellij.openapi.wm.ToolWindowManager
+import com.intellij.openapi.wm.WidgetPresentation
+import com.intellij.openapi.wm.WidgetPresentationDataContext
+import com.intellij.openapi.wm.WidgetPresentationFactory
+import com.intellij.openapi.wm.ex.ProgressIndicatorEx
+import com.intellij.openapi.wm.ex.StatusBarEx
+import com.intellij.openapi.wm.impl.status.TextPanel.WithIconAndArrows
+import com.intellij.openapi.wm.impl.status.widget.StatusBarWidgetSettings
+import com.intellij.openapi.wm.impl.status.widget.StatusBarWidgetsActionGroup
+import com.intellij.openapi.wm.impl.status.widget.StatusBarWidgetsManager
+import com.intellij.openapi.wm.impl.status.widget.WidgetPresentationWrapper
+import com.intellij.openapi.wm.impl.welcomeScreen.cloneableProjects.CloneableProjectsService
+import com.intellij.openapi.wm.impl.welcomeScreen.cloneableProjects.CloneableProjectsService.CloneProjectListener
+import com.intellij.platform.diagnostic.telemetry.impl.span
+import com.intellij.platform.ide.progress.ModalTaskOwner
+import com.intellij.platform.ide.progress.runWithModalProgressBlocking
+import com.intellij.platform.util.coroutines.childScope
+import com.intellij.platform.util.progress.ProgressState
+import com.intellij.platform.util.progress.StepState
+import com.intellij.toolWindow.ToolWindowDragHelper
+import com.intellij.toolWindow.ToolWindowDragHelper.Companion.createThumbnailDragImage
+import com.intellij.ui.ClickListener
+import com.intellij.ui.ClientProperty
+import com.intellij.ui.ComponentUtil
+import com.intellij.ui.ExperimentalUI
+import com.intellij.ui.GuiUtils
+import com.intellij.ui.MouseDragHelper
+import com.intellij.ui.PopupHandler
+import com.intellij.ui.UIBundle
+import com.intellij.ui.WindowRoundedCornersManager
+import com.intellij.ui.awt.DevicePoint
+import com.intellij.ui.awt.RelativePoint
+import com.intellij.ui.border.name
+import com.intellij.ui.drag.DialogDragImageView
+import com.intellij.ui.drag.DragImageView
+import com.intellij.ui.drag.GlassPaneDragImageView
+import com.intellij.ui.paint.RectanglePainter
+import com.intellij.ui.popup.AbstractPopup
+import com.intellij.ui.popup.NotificationPopup
+import com.intellij.ui.scale.JBUIScale
+import com.intellij.ui.util.height
+import com.intellij.util.EventDispatcher
+import com.intellij.util.IconUtil
+import com.intellij.util.concurrency.annotations.RequiresEdt
+import com.intellij.util.ui.EdtInvocationManager
+import com.intellij.util.ui.JBInsets
+import com.intellij.util.ui.JBUI
+import com.intellij.util.ui.StartupUiUtil
+import com.intellij.util.ui.UIUtil
+import com.intellij.util.ui.accessibility.AccessibleContextDelegate
+import com.intellij.util.ui.table.ComponentsListFocusTraversalPolicy
+import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.takeWhile
+import kotlinx.coroutines.job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.annotations.ApiStatus.Internal
+import org.jetbrains.annotations.Nls
+import java.awt.AWTEvent
+import java.awt.AWTKeyStroke
+import java.awt.BorderLayout
+import java.awt.Color
+import java.awt.Component
+import java.awt.Container
+import java.awt.Dimension
+import java.awt.Graphics
+import java.awt.Graphics2D
+import java.awt.GridBagConstraints
+import java.awt.GridBagLayout
+import java.awt.Image
+import java.awt.Insets
+import java.awt.KeyboardFocusManager
+import java.awt.LayoutManager
+import java.awt.Point
+import java.awt.event.ActionEvent
+import java.awt.event.FocusAdapter
+import java.awt.event.FocusEvent
+import java.awt.event.InputEvent
+import java.awt.event.KeyEvent
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
+import java.awt.image.BufferedImage
+import java.lang.ref.WeakReference
+import java.util.function.Supplier
+import javax.accessibility.Accessible
+import javax.accessibility.AccessibleContext
+import javax.accessibility.AccessibleRole
+import javax.swing.AbstractAction
+import javax.swing.BoxLayout
+import javax.swing.Icon
+import javax.swing.JComponent
+import javax.swing.JDialog
+import javax.swing.JLabel
+import javax.swing.JPanel
+import javax.swing.KeyStroke
+import javax.swing.SwingUtilities
+import javax.swing.ToolTipManager
+import javax.swing.UIManager
+import javax.swing.border.Border
+import javax.swing.border.CompoundBorder
+import javax.swing.event.HyperlinkListener
+import kotlin.math.max
+
+private const val UI_CLASS_ID = "IdeStatusBarUI"
+private val WIDGET_ID = Key.create<String>("STATUS_BAR_WIDGET_ID")
+private const val STATUS_BAR_WIDGET_ACTIVATE = "statusBarWidgetActivate"
+
+private val LOG = logger<IdeStatusBarImpl>()
+
+private val minIconHeight: Int
+  get() = JBUIScale.scale(18 + 1 + 1)
+
+/**
+ * Interface for widgets that can be recreated for child status bars (detached windows).
+ * Preferred over [StatusBarWidget.Multiframe] as it provides full context for recreation.
+ */
+internal interface ChildStatusBarWidget {
+  fun createForChild(childStatusBar: IdeStatusBarImpl): StatusBarWidget
+}
+
+@OptIn(ExperimentalCoroutinesApi::class)
+open class IdeStatusBarImpl @Internal constructor(
+  parentCs: CoroutineScope,
+  private val getProject: () -> Project?,
+  addToolWindowWidget: Boolean,
+  currentFileEditorFlow: StateFlow<FileEditor?>? = null,
+) : JComponent(), Accessible, StatusBarEx, UiDataProvider {
+  private val customCurrentFileEditorFlow: MutableStateFlow<StateFlow<FileEditor?>?> = MutableStateFlow(currentFileEditorFlow)
+
+  internal val coroutineScope = parentCs.childScope("IdeStatusBarImpl", supervisor = false)
+  private var infoAndProgressPanel: InfoAndProgressPanel? = null
+
+  internal enum class WidgetEffect {
+    HOVER,
+    PRESSED
+  }
+
+  private val widgetRegistry = WidgetRegistry()
+  private var leftPanel: JPanel? = null
+
+  private var rightPanelLayout = GridBagLayout()
+  private val rightPanel: JPanel
+
+  private val centerPanel: JPanel
+  private val effectRenderer = WidgetEffectRenderer(this)
+  private var isWidgetDragInProgress = false
+
+  /**
+   * The id of the widget under the last left-button press. A click is logged on the release, so a drag of the widget does not count as a click.
+   * A drag start clears it. The id instead of the component keeps a removed widget from being held.
+   */
+  private var clickPressedWidgetId: String? = null
+  private var info: @NlsContexts.StatusBarText String? = null
+
+  private var preferredTextHeight: Int = 0
+
+  private val childManager = ChildStatusBarManager(this, widgetRegistry)
+  private val listeners = EventDispatcher.create(StatusBarListener::class.java)
+
+  private val progressFlow = MutableSharedFlow<ProgressSetChangeEvent>(replay = 1, extraBufferCapacity = Int.MAX_VALUE)
+  private var restoreFocusTargetRef: WeakReference<Component>? = null
+
+  @Internal
+  companion object {
+    internal val HOVERED_WIDGET_ID: DataKey<String> = DataKey.create("HOVERED_WIDGET_ID")
+
+    const val NAVBAR_WIDGET_KEY: String = "NavBar"
+  }
+
+  /**
+   * Traverse the components in case the drop was somehow not on the widget itself.
+   *
+   * Most likely not needed.
+   */
+  private fun findWidgetComponent(component: Component): JComponent? {
+    var current: Component? = component
+    while (current != null) {
+      (current as? JComponent)
+        ?.let { ClientProperty.get(current, WIDGET_ID) }
+        ?.let { return current }
+
+      if (current === rightPanel) break
+      current = current.parent
+    }
+    return null
+  }
+
+  @Internal
+  class WidgetSorter(
+    initialOrder: Map<String, Int> = StatusBarWidgetSettings.getInstance().getWidgetOrder(),
+    private val persist: (Map<String, Int>) -> Unit = StatusBarWidgetSettings.getInstance()::setWidgetOrder,
+  ) {
+    private val order: MutableMap<String, Int> = initialOrder.toMutableMap()
+
+    fun reorder(sourceWidgetId: String, targetWidgetId: String, currentVisibleOrder: List<String>) {
+      if (sourceWidgetId == targetWidgetId) {
+        currentVisibleOrder.forEachIndexed { i, id ->
+          if (order.containsKey(id)) {
+            order[id] = i
+          }
+        }
+        persist(order.toMap())
+        return
+      }
+
+      val withoutSource = currentVisibleOrder.toMutableList()
+      if (!withoutSource.remove(sourceWidgetId)) return
+      val targetIdx = withoutSource.indexOf(targetWidgetId)
+      if (targetIdx == -1) return
+
+      reorderToIndex(sourceWidgetId, targetIdx, currentVisibleOrder)
+    }
+
+    /**
+     * Moves [sourceWidgetId] to [targetIndex] in [currentVisibleOrder] with the source itself removed.
+     *
+     * An index equal to the size of that list puts the widget last, which a target widget id cannot express.
+     */
+    fun reorderToIndex(sourceWidgetId: String, targetIndex: Int, currentVisibleOrder: List<String>) {
+      val finalVisible = currentVisibleOrder.toMutableList()
+      if (!finalVisible.remove(sourceWidgetId)) return
+
+      finalVisible.add(targetIndex.coerceIn(0, finalVisible.size), sourceWidgetId)
+
+      finalVisible.forEachIndexed { i, id ->
+        if (id == sourceWidgetId || order.containsKey(id)) {
+          order[id] = i
+        }
+      }
+      persist(order.toMap())
+    }
+
+    fun sortWidgets(sorted: MutableList<Orderable>) {
+      LoadingOrder.sortByLoadingOrder(sorted)
+      applyCustomOrder(sorted)
+    }
+
+    /**
+     * Moves the widgets with a custom position to their indices in [sorted].
+     *
+     * The indices count only real widgets, so [sorted] must not contain virtual anchors.
+     */
+    fun applyCustomOrder(sorted: MutableList<Orderable>) {
+      val customMoves = order.entries.sortedBy { it.value }
+      for (entry in customMoves) {
+        val widgetId = entry.key
+        val targetIdx = entry.value
+
+        val itemIdx = sorted.indexOfFirst { it.orderId == widgetId }
+        if (itemIdx != -1) {
+          val item = sorted.removeAt(itemIdx)
+          val safeIdx = targetIdx.coerceIn(0, sorted.size)
+          sorted.add(safeIdx, item)
+        }
+      }
+    }
+  }
+
+  private val widgetSorter = WidgetSorter()
+
+  private fun reorderWidgets(sourceWidgetId: String, targetIndex: Int, dropEvent: MouseEvent) {
+    val sourceBean = widgetRegistry.get(sourceWidgetId) ?: return
+    if (sourceBean.position != Position.RIGHT) return
+
+    widgetSorter.reorderToIndex(sourceWidgetId, targetIndex, visibleRightWidgetIds())
+    logWidgetDragged(sourceBean.widget, dropEvent)
+
+    sortRightWidgets()
+    rightPanel.revalidate()
+    rightPanel.repaint()
+  }
+
+  /**
+   * Build the same sorted list that sortRightWidgets renders, then filter virtuals.
+   * This guarantees the drag insert positions match the on-screen widget order
+   * even when disabled-but-anchor-referenced extensions are injected as virtuals.
+   */
+  private fun visibleRightWidgets(): List<WidgetBean> = buildSortedRightWidgets().filterIsInstance<WidgetBean>()
+
+  private fun visibleRightWidgetIds(): List<String> = visibleRightWidgets().map { it.orderId }
+
+  /**
+   * Detects drag-to-reorder of right-side widgets at the status bar glass-pane level.
+   *
+   * A ghost image of the widget follows the pointer. A [WidgetDropPlaceholder] takes the place of the
+   * dragged widget and moves to the position under the pointer, so the drop position is always visible
+   * and the other widgets keep their place. The new order is committed on drop.
+   *
+   * This repeats the approach of [com.intellij.toolWindow.innerDrag.ToolWindowInnerDragHelper] for tool window tabs.
+   */
+  private inner class WidgetDragHelper(private val parentDisposable: Disposable) : MouseDragHelper<JPanel>(parentDisposable, rightPanel) {
+    private val placeholder = WidgetDropPlaceholder()
+    private val initialOffset = Point()
+
+    private var pressedWidgetId: String? = null
+    private var draggedWidgetId: String? = null
+    private var draggedComponent: JComponent? = null
+
+    /** The on-screen widgets without the dragged one. [dropIndex] is an insert position in this list. */
+    private var dragOrder: List<WidgetBean> = emptyList()
+    private var dropIndex = -1
+    private var dragImageView: DragImageView? = null
+
+    /** The glass pane skips a release over a balloon, so a release listener on the event queue ends the drag. */
+    private var releaseListenerDisposable: Disposable? = null
+
+    override fun canStartDragging(dragComponent: JComponent, dragComponentPoint: Point): Boolean =
+      widgetIdAt(dragComponentPoint) != null
+
+    override fun processMousePressed(event: MouseEvent) {
+      val pointInRightPanel = SwingUtilities.convertPoint(event.component, event.point, rightPanel)
+      pressedWidgetId = widgetIdAt(pointInRightPanel)
+    }
+
+    override fun processDrag(event: MouseEvent, dragToScreenPoint: Point, startScreenPoint: Point) {
+      if (!checkModifiers(event)) return
+      if (isDragJustStarted) {
+        startDrag(event, startScreenPoint)
+      }
+      else {
+        relocate(event)
+      }
+    }
+
+    override fun processDragFinish(event: MouseEvent, willDragOutStart: Boolean) {
+      val sourceId = draggedWidgetId
+      val targetIndex = dropIndex
+      pressedWidgetId = null
+
+      try {
+        if (sourceId == null || willDragOutStart || targetIndex == -1 || !checkModifiers(event)) return
+        reorderWidgets(sourceId, targetIndex, event)
+      }
+      finally {
+        endDrag()
+      }
+    }
+
+    override fun processDragCancel() {
+      pressedWidgetId = null
+      endDrag()
+    }
+
+    override fun stop() {
+      super.stop()
+      pressedWidgetId = null
+      endDrag()
+    }
+
+    private fun startDrag(event: MouseEvent, startScreenPoint: Point) {
+      val sourceId = pressedWidgetId ?: return
+      val component = widgetRegistry.get(sourceId)?.takeIf { it.position == Position.RIGHT }?.component ?: return
+      if (component.width <= 0 || component.height <= 0) return
+
+      initialOffset.location = Point(startScreenPoint).also { SwingUtilities.convertPointFromScreen(it, component) }
+      draggedWidgetId = sourceId
+      draggedComponent = component
+      dragOrder = visibleRightWidgets().filter { it.orderId != sourceId }
+
+      val dragImage = createThumbnailDragImage(component, thumbSize = -1)
+      dragImageView = if (StartupUiUtil.isWaylandToolkit()) {
+        GlassPaneDragImageView(IdeGlassPaneUtil.find(event.component)).apply { image = dragImage }
+      }
+      else {
+        DialogDragImageView(WidgetDragImageDialog(dragImage))
+      }
+
+      // The placeholder takes the size of the dragged widget, so hiding the widget does not move its neighbors or change the status bar height.
+      placeholder.dropSize = Dimension(component.width, component.preferredSize.height)
+      component.isVisible = false
+      rightPanel.add(placeholder)
+
+      isWidgetDragInProgress = true
+      clickPressedWidgetId = null
+      applyWidgetEffect(null, null)
+
+      val releaseListener = Disposer.newDisposable(parentDisposable, "status bar widget drag")
+      releaseListenerDisposable = releaseListener
+      IdeEventQueue.getInstance().addPostprocessor(IdeEventQueue.EventDispatcher { e ->
+        if (e is MouseEvent && e.id == MouseEvent.MOUSE_RELEASED && e.button == MouseEvent.BUTTON1 && draggedComponent != null) {
+          mouseReleased(e)
+        }
+        false
+      }, releaseListener)
+
+      relocate(event)
+      dragImageView?.show()
+    }
+
+    private fun relocate(event: MouseEvent) {
+      val view = dragImageView ?: return
+      val screenPoint = DevicePoint(event).locationOnScreen
+      view.location = Point(screenPoint.x - initialOffset.x, screenPoint.y - initialOffset.y)
+
+      val index = dropIndexAt(event)
+      if (index != dropIndex) {
+        dropIndex = index
+        layoutWithPlaceholder(index)
+      }
+    }
+
+    /**
+     * Finds the insert position in [dragOrder] for the center of the dragged widget.
+     *
+     * The center is used instead of the pointer, so the drop position follows the ghost image.
+     * A widget keeps its place until the center passes the middle of that widget. Because the widgets
+     * move when the placeholder moves, the two thresholds differ and the placeholder does not flicker.
+     */
+    private fun dropIndexAt(event: MouseEvent): Int {
+      val point = SwingUtilities.convertPoint(event.component, event.point, rightPanel)
+      val centerX = point.x - initialOffset.x + placeholder.dropSize.width / 2
+
+      var index = 0
+      for (bean in dragOrder) {
+        val component = bean.component
+        if (centerX <= component.x + component.width / 2) break
+        index++
+      }
+      return index
+    }
+
+    private fun layoutWithPlaceholder(index: Int) {
+      var gridX = 0
+      for ((position, bean) in dragOrder.withIndex()) {
+        if (position == index) {
+          setRightWidgetGridX(placeholder, gridX++)
+        }
+        setRightWidgetGridX(bean.component, gridX++)
+      }
+      if (index >= dragOrder.size) {
+        setRightWidgetGridX(placeholder, gridX)
+      }
+      rightPanel.revalidate()
+      rightPanel.repaint()
+    }
+
+    private fun endDrag() {
+      val component = draggedComponent ?: return
+
+      isWidgetDragInProgress = false
+      draggedWidgetId = null
+      draggedComponent = null
+      dragOrder = emptyList()
+      dropIndex = -1
+
+      dragImageView?.hide()
+      dragImageView = null
+
+      releaseListenerDisposable?.let { Disposer.dispose(it) }
+      releaseListenerDisposable = null
+
+      rightPanel.remove(placeholder)
+      component.isVisible = true
+
+      // Restore the constraints because a canceled drag keeps the placeholder layout otherwise.
+      sortRightWidgets()
+      rightPanel.revalidate()
+      rightPanel.repaint()
+    }
+
+    private fun widgetIdAt(point: Point): String? {
+      if (point.x < 0 || point.y < 0 || point.x >= rightPanel.width || point.y >= rightPanel.height) {
+        return null
+      }
+      return SwingUtilities.getDeepestComponentAt(rightPanel, point.x, point.y)
+        ?.let { findWidgetComponent(it) }
+        ?.let { ClientProperty.get(it, WIDGET_ID) }
+    }
+
+    private inner class WidgetDragImageDialog(
+      dragImage: BufferedImage,
+    ) : JDialog(ComponentUtil.getWindow(rightPanel), null, ModalityType.MODELESS) {
+      init {
+        type = Type.POPUP
+        focusableWindowState = false
+        isUndecorated = true
+        try {
+          opacity = ToolWindowDragHelper.THUMB_OPACITY
+        }
+        catch (_: Exception) {
+        }
+        isAlwaysOnTop = true
+        contentPane = JLabel(IconUtil.createImageIcon(dragImage as Image))
+        contentPane.addMouseListener(object : MouseAdapter() {
+          override fun mouseReleased(e: MouseEvent) {
+            this@WidgetDragHelper.mouseReleased(e)
+          }
+
+          override fun mouseDragged(e: MouseEvent) {
+            this@WidgetDragHelper.relocate(e)
+          }
+        })
+        pack()
+
+        if (InternalUICustomization.getInstance()?.isRoundedTabDuringDrag == true) {
+          WindowRoundedCornersManager.setRoundedCorners(this, PopupCornerType.RoundedWindow)
+        }
+      }
+    }
+  }
+
+  /**
+   * Reserves the space of a dragged widget and shows where it lands.
+   */
+  private class WidgetDropPlaceholder : JComponent() {
+    var dropSize: Dimension = Dimension()
+
+    init {
+      isOpaque = false
+    }
+
+    override fun getPreferredSize(): Dimension = Dimension(dropSize)
+
+    override fun paintComponent(g: Graphics) {
+      val arc = if (InternalUICustomization.getInstance()?.isRoundedTabDuringDrag == true) {
+        JBUI.CurrentTheme.MainToolbar.Button.hoverArc().get()
+      }
+      else {
+        null
+      }
+      val inset = if (arc == null) 0 else JBUI.scale(2)
+      g.color = JBUI.CurrentTheme.DragAndDrop.Area.BACKGROUND
+      RectanglePainter.FILL.paint(g as Graphics2D, 0, inset, width, height - inset * 2, arc)
+    }
+  }
+
+  override fun findChild(c: Component): StatusBar {
+    var parent: Component? = c
+    while (parent != null) {
+      if (parent is IdeFrame) {
+        return parent.statusBar!!
+      }
+      parent = parent.parent
+    }
+    return this
+  }
+
+  //=== CREATE CHILD: New child gets all existing widgets ===
+  @RequiresEdt
+  @Internal
+  override fun createChild(coroutineScope: CoroutineScope, frame: IdeFrame, currentFileEditorFlow: StateFlow<FileEditor?>): StatusBar {
+    return childManager.createChild(coroutineScope, currentFileEditorFlow)
+  }
+
+  override val component: JComponent?
+    get() = this
+
+  private val disposable = Disposer.newDisposable()
+
+  init {
+    coroutineScope.coroutineContext.job.invokeOnCompletion {
+      Disposer.dispose(disposable)
+    }
+
+    layout = BorderLayout()
+    isOpaque = true
+    border = (if (ExperimentalUI.isNewUI()) {
+      CompoundBorder(object : Border {
+        override fun paintBorder(component: Component, g: Graphics, x: Int, y: Int, width: Int, height: Int) {
+          val top = getTopWidth()
+          if (top > 0) {
+            g.color = JBUI.CurrentTheme.StatusBar.BORDER_COLOR
+            g.fillRect(x, y, width, JBUI.scale(top))
+          }
+        }
+
+        override fun getBorderInsets(component: Component): Insets {
+          return JBInsets(getTopWidth(), 0, 0, 0)
+        }
+
+        private fun getTopWidth(): Int = JBUI.getInt("StatusBar.topBorderWidth", 1)
+
+        override fun isBorderOpaque(): Boolean = true
+      }, JBUI.Borders.empty(0, 10))
+    }
+    else {
+      JBUI.Borders.empty(1, 0, 0, 6)
+    })
+
+    centerPanel = StatusBarPanel(BorderLayout())
+    centerPanel.isOpaque = false
+    centerPanel.border = if (ExperimentalUI.isNewUI()) JBUI.Borders.empty() else JBUI.Borders.empty(0, 1)
+    add(centerPanel, BorderLayout.CENTER)
+
+    rightPanel = StatusBarPanel(rightPanelLayout)
+    rightPanel.isOpaque = false
+    rightPanel.border = JBUI.Borders.emptyLeft(1)
+    add(rightPanel, BorderLayout.EAST)
+    WidgetDragHelper(disposable).start()
+
+    if (addToolWindowWidget) {
+      val disposable = Disposer.newDisposable()
+      coroutineScope.coroutineContext.job.invokeOnCompletion { Disposer.dispose(disposable) }
+
+      val toolWindowWidget = ToolWindowsWidget(disposable, this)
+      val toolWindowWidgetComponent = wrapCustomStatusBarWidget(toolWindowWidget)
+      widgetRegistry.put(toolWindowWidget.ID(), WidgetBean(widget = toolWindowWidget,
+                                                           position = Position.LEFT,
+                                                           component = toolWindowWidgetComponent,
+                                                           order = LoadingOrder.ANY))
+      Disposer.register(disposable, toolWindowWidget)
+      toolWindowWidgetComponent.border = if (SystemInfoRt.isMac) JBUI.Borders.empty(2, 0, 2, 4) else JBUI.Borders.empty()
+      leftPanel().add(toolWindowWidgetComponent)
+    }
+
+    updateUI()
+
+    enableEvents(AWTEvent.MOUSE_EVENT_MASK)
+    enableEvents(AWTEvent.MOUSE_MOTION_EVENT_MASK)
+    IdeEventQueue.getInstance().addDispatcher(object : IdeEventQueue.NonLockedEventDispatcher {
+      override fun dispatch(e: AWTEvent): Boolean {
+        if (e is MouseEvent) {
+          dispatchMouseEvent(e)
+        }
+        return false
+      }
+    }, coroutineScope)
+
+    isFocusCycleRoot = true
+    isFocusTraversalPolicyProvider = true
+    focusTraversalPolicy = StatusBarFocusTraversalPolicy()
+    val kfm = KeyboardFocusManager.getCurrentKeyboardFocusManager()
+    setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,
+                          kfm.getDefaultFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS) +
+                          AWTKeyStroke.getAWTKeyStroke(KeyEvent.VK_RIGHT, 0))
+    setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS,
+                          kfm.getDefaultFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS) +
+                          AWTKeyStroke.getAWTKeyStroke(KeyEvent.VK_LEFT, 0))
+    DumbAwareAction.create { restoreFocusToPreviousComponent() }
+      .registerCustomShortcutSet(KeyEvent.VK_ESCAPE, 0, this)
+  }
+
+  internal fun initialize() {
+    LOG.info("Initializing status bar")
+
+    // The welcome screen shows a clone on the row of the project it clones, so its own status bar must not show it a second time. Any
+    // other frame still does, because the welcome screen closes when a project opens and its row goes with it.
+    if (project?.let(WelcomeUtils::isWelcomeProject) != true) {
+      registerCloneTasks()
+    }
+    project?.service<PerProjectTaskInfoEntityCollector>()?.startCollectingActiveTasks()
+  }
+
+  private fun createInfoAndProgressPanel(): InfoAndProgressPanel {
+    infoAndProgressPanel?.let {
+      return it
+    }
+
+    val infoAndProgressPanel = InfoAndProgressPanel(
+      statusBar = this,
+      coroutineScope = coroutineScope.childScope("InfoAndProgressPanel of $this"),
+    )
+    centerPanel.add(infoAndProgressPanel.component)
+    this.infoAndProgressPanel = infoAndProgressPanel
+    return infoAndProgressPanel
+  }
+
+  override fun getPreferredSize(): Dimension {
+    val size = super.getPreferredSize()!!
+    val insets = insets
+    val minHeight = insets.top + insets.bottom + max(minIconHeight, preferredTextHeight)
+    return Dimension(size.width, size.height.coerceAtLeast(minHeight))
+  }
+
+  override fun uiDataSnapshot(sink: DataSink) {
+    sink[CommonDataKeys.PROJECT] = project
+    sink[PlatformDataKeys.STATUS_BAR] = this
+    sink[HOVERED_WIDGET_ID] = effectRenderer.getEffectWidgetId()
+  }
+
+  override fun setVisible(aFlag: Boolean) {
+    super.setVisible(aFlag)
+    childManager.setVisibilityForAll(aFlag)
+  }
+
+  @Suppress("OVERRIDE_DEPRECATION")
+  override fun addWidget(widget: StatusBarWidget) {
+    addWidget(widget, Position.RIGHT, LoadingOrder.ANY)
+  }
+
+  @Suppress("OVERRIDE_DEPRECATION")
+  override fun addWidget(widget: StatusBarWidget, anchor: String) {
+    val order = LoadingOrder.anchorToOrder(anchor)
+    EdtInvocationManager.invokeLaterIfNeeded { addWidget(widget, Position.RIGHT, order) }
+  }
+
+  override fun addWidget(widget: StatusBarWidget, parentDisposable: Disposable) {
+    EdtInvocationManager.invokeLaterIfNeeded { addWidget(widget, Position.RIGHT, LoadingOrder.ANY) }
+    val id = widget.ID()
+    Disposer.register(parentDisposable) { removeWidget(id) }
+  }
+
+  override fun addWidget(widget: StatusBarWidget, anchor: String, parentDisposable: Disposable) {
+    val order = LoadingOrder.anchorToOrder(anchor)
+    EdtInvocationManager.invokeLaterIfNeeded {
+      addWidget(widget = widget, position = Position.RIGHT, anchor = order)
+      val id = widget.ID()
+      Disposer.register(parentDisposable) { removeWidget(id) }
+    }
+  }
+
+  @ApiStatus.Experimental
+  @RequiresEdt
+  fun setCentralWidget(id: String, component: JComponent?) {
+    if (component == null) {
+      widgetRegistry.remove(id)
+    }
+    else {
+      val widget = object : StatusBarWidget {
+        override fun ID(): String = id
+      }
+      widgetRegistry.put(id, WidgetBean(widget = widget, position = Position.CENTER, component = component, order = LoadingOrder.ANY))
+    }
+
+    val infoAndProgressPanel = createInfoAndProgressPanel()
+    infoAndProgressPanel.setCentralComponent(component)
+    infoAndProgressPanel.component.revalidate()
+  }
+
+  /**
+   * Adds widget to the left side of the status bar.
+   * Please note there is no hover effect when the mouse is over the widget.
+   * Use [addWidget] to add widget to the right side of the status bar, in this case the hover effect is on.
+   * @param widget widget to add
+   */
+  internal suspend fun addWidgetToLeft(widget: StatusBarWidget) {
+    withContext(Dispatchers.UiWithModelAccess) {
+      addWidget(widget, Position.LEFT, LoadingOrder.ANY)
+    }
+  }
+
+  @RequiresEdt
+  @Internal
+  fun addWidget(widget: StatusBarWidget, anchor: LoadingOrder) {
+    addWidget(widget, Position.RIGHT, anchor)
+  }
+
+  internal suspend fun init(project: Project, frame: IdeFrame, extraItems: List<Pair<StatusBarWidget, LoadingOrder>> = emptyList()) {
+    val service = project.serviceAsync<StatusBarWidgetsManager>()
+    val items = span("status bar pre-init") {
+      service.init(frame)
+    }
+    span("status bar init") {
+      doInit(widgets = items + extraItems, parentDisposable = service)
+    }
+  }
+
+  //=== BATCH INIT: Optimized for performance, still propagates ===
+  private suspend fun doInit(widgets: List<Pair<StatusBarWidget, LoadingOrder>>, parentDisposable: Disposable) {
+    val anyModality = ModalityState.any().asContextElement()
+
+    // Create components in parallel (performance optimization)
+    val beans: List<WidgetBean> = span("status bar widget creating") {
+      widgets.map { (widget, anchor) ->
+        val component = span(widget.ID(), Dispatchers.UiWithModelAccess + anyModality) {
+          val c = wrap(widget)
+          if (c is StatusBarWidgetWrapper) {
+            c.beforeUpdate()
+          }
+          c
+        }
+        WidgetBean(widget, Position.RIGHT, component, anchor)
+      }
+    }
+
+    withContext(Dispatchers.UiWithModelAccess + anyModality + CoroutineName("status bar widget adding")) {
+      // Add all to self
+      for (bean in beans) {
+        addWidgetToSelf(bean, parentDisposable)
+      }
+      sortRightWidgets()
+
+      // Propagate all to existing children
+      if (!childManager.isEmpty()) {
+        for (bean in beans) {
+          childManager.propagateToAll(bean.widget, bean.position, bean.order)
+        }
+      }
+    }
+
+    // Fire events
+    if (listeners.hasListeners()) {
+      withContext(Dispatchers.UiWithModelAccess + anyModality) {
+        for (bean in beans) {
+          fireWidgetAdded(bean.widget, bean.anchor)
+        }
+      }
+    }
+
+    withContext(Dispatchers.UiWithModelAccess) {
+      PopupHandler.installPopupMenu(this@IdeStatusBarImpl, StatusBarWidgetsActionGroup.GROUP_ID, ActionPlaces.STATUS_BAR_PLACE)
+    }
+  }
+
+  // Builds a sorted list of right-position widgets with virtual placeholders injected
+  // for disabled-but-EP-registered factories. Virtuals exist solely to anchor `after X` /
+  // `before X` chains during LoadingOrder topological sort and are removed before the custom order is applied.
+  private fun buildSortedRightWidgets(): MutableList<Orderable> {
+    val sorted = widgetRegistry.filterByPosition(Position.RIGHT)
+    StatusBarWidgetFactory.EP_NAME.filterableLazySequence()
+      .filter { it.id != null && !widgetRegistry.containsKey(it.id!!) }
+      .mapTo(sorted) {
+        object : Orderable {
+          override val orderId: String?
+            get() = it.id
+          override val order: LoadingOrder
+            get() = it.order
+          override fun toString(): String {
+            return "Virtual(id=${it.id}, order=${it.order})"
+          }
+        }
+      }
+    LoadingOrder.sortByLoadingOrder(sorted)
+    // The custom indices count only real widgets, so drop the virtuals before they are applied.
+    sorted.retainAll { it is WidgetBean }
+    widgetSorter.applyCustomOrder(sorted)
+    return sorted
+  }
+
+  private fun sortRightWidgets() {
+    val sorted = buildSortedRightWidgets()
+
+    for ((index, item) in sorted.withIndex()) {
+      setRightWidgetGridX((item as? WidgetBean ?: continue).component, index)
+    }
+  }
+
+  private fun setRightWidgetGridX(component: JComponent, index: Int) {
+    rightPanelLayout.setConstraints(component, GridBagConstraints().apply {
+      gridx = index
+      gridy = 0
+      fill = GridBagConstraints.VERTICAL
+      weighty = 1.0
+      weightx = 1.0
+      anchor = GridBagConstraints.PAGE_END
+    })
+  }
+
+  //=== CORE: Add widget to THIS status bar only (no propagation) ===
+  @RequiresEdt
+  internal fun addWidgetToSelf(bean: WidgetBean, parentDisposable: Disposable? = null) {
+    LOG.debug { "addWidgetToSelf: ${bean.widget.ID()}" }
+
+    widgetRegistry.put(bean.widget.ID(), bean)
+    registerFocusableWidget(bean.widget, bean.component)
+
+    val effectiveDisposable = parentDisposable ?: disposable
+    Disposer.register(effectiveDisposable, bean.widget)
+    bean.widget.install(this)
+
+    val panel = getTargetPanel(bean.position)
+    if (bean.position == Position.LEFT && panel.componentCount == 0) {
+      bean.component.border = if (SystemInfoRt.isMac) JBUI.Borders.empty(2, 0, 2, 4) else JBUI.Borders.empty()
+    }
+
+    panel.add(bean.component)
+    // A widget component has its own mouse listeners, so right-clicks on it don't bubble to the status bar's own
+    // `PopupHandler`. Install the same context menu directly on the widget so it still shows on right-click, while
+    // letting the event reach toolkit `AWTEventListener`s (unlike the previous global-dispatcher approach).
+    if (bean.position == Position.RIGHT) {
+      // Note that the target component is different, because otherwise, if we just passed bean.component,
+      // then as soon as we hide this component using this very context menu, then the menu stops working,
+      // because the target component isn't showing anymore.
+      PopupHandler.installPopupMenu(bean.component, panel, StatusBarWidgetsActionGroup.GROUP_ID, ActionPlaces.STATUS_BAR_PLACE)
+    }
+    panel.revalidate()
+  }
+
+  private fun registerFocusableWidget(widget: StatusBarWidget, component: JComponent) {
+    val activationTarget = if (widget is CustomStatusBarWidget) {
+      val widgetComponent = widget.component
+      if (widgetComponent === component || SwingUtilities.isDescendingFrom(widgetComponent, component))
+        widgetComponent else component
+    }
+    else {
+      component
+    }
+    registerFocusableWidget(component, activationTarget = activationTarget)
+  }
+
+  internal fun registerFocusableWidget(component: JComponent, activationTarget: JComponent = component, onActivate: (() -> Unit)? = null) {
+    component.isFocusable = true
+    component.isRequestFocusEnabled = false
+    component.addFocusListener(object : FocusAdapter() {
+      override fun focusGained(e: FocusEvent) = effectRenderer.repaintFocusBorder(component)
+      override fun focusLost(e: FocusEvent) = effectRenderer.repaintFocusBorder(component)
+    })
+
+    val activate = object : AbstractAction() {
+      override fun actionPerformed(e: ActionEvent) {
+        if (component.isShowing && component.isEnabled) {
+          logWidgetActivated(component, IdeEventQueue.getInstance().trueCurrentEvent as? InputEvent)
+          StatusBarUtil.performPrimaryAction(component, activationTarget, onActivate?.let { Runnable {
+            it() } })
+        }
+      }
+    }
+    val inputMap = component.getInputMap(WHEN_FOCUSED)
+    inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), STATUS_BAR_WIDGET_ACTIVATE)
+    inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), STATUS_BAR_WIDGET_ACTIVATE)
+    component.actionMap.put(STATUS_BAR_WIDGET_ACTIVATE, activate)
+  }
+
+  private fun restoreFocusToPreviousComponent() {
+    val project = ProjectUtil.getProjectForComponent(this) ?: return
+    val savedFocus = restoreFocusTargetRef?.get()
+    restoreFocusTargetRef = null
+    if (savedFocus != null && savedFocus.isShowing && savedFocus.isEnabled) {
+      IdeFocusManager.getGlobalInstance().requestFocusInProject(savedFocus, project)
+      return
+    }
+
+    val toolWindowManager = ToolWindowManager.getInstance(project)
+    toolWindowManager.activateEditorComponent()
+    SwingUtilities.invokeLater {
+      if (!toolWindowManager.isEditorComponentActive) {
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().clearGlobalFocusOwner()
+      }
+    }
+  }
+
+  //=== PUBLIC API: Add widget + propagate to all children ===
+  @RequiresEdt
+  private fun addWidget(widget: StatusBarWidget, position: Position, anchor: LoadingOrder) {
+    val component = wrap(widget)
+    if (component is StatusBarWidgetWrapper) {
+      component.beforeUpdate()
+    }
+
+    addWidgetToSelf(WidgetBean(widget, position, component, anchor))
+
+    if (position == Position.RIGHT) {
+      sortRightWidgets()
+    }
+
+    // Propagate to all existing children
+    childManager.propagateToAll(widget, position, anchor)
+
+    fireWidgetAdded(widget = widget, anchor = anchor.toString())
+  }
+
+  private fun getTargetPanel(position: Position): JPanel {
+    return when (position) {
+      Position.RIGHT -> rightPanel
+      Position.LEFT -> leftPanel()
+      else -> centerPanel
+    }
+  }
+
+  private fun leftPanel(): JPanel {
+    var panel = leftPanel
+    if (panel == null) {
+      panel = JPanel()
+      panel.border = JBUI.Borders.empty(0, 4, 0, 1)
+      panel.layout = BoxLayout(panel, BoxLayout.X_AXIS)
+      panel.isOpaque = false
+      add(panel, BorderLayout.WEST)
+      leftPanel = panel
+    }
+    return panel
+  }
+
+  override fun setInfo(s: String?) {
+    setInfo(s, null)
+  }
+
+  override fun setInfo(s: @Nls String?, requestor: String?) {
+    EdtInvocationManager.invokeLaterIfNeeded {
+      info = createInfoAndProgressPanel().setText(s, requestor)
+    }
+  }
+
+  override fun getInfo(): @NlsContexts.StatusBarText String? = info
+
+  @Suppress("UsagesOfObsoleteApi")
+  override fun addProgress(indicator: ProgressIndicatorEx, info: TaskInfo) {
+    @Suppress("DEPRECATION")
+    BridgeTaskSupport.getInstance().withBridgeBackgroundProgress(project, indicator, info)
+  }
+
+  internal fun addProgressImpl(progressModel: ProgressModel, info: TaskInfo) {
+    check(progressFlow.tryEmit(ProgressSetChangeEvent(
+      newProgress = Triple(info, progressModel, ClientId.currentOrNull),
+      existingProgresses = infoAndProgressPanel?.backgroundProcesses ?: emptyList(),
+    )))
+    createInfoAndProgressPanel().addProgress(progressModel, info)
+    ProgressSoundSignalTracker.getInstanceIfEnabled()?.track(project, progressModel, info)
+  }
+
+  internal fun notifyProgressRemoved(backgroundProcesses: List<Pair<TaskInfo, ProgressModel>>) {
+    check(progressFlow.tryEmit(ProgressSetChangeEvent(newProgress = null, existingProgresses = backgroundProcesses)))
+  }
+
+  /**
+   * Reports currently displayed progresses and the ones that will be displayed in future (never ending flow).
+   *
+   * NOTE: correct client id value is reported only for newly appearing progresses, older ones are reported with local client id.
+   * This isn't a problem for current usage when the subscription is performed on the first remote client's connection, but may need to be
+   * corrected for potential future usages.
+   */
+  @Internal
+  fun getVisibleProcessFlow(): Flow<VisibleProgress> {
+    return flow {
+      var firstTime = true
+      progressFlow.collect { event ->
+        if (firstTime) {
+          firstTime = false
+          event.existingVisibleProgresses.forEach { emit(it) }
+        }
+        event.newVisibleProgress?.let { emit(it) }
+      }
+    }
+  }
+
+  override fun getBackgroundProcessModels(): List<Pair<TaskInfo, ProgressModel>> {
+    return (infoAndProgressPanel?.backgroundProcesses ?: emptyList())
+  }
+
+  override fun setProcessWindowOpen(open: Boolean) {
+    createInfoAndProgressPanel().isProcessWindowOpen = open
+  }
+
+  override fun isProcessWindowOpen(): Boolean = infoAndProgressPanel?.isProcessWindowOpen ?: false
+
+  override fun startRefreshIndication(tooltipText: @NlsContexts.Tooltip String?) {
+    createInfoAndProgressPanel().setRefreshVisible(tooltipText)
+    childManager.updateAll { it.startRefreshIndication(tooltipText) }
+  }
+
+  override fun stopRefreshIndication() {
+    createInfoAndProgressPanel().setRefreshHidden()
+    childManager.updateAll { it.stopRefreshIndication() }
+  }
+
+  override fun notifyProgressByBalloon(type: MessageType, htmlBody: @NlsContexts.PopupContent String): BalloonHandler {
+    return notifyProgressByBalloon(type = type, htmlBody = htmlBody, icon = null, listener = null)
+  }
+
+  override fun notifyProgressByBalloon(
+    type: MessageType,
+    htmlBody: @NlsContexts.PopupContent String,
+    icon: Icon?,
+    listener: HyperlinkListener?,
+  ): BalloonHandler {
+    return createInfoAndProgressPanel().notifyByBalloon(type, htmlBody, icon, listener)
+  }
+
+  override fun fireNotificationPopup(content: JComponent, backgroundColor: Color?) {
+    NotificationPopup(this, content, backgroundColor)
+  }
+
+  private fun applyWidgetEffect(component: JComponent?, widgetEffect: WidgetEffect?) {
+    // A drag shows the drop position with its own placeholder. A hover effect that follows the
+    // pointer over the other widgets only adds noise, so drop it while a drag runs.
+    if (isWidgetDragInProgress) {
+      effectRenderer.applyEffect(null, null)
+      return
+    }
+    effectRenderer.applyEffect(component, widgetEffect)
+  }
+
+  override fun paintChildren(g: Graphics) {
+    effectRenderer.paintBackground(g)
+    super.paintChildren(g)
+    effectRenderer.paintFocusBorder(g)
+  }
+
+  private fun dispatchMouseEvent(e: MouseEvent) {
+    val rightPanel = rightPanel.takeIf { it.isVisible } ?: return
+    val component = e.component ?: return
+    if (ComponentUtil.getWindow(this) !== ComponentUtil.getWindow(component)) {
+      applyWidgetEffect(null, null)
+      return
+    }
+
+    val point = SwingUtilities.convertPoint(component, e.point, rightPanel)
+    val widget = getVisibleChildAt(rightPanel, point)
+    val targetWidget = widget.takeIf { it !== rightPanel }
+    if (e.clickCount == 0 || e.id == MouseEvent.MOUSE_RELEASED) {
+      applyWidgetEffect(targetWidget, WidgetEffect.HOVER)
+      if (e.id == MouseEvent.MOUSE_RELEASED && e.button == MouseEvent.BUTTON1) {
+        val pressedWidgetId = clickPressedWidgetId
+        clickPressedWidgetId = null
+
+        if (
+          targetWidget != null
+          && pressedWidgetId != null
+          && pressedWidgetId == ClientProperty.get(targetWidget, WIDGET_ID) &&
+          !isWidgetDragInProgress
+          && !e.isPopupTrigger
+        ) {
+          logWidgetActivated(targetWidget, e)
+        }
+      }
+    }
+    else if (e.clickCount == 1 && e.id == MouseEvent.MOUSE_PRESSED) {
+      applyWidgetEffect(targetWidget, WidgetEffect.PRESSED)
+
+      clickPressedWidgetId = targetWidget?.takeIf {
+        e.button == MouseEvent.BUTTON1 && !e.isPopupTrigger
+      }?.let {
+        ClientProperty.get(it, WIDGET_ID)
+      }
+    }
+
+    // The right-click context menu is not shown here on purpose: doing so would consume the event before
+    // `super.dispatchEvent` runs, hiding it from toolkit `AWTEventListener`s (e.g. the UI test robot). The menu is shown by a
+    // component-level `PopupHandler` installed on each widget (see `addWidgetToSelf`) and on the status bar itself.
+  }
+
+  /**
+   * Unlike [Container.getComponentAt] will not return invisible child.
+   * Unlike [Container.findComponentAt] or [SwingUtilities.getDeepestComponentAt] will not search deeper.
+   */
+  private fun getVisibleChildAt(component: JComponent, point: Point): JComponent? {
+    if (component.isVisible && component.contains(point)) {
+      return component.components.find { child ->
+        child.isVisible && child.contains(point.x - child.x, point.y - child.y)
+      } as? JComponent
+    }
+    return null
+  }
+
+  private fun logWidgetActivated(component: JComponent, inputEvent: InputEvent?) {
+    val widget = ClientProperty.get(component, WIDGET_ID)?.let { widgetRegistry.getWidget(it) } ?: return
+    UIEventLogger.StatusBarWidgetClicked.log(widgetStatisticsClass(widget), inputEvent?.let { FusInputEvent(it, ActionPlaces.STATUS_BAR_PLACE) })
+  }
+
+  /**
+   * The drop arrives as a button release, which the statistics report as a plain click.
+   * Report it as a drag of the left button with the modifiers of the drop.
+   */
+  private fun logWidgetDragged(widget: StatusBarWidget, dropEvent: MouseEvent) {
+    val dragEvent = MouseEvent(dropEvent.component, MouseEvent.MOUSE_DRAGGED, dropEvent.`when`, dropEvent.modifiersEx,
+                               dropEvent.x, dropEvent.y, 0, false, MouseEvent.BUTTON1)
+    UIEventLogger.StatusBarWidgetDragged.log(widgetStatisticsClass(widget), FusInputEvent(dragEvent, ActionPlaces.STATUS_BAR_PLACE))
+  }
+
+  // WidgetPresentationWrapper is a single generic wrapper shared by all V2 widgets, so report the concrete factory class
+  private fun widgetStatisticsClass(widget: StatusBarWidget): Class<*> =
+    (widget as? WidgetPresentationWrapper)?.factoryClass ?: widget.javaClass
+
+  override fun getUIClassID(): String = UI_CLASS_ID
+
+  override fun updateUI() {
+    if (UIManager.get(UI_CLASS_ID) != null) {
+      setUI(UIManager.getUI(this))
+    }
+    else {
+      setUI(StatusBarUI())
+    }
+    GuiUtils.iterateChildren(this, { c ->
+      if (c is JComponent) {
+        val newBorder = when (c.border?.name) {
+          JBUI.CurrentTheme.StatusBar.Widget.borderName() -> JBUI.CurrentTheme.StatusBar.Widget.border()
+          JBUI.CurrentTheme.StatusBar.Widget.iconBorderName() -> JBUI.CurrentTheme.StatusBar.Widget.iconBorder()
+          else -> null
+        }
+        if (newBorder != null) {
+          c.border = newBorder
+        }
+      }
+    })
+    preferredTextHeight = TextPanel.computeTextHeight() + JBUI.CurrentTheme.StatusBar.Widget.border().getBorderInsets(null).height
+  }
+
+  override fun getComponentGraphics(g: Graphics): Graphics {
+    return InternalUICustomization.runGlobalCGTransformWithInactiveFrameSupport(this, super.getComponentGraphics(g))
+  }
+
+  override fun removeWidget(id: String) {
+    EdtInvocationManager.invokeLaterIfNeeded {
+      val bean = widgetRegistry.remove(id)
+      if (bean != null) {
+        effectRenderer.clearIfMatches(bean.component)
+
+        val targetPanel = getTargetPanel(bean.position)
+        targetPanel.remove(bean.component)
+        recreateLayoutIfIsEmptyRightPanel(targetPanel)
+        targetPanel.revalidate()
+        Disposer.dispose(bean.widget)
+        fireWidgetRemoved(id)
+      }
+      childManager.updateAll { it.removeWidget(id) }
+    }
+  }
+
+  private fun recreateLayoutIfIsEmptyRightPanel(panel: JPanel) {
+    if (panel === rightPanel && panel.components.none { it.isVisible }) {
+      // Workaround of a bug in AWT:
+      // GridBagLayout.componentAdjusting is not set to NULL after removing the last visible child component.
+      // That leads to a leak of the StatusBarWidget component, and that leads to a situation when the plugin can't be properly unloaded.
+      rightPanelLayout = GridBagLayout()
+      panel.layout = rightPanelLayout
+      sortRightWidgets()
+    }
+  }
+
+  override fun updateWidget(id: String) {
+    EdtInvocationManager.invokeLaterIfNeeded {
+      val widgetComponent = getWidgetComponent(id)
+      if (widgetComponent != null) {
+        if (widgetComponent is StatusBarWidgetWrapper) {
+          widgetComponent.beforeUpdate()
+        }
+        widgetComponent.repaint()
+        fireWidgetUpdated(id)
+      }
+      childManager.updateAll { it.updateWidget(id) }
+    }
+  }
+
+  override fun getWidget(id: String): StatusBarWidget? = widgetRegistry.getWidget(id)
+
+  override val allWidgets: Collection<StatusBarWidget>?
+    get() = widgetRegistry.getAllWidgets()
+
+  override fun getWidgetAnchor(id: String): String? = widgetRegistry.getAnchor(id)
+
+  //todo: make private after removing all external usages
+  @Internal
+  fun getWidgetComponent(id: String): JComponent? = widgetRegistry.getComponent(id)
+
+  internal fun focusFirstWidget() {
+    if (currentFocusOwner()?.isSameOrDescendingFrom(this) == true) {
+      return
+    }
+
+    val component = getFocusableAndEnabledWidgets().firstOrNull() ?: return
+    val focusOwner = currentFocusOwner()
+    restoreFocusTargetRef = if (focusOwner == null) null else WeakReference(focusOwner)
+    IdeFocusManager.getGlobalInstance().requestFocusInProject(component, project)
+  }
+
+  internal fun getFocusableWidgetComponents(): List<JComponent> {
+    return buildList {
+      leftPanel?.components?.let { addAll(it) }
+      infoAndProgressPanel?.focusableComponents?.let { addAll(it) }
+      addAll(rightPanel.components.sortedBy { rightPanelLayout.getConstraints(it).gridx })
+    }.filterIsInstance<JComponent>()
+  }
+
+  internal fun focusNextWidgetAfter(component: JComponent) {
+    val focusOwner = currentFocusOwner()
+    if (focusOwner !== component && !(focusOwner != null && SwingUtilities.isDescendingFrom(focusOwner, component))) return
+
+    val widgets = getFocusableAndEnabledWidgets()
+    val currentIndex = widgets.indexOfFirst { it === component }
+    if (currentIndex == -1) {
+      return
+    }
+
+    for (i in currentIndex + 1 until widgets.size) {
+      val target = widgets[i]
+      if (!target.isSameOrDescendingFrom(component)) {
+        IdeFocusManager.getGlobalInstance().requestFocusInProject(target, project)
+        return
+      }
+    }
+  }
+
+  private fun getFocusableAndEnabledWidgets(): List<JComponent> =
+    getFocusableWidgetComponents().filter { it.isShowing && it.isEnabled }
+
+  private fun Component.isSameOrDescendingFrom(parent: Component): Boolean =
+    this === parent || SwingUtilities.isDescendingFrom(this, parent)
+
+  private fun currentFocusOwner(): Component? = KeyboardFocusManager.getCurrentKeyboardFocusManager().focusOwner
+
+  override val project: Project?
+    get() = getProject()
+
+  @get:Internal
+  override val currentEditor: StateFlow<FileEditor?> by lazy {
+    customCurrentFileEditorFlow
+      .flatMapLatest { customFlow ->
+        customFlow
+        ?: project?.serviceAsync<StatusBarWidgetsManager>()?.dataContext?.currentFileEditor
+        ?: emptyFlow()
+      }
+      .stateIn(coroutineScope, SharingStarted.Eagerly, null)
+  }
+
+  @Internal
+  fun setCurrentFileEditorFlow(flow: StateFlow<FileEditor?>?) {
+    customCurrentFileEditorFlow.value = flow
+  }
+
+  override fun getAccessibleContext(): AccessibleContext {
+    if (accessibleContext == null) {
+      accessibleContext = AccessibleIdeStatusBarImpl()
+      accessibleContext.accessibleName = UIBundle.message("status.bar.accessible.group.name")
+    }
+    return accessibleContext
+  }
+
+  override fun addListener(listener: StatusBarListener, parentDisposable: Disposable) {
+    listeners.addListener(listener, parentDisposable)
+  }
+
+  private fun fireWidgetAdded(widget: StatusBarWidget, anchor: String?) {
+    listeners.multicaster.widgetAdded(widget, anchor)
+  }
+
+  private fun fireWidgetUpdated(id: String) {
+    listeners.multicaster.widgetUpdated(id)
+  }
+
+  private fun fireWidgetRemoved(id: String) {
+    listeners.multicaster.widgetRemoved(id)
+  }
+
+  private inner class StatusBarFocusTraversalPolicy : ComponentsListFocusTraversalPolicy(true) {
+    override fun getOrderedComponents(): List<Component> = getFocusableAndEnabledWidgets()
+
+    override fun getComponentAfter(aContainer: Container, aComponent: Component): Component? =
+      super.getComponentAfter(aContainer, aComponent) ?: getFirstComponent(aContainer)
+
+    override fun getComponentBefore(aContainer: Container, aComponent: Component): Component? =
+      super.getComponentBefore(aContainer, aComponent) ?: getLastComponent(aContainer)
+
+    override fun getDefaultComponent(aContainer: Container): Component? = null
+  }
+
+  private fun registerCloneTasks() {
+    CloneableProjectsService.getInstance()
+      .collectCloneableProjects()
+      .map { it.cloneableProject }
+      .forEach { addProgress(indicator = it.progressIndicator, info = it.cloneTaskInfo) }
+    ApplicationManager.getApplication().messageBus.connect(coroutineScope)
+      .subscribe(CloneableProjectsService.TOPIC, object : CloneProjectListener {
+        override fun onCloneAdded(progressIndicator: ProgressIndicatorEx, taskInfo: TaskInfo) {
+          addProgress(progressIndicator, taskInfo)
+        }
+      })
+  }
+
+  @Internal
+  protected inner class AccessibleIdeStatusBarImpl : AccessibleJComponent() {
+    override fun getAccessibleRole(): AccessibleRole = AccessibilityUtils.GROUPED_ELEMENTS
+
+    override fun getAccessibleDescription(): String? = getInfo()
+  }
+}
+
+@RequiresEdt
+internal fun createComponentByWidgetPresentation(presentation: WidgetPresentation, project: Project, scope: CoroutineScope): JComponent {
+  val toolTipTextSupplier = { runWithModalProgressBlocking(project, title = "") { presentation.getTooltipText() } }
+  return when (presentation) {
+    is TextWidgetPresentation -> {
+      val panel = TextPanel(toolTipTextSupplier)
+      panel.setTextAlignment(presentation.alignment)
+      panel.border = JBUI.CurrentTheme.StatusBar.Widget.border()
+      configurePresentationComponent(presentation, panel)
+      panel.useStoredAccessibleDescription = true
+
+      scope.launch {
+        presentation.text()
+          .distinctUntilChanged()
+          .collectLatest { text ->
+            val description = StatusBarAccessibilityUtil.toAccessibleDescription(presentation.getTooltipText())
+            withContext(Dispatchers.EDT) {
+              panel.isVisible = !text.isNullOrEmpty()
+              panel.text = text
+              panel.accessibleContext.accessibleDescription = description
+            }
+          }
+      }
+      panel
+    }
+    is IconWidgetPresentation -> {
+      val panel = WithIconAndArrows(toolTipTextSupplier)
+      panel.border = JBUI.CurrentTheme.StatusBar.Widget.iconBorder()
+      configurePresentationComponent(presentation, panel)
+      panel.useStoredAccessibleDescription = true
+
+      scope.launch {
+        presentation.icon()
+          .distinctUntilChanged()
+          .collectLatest { icon ->
+            val description = StatusBarAccessibilityUtil.toAccessibleDescription(presentation.getTooltipText())
+            withContext(Dispatchers.EDT) {
+              panel.icon = icon
+              panel.isVisible = icon != null
+              panel.accessibleContext.accessibleDescription = description
+              panel.repaint()
+            }
+          }
+      }
+      panel
+    }
+    else -> throw IllegalArgumentException("Unable to find a wrapper for presentation: ${presentation.javaClass.simpleName}")
+  }
+}
+
+@RequiresEdt
+private fun createComponentByWidgetPresentation(widget: StatusBarWidget): JComponent {
+  val presentation = widget.getPresentation() ?: throw IllegalStateException("Widget $widget getPresentation() method must not return null")
+  return when (presentation) {
+    is IconPresentation -> IconPresentationComponent(presentation)
+    is TextPresentation -> TextPresentationComponent(presentation)
+    is MultipleTextValuesPresentation -> MultipleTextValues(presentation)
+    else -> throw IllegalArgumentException("Unable to find a wrapper for presentation: ${presentation.javaClass.simpleName}")
+  }
+}
+
+private fun configurePresentationComponent(presentation: WidgetPresentation, panel: JComponent) {
+  presentation.getClickConsumer()?.let {
+    StatusBarWidgetClickListener(it).installOn(panel, true)
+  }
+  ClientProperty.put(panel, HelpTooltipManager.SHORTCUT_PROPERTY, Supplier {
+    runWithModalProgressBlocking(ModalTaskOwner.component(panel), title = "") { presentation.getShortcutText() }
+  })
+}
+
+internal fun wrap(widget: StatusBarWidget): JComponent {
+  val result = if (widget is CustomStatusBarWidget) {
+    wrapCustomStatusBarWidget(widget)
+      .also { ClientProperty.put(it, WIDGET_ID, widget.ID()) }
+  }
+  else {
+    createComponentByWidgetPresentation(widget).also {
+      ToolTipManager.sharedInstance().registerComponent(it)
+      it.putClientProperty(UIUtil.CENTER_TOOLTIP_DEFAULT, true)
+    }
+  }
+  ClientProperty.put(result, WIDGET_ID, widget.ID())
+  return result
+}
+
+private fun wrapCustomStatusBarWidget(widget: CustomStatusBarWidget): JComponent {
+  val component = widget.component
+  if (component.border == null) {
+    component.border = if (widget is IconLikeCustomStatusBarWidget) {
+      JBUI.CurrentTheme.StatusBar.Widget.iconBorder()
+    }
+    else {
+      JBUI.CurrentTheme.StatusBar.Widget.border()
+    }
+  }
+
+  // wrap with a panel, so it will fill the entire status bar height
+  val result = if (component is JLabel) {
+    val panel = object : JPanel(BorderLayout()) {
+      override fun getAccessibleContext(): AccessibleContext {
+        if (accessibleContext == null) {
+          val defaultAccessibleContext = super.getAccessibleContext()
+          accessibleContext = object : AccessibleContextDelegate(component.accessibleContext) {
+            override fun getDelegateParent(): Container? = parent
+            override fun getAccessibleIndexInParent(): Int = defaultAccessibleContext.accessibleIndexInParent
+          }
+        }
+        return accessibleContext
+      }
+    }
+    panel.add(component, BorderLayout.CENTER)
+    panel.isOpaque = false
+    panel
+  }
+  else {
+    component
+  }
+  return result
+}
+
+private class IconPresentationComponent(private val presentation: IconPresentation) : WithIconAndArrows(presentation::getTooltipText),
+                                                                                      StatusBarWidgetWrapper {
+  init {
+    setTextAlignment(CENTER_ALIGNMENT)
+    border = JBUI.CurrentTheme.StatusBar.Widget.iconBorder()
+    presentation.getClickConsumer()?.let { clickConsumer ->
+      StatusBarWidgetClickListener(clickConsumer = clickConsumer::consume).installOn(this, true)
+    }
+    ClientProperty.put(this, HelpTooltipManager.SHORTCUT_PROPERTY, Supplier(presentation::getShortcutText))
+  }
+
+  override fun beforeUpdate() {
+    icon = presentation.getIcon()
+    isVisible = hasIcon()
+  }
+}
+
+private class TextPresentationComponent(
+  private val presentation: TextPresentation,
+) : TextPanel(presentation::getTooltipText), StatusBarWidgetWrapper {
+  init {
+    setTextAlignment(presentation.getAlignment())
+    border = JBUI.CurrentTheme.StatusBar.Widget.border()
+    presentation.getClickConsumer()?.let { clickConsumer ->
+      StatusBarWidgetClickListener(clickConsumer::consume).installOn(this, true)
+    }
+    ClientProperty.put(this, HelpTooltipManager.SHORTCUT_PROPERTY, Supplier(presentation::getShortcutText))
+  }
+
+  override fun beforeUpdate() {
+    text = presentation.getText()
+    isVisible = text != null
+  }
+}
+
+private class MultipleTextValues(private val presentation: MultipleTextValuesPresentation)
+  : WithIconAndArrows(presentation::getTooltipText), StatusBarWidgetWrapper {
+  init {
+    isVisible = !presentation.getSelectedValue().isNullOrEmpty()
+    setTextAlignment(CENTER_ALIGNMENT)
+    border = JBUI.CurrentTheme.StatusBar.Widget.border()
+    object : ClickListener() {
+      override fun onClick(event: MouseEvent, clickCount: Int): Boolean {
+        val popup = presentation.getPopup() ?: return false
+        StatusBarPopupShown.log(presentation::class.java)
+        val dimension = getSizeFor(popup)
+        val at = Point(0, -dimension.height)
+        popup.show(RelativePoint(event.component, at))
+        return true
+      }
+
+      private fun getSizeFor(popup: JBPopup): Dimension {
+        return if (popup is AbstractPopup) popup.sizeForPositioning else popup.content.preferredSize
+      }
+    }.installOn(this, true)
+
+    ClientProperty.put(this, HelpTooltipManager.SHORTCUT_PROPERTY, Supplier(presentation::getShortcutText))
+  }
+
+  override fun beforeUpdate() {
+    val value = presentation.getSelectedValue()
+    text = value
+    icon = presentation.getIcon()
+    isVisible = !Strings.isEmpty(value)
+  }
+}
+
+private class StatusBarWidgetClickListener(private val clickConsumer: (MouseEvent) -> Unit) : ClickListener() {
+  override fun onClick(e: MouseEvent, clickCount: Int): Boolean {
+    if (!e.isPopupTrigger && MouseEvent.BUTTON1 == e.button) {
+      WriteIntentReadAction.run {
+        clickConsumer(e)
+      }
+    }
+    return true
+  }
+}
+
+internal interface StatusBarWidgetWrapper {
+  fun beforeUpdate()
+}
+
+internal fun adaptV2Widget(
+  id: String,
+  dataContext: WidgetPresentationDataContext,
+  parentCoroutineScope: CoroutineScope,
+  presentationFactory: (WidgetPresentationDataContext, CoroutineScope) -> WidgetPresentation,
+): StatusBarWidget {
+  val factory = object : WidgetPresentationFactory {
+    override fun createPresentation(context: WidgetPresentationDataContext, scope: CoroutineScope) = presentationFactory(context, scope)
+  }
+  return WidgetPresentationWrapper(id = id, factory = factory, dataContext = dataContext, scope = parentCoroutineScope.childScope(id))
+}
+
+private class StatusBarPanel(layout: LayoutManager) : JPanel(layout) {
+  init {
+    updateFont()
+  }
+
+  override fun updateUI() {
+    super.updateUI()
+    updateFont()
+  }
+
+  private fun updateFont() {
+    font = JBUI.CurrentTheme.StatusBar.font()
+  }
+}
+
+@Internal
+class VisibleProgress(
+  val title: @NlsContexts.ProgressTitle String,
+  val clientId: ClientId?,
+  val canceler: (() -> Unit)?,
+  val state: Flow<ProgressState>, /* finite */
+) {
+  override fun toString(): String {
+    return "VisibleProgress['$title', ${if (canceler == null) "non-" else ""}cancelable]"
+  }
+}
+
+private val EMPTY_PROGRESS = StepState(-1.0, null, null)
+
+private fun createVisibleProgress(progressModel: ProgressModel, info: TaskInfo, clientId: ClientId?): VisibleProgress {
+  val stateFlow = MutableStateFlow(EMPTY_PROGRESS)
+  val activeFlow = MutableStateFlow(true)
+  val updater = {
+    stateFlow.value = StepState(
+      fraction = if (progressModel.isIndeterminate()) -1.0 else progressModel.getFraction(),
+      text = progressModel.getText(),
+      details = progressModel.getDetails(),
+    )
+  }
+
+  val finisher = { activeFlow.value = false }
+
+  progressModel.addOnChangeAction {
+    updater()
+  }
+  progressModel.addOnFinishAction { taskInfo ->
+    if (taskInfo == info) {
+      finisher()
+    }
+  }
+
+  if (progressModel.isFinished(info)) {
+    finisher()
+  }
+  else {
+    updater()
+  }
+
+  val state = stateFlow.combine(activeFlow) { state, active -> state.takeIf { active } }
+    .takeWhile { it != null }.map { it!! }
+
+  return VisibleProgress(
+    title = info.title,
+    clientId = clientId,
+    canceler = { progressModel.cancel() }.takeIf { info.isCancellable },
+    state = state,
+  )
+}
+
+private class ProgressSetChangeEvent(
+  private val newProgress: Triple<TaskInfo, ProgressModel, ClientId?>?,
+  private val existingProgresses: List<Pair<TaskInfo, ProgressModel>>,
+) {
+  val newVisibleProgress by lazy {
+    newProgress?.let { createVisibleProgress(it.second, it.first, it.third) }
+  }
+  val existingVisibleProgresses by lazy {
+    existingProgresses.map { createVisibleProgress(it.second, it.first, null) }
+  }
+}

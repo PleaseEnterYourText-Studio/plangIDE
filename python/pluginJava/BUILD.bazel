@@ -1,0 +1,69 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.python.community.plugin.java` start
+content_module_jar(module = ":community-plugin-java")
+### auto-generated section `dev intellij.python.community.plugin.java` end
+
+### auto-generated section `build intellij.python.community.plugin.java` start
+jvm_library(
+    name = "community-plugin-java",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.python.community.plugin.java",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "@lib//:kotlin-stdlib",
+        "//platform/indexing-api:indexing",
+        "//jps/model-api:model",
+        "//platform/lang-api:lang",
+        "//platform/lang-core",
+        "//platform/lang-impl",
+        "//platform/projectModel-api:projectModel",
+        "//python/python-sdk/backend",
+        "//python/python-sdk/common",
+        "//python/python-psi-api:psi",
+        "//python:python-community-impl",
+        "//python/python-source-roots:sourceRoots",
+        "//platform/forms_rt:java-guiForms-rt",
+        "//java/openapi:java",
+        "//java/java-psi-api:psi",
+        "//java/java-frontback-psi-api:frontback-psi",
+        "//java/java-indexing-api:indexing",
+        "//platform/platform-impl:ide-impl",
+        "//platform/ide-core",
+        "//java/idea-ui:ui",
+        "//python/pluginCore/impl",
+        "//python/python-psi-impl:psi-impl",
+        "//platform/core-ui",
+        "//platform/util/jdom",
+        "//platform/util:util-ui",
+        "//python/python-core-impl:community-core-impl",
+        "//platform/execution",
+        "//platform/util/concurrency",
+    ],
+)
+### auto-generated section `build intellij.python.community.plugin.java` end
+
+### auto-generated section `iml intellij.python.community.plugin.java` start
+exports_files(
+    [
+        "intellij.python.community.plugin.java.iml",
+        "resources/intellij.python.community.plugin.java.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.python.community.plugin.java` end

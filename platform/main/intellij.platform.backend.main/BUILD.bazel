@@ -1,0 +1,49 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `build intellij.platform.backend.main` start
+jvm_library(
+    name = "backend-main",
+    srcs = glob(
+        [],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.backend.main",
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//platform/main/intellij.platform.main:main",
+        "//platform/kernel/rpc.backend",
+        "//platform/navbar/backend",
+        "//platform/project/backend",
+        "//platform/progress/backend",
+        "//platform/xdebugger-impl/backend",
+        "//plugins/stream-debugger/backend",
+        "//platform/searchEverywhere/backend",
+        "//platform/vcs-impl",
+        "//platform/bookmarks/backend",
+        "//platform/recentFiles/backend",
+        "//platform/execution-impl/backend",
+        "//platform/execution.dashboard/backend",
+        "//spellchecker/xml",
+        "//spellchecker/xml/backend",
+        "//platform/find/backend",
+        "//platform/todo/backend",
+        "//platform/managed-cache/managed.cache.backend",
+        "//platform/scopes/backend",
+        "//platform/remote-topics/backend",
+        "//platform/buildView/backend",
+        "//platform/lang-impl/backend",
+        "//platform/pluginManager/backend",
+        "//platform/backend/workspace.impl",
+    ],
+)
+### auto-generated section `build intellij.platform.backend.main` end
+
+### auto-generated section `iml intellij.platform.backend.main` start
+exports_files(
+    [
+        "intellij.platform.backend.main.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.backend.main` end

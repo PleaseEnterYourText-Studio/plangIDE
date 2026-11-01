@@ -1,0 +1,48 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.extendedToolWindowsUi.frontend` start
+content_module_jar(module = ":frontend")
+### auto-generated section `dev intellij.extendedToolWindowsUi.frontend` end
+
+### auto-generated section `build intellij.extendedToolWindowsUi.frontend` start
+jvm_library(
+    name = "frontend",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.extendedToolWindowsUi.frontend",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//platform/core-ui",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/platform-frontend:frontend",
+        "//platform/ide-core",
+        "//platform/platform-impl:ide-impl",
+        "//platform/platform-impl/ui",
+        "//platform/projectModel-api:projectModel",
+        "//platform/util:util-ui",
+    ],
+)
+### auto-generated section `build intellij.extendedToolWindowsUi.frontend` end
+
+### auto-generated section `iml intellij.extendedToolWindowsUi.frontend` start
+exports_files(
+    [
+        "intellij.extendedToolWindowsUi.frontend.iml",
+        "resources/intellij.extendedToolWindowsUi.frontend.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.extendedToolWindowsUi.frontend` end

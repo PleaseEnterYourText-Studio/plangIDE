@@ -1,0 +1,60 @@
+// Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+@file:JvmName("GradleBuildEntityModifications")
+
+package org.jetbrains.plugins.gradle.model.projectModel
+
+import com.intellij.platform.externalSystem.impl.workspaceModel.ExternalProjectEntityBuilder
+import com.intellij.platform.workspace.storage.EntitySource
+import com.intellij.platform.workspace.storage.EntityType
+import com.intellij.platform.workspace.storage.GeneratedCodeApiVersion
+import com.intellij.platform.workspace.storage.MutableEntityStorage
+import com.intellij.platform.workspace.storage.WorkspaceEntity
+import com.intellij.platform.workspace.storage.WorkspaceEntityBuilder
+import com.intellij.platform.workspace.storage.url.VirtualFileUrl
+import org.jetbrains.plugins.gradle.model.projectModel.impl.GradleBuildEntityImpl
+
+@GeneratedCodeApiVersion(3)
+interface GradleBuildEntityBuilder : WorkspaceEntityBuilder<GradleBuildEntity> {
+  override var entitySource: EntitySource
+  var externalProject: ExternalProjectEntityBuilder
+  var name: String
+  var url: VirtualFileUrl
+  var projects: List<GradleProjectEntityBuilder>
+  val symbolicId: GradleBuildEntityId
+    get() = GradleBuildEntityId(externalProject.symbolicId, url)
+}
+
+internal object GradleBuildEntityType : EntityType<GradleBuildEntity, GradleBuildEntityBuilder>() {
+  override val entityImplClass: Class<*> get() = GradleBuildEntityImpl::class.java
+  override val entityImplBuilderClass: Class<*> get() = GradleBuildEntityImpl.Builder::class.java
+  operator fun invoke(
+    name: String,
+    url: VirtualFileUrl,
+    entitySource: EntitySource,
+    init: (GradleBuildEntityBuilder.() -> Unit)? = null,
+  ): GradleBuildEntityBuilder {
+    val builder = builder()
+    builder.name = name
+    builder.url = url
+    builder.entitySource = entitySource
+    init?.invoke(builder)
+    return builder
+  }
+}
+
+fun MutableEntityStorage.modifyGradleBuildEntity(
+  entity: GradleBuildEntity,
+  modification: GradleBuildEntityBuilder.() -> Unit,
+): GradleBuildEntity = modifyEntity(GradleBuildEntityBuilder::class.java, entity, modification)
+
+var ExternalProjectEntityBuilder.gradleBuilds: List<GradleBuildEntityBuilder>
+  by WorkspaceEntity.extensionBuilder(GradleBuildEntity::class.java)
+
+@JvmOverloads
+@JvmName("createGradleBuildEntity")
+fun GradleBuildEntity(
+  name: String,
+  url: VirtualFileUrl,
+  entitySource: EntitySource,
+  init: (GradleBuildEntityBuilder.() -> Unit)? = null,
+): GradleBuildEntityBuilder = GradleBuildEntityType(name, url, entitySource, init)

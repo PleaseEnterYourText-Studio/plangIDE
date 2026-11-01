@@ -1,0 +1,77 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//build:compiler-options.bzl", "create_kotlinc_options")
+
+### auto-generated section `build kotlin.base.injection.tests` start
+create_kotlinc_options(
+    name = "custom_tests",
+    opt_in = [
+        "org.jetbrains.kotlin.psi.KtExperimentalApi",
+        "org.jetbrains.kotlin.psi.KtNonPublicApi",
+        "org.jetbrains.kotlin.psi.KtIdeApi",
+        "org.jetbrains.kotlin.analysis.api.KaExperimentalApi",
+        "org.jetbrains.kotlin.analysis.api.KaIdeApi",
+        "org.jetbrains.kotlin.analysis.api.KaPlatformInterface",
+        "org.jetbrains.kotlin.analysis.api.fir.diagnostics.KaUnstableDiagnosticApi",
+        "org.jetbrains.kotlin.analysis.api.KaNonPublicApi",
+        "org.jetbrains.kotlin.analysis.api.KaContextParameterApi",
+        "org.jetbrains.kotlin.analysis.api.permissions.KaAllowProhibitedAnalyzeFromWriteAction",
+    ],
+    x_context_parameters = True,
+)
+
+jvm_library(
+    name = "tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "test/**/*.kt",
+            "test/**/*.java",
+            "test/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = ":custom_tests",
+    module_name = "kotlin.base.injection.tests",
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//platform/core-impl",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/projectModel-api:projectModel",
+        "//plugins/kotlin/tests-common:common-tests_test_lib",
+        "//plugins/kotlin/base/testFramework",
+        "//plugins/kotlin/test-framework:test-framework_test_lib",
+        "//java/testFramework",
+        "//java/java-psi-api:psi",
+        "//platform/editor-ui-ex:editor-ex",
+        "//libraries/kotlinc/analysis-api:libraries-kotlinc-analysis-api",
+        "//platform/testFramework",
+        "//RegExpSupport:regexp",
+        "//plugins/IntelliLang:langInjection",
+        "//libraries/kotlinc/kotlin-compiler-common:libraries-kotlinc-kotlin-compiler-common",
+        "//plugins/IntelliLang/backend",
+        "//platform/ide-core",
+        "//xml/xml-parser:parser",
+        "//libraries/junit4",
+    ],
+)
+### auto-generated section `build kotlin.base.injection.tests` end
+
+### auto-generated section `iml kotlin.base.injection.tests` start
+exports_files(
+    [
+        "kotlin.base.injection.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml kotlin.base.injection.tests` end
+
+### auto-generated section `test kotlin.base.injection.tests` start
+jps_test(
+    name = "tests_test",
+    runtime_deps = [":tests_test_lib"],
+)
+### auto-generated section `test kotlin.base.injection.tests` end

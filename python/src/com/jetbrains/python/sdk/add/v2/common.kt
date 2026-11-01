@@ -1,0 +1,239 @@
+// Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+package com.jetbrains.python.sdk.add.v2
+
+import com.intellij.python.venv.PipPyTool
+import com.intellij.icons.AllIcons
+import com.intellij.notification.NotificationAction
+import com.intellij.notification.NotificationGroupManager
+import com.intellij.notification.NotificationType
+import com.intellij.notification.NotificationsManager
+import com.intellij.openapi.application.EDT
+import com.intellij.openapi.diagnostic.getOrLogException
+import com.intellij.openapi.help.HelpManager
+import com.intellij.openapi.module.Module
+import com.intellij.openapi.observable.properties.AtomicProperty
+import com.intellij.openapi.observable.properties.ObservableProperty
+import com.intellij.openapi.ui.ValidationInfo
+import com.intellij.openapi.ui.validation.DialogValidationRequestor
+import com.intellij.openapi.ui.validation.WHEN_PROPERTY_CHANGED
+import com.intellij.openapi.ui.validation.and
+import com.intellij.openapi.wm.IdeFocusManager
+import com.intellij.python.community.common.tools.ToolId
+import com.intellij.python.community.impl.conda.common.icons.PythonCommunityImplCondaCommonIcons
+import com.intellij.python.community.impl.pipenv.common.icons.PythonCommunityImplPipenvCommonIcons
+import com.intellij.python.community.impl.poetry.common.POETRY_TOOL_ID
+import com.intellij.python.community.impl.poetry.common.icons.PythonCommunityImplPoetryCommonIcons
+import com.intellij.python.hatch.common.icons.PythonHatchCommonIcons
+import com.intellij.python.hatch.impl.HATCH_TOOL_ID
+import com.intellij.python.sdk.backend.PythonInterpreter
+import com.intellij.python.sdk.backend.getSdkAPI
+import com.intellij.python.sdk.backend.pythonInterpreterResultAsync
+import com.intellij.python.uv.common.UV_TOOL_ID
+import com.intellij.python.uv.common.icons.PythonUvCommonIcons
+import com.intellij.python.venv.common.icons.PythonVenvCommonIcons
+import com.intellij.ui.dsl.builder.Align
+import com.intellij.ui.dsl.builder.Panel
+import com.intellij.ui.dsl.builder.Row
+import com.jetbrains.python.PyBundle.message
+import com.jetbrains.python.Result
+import com.jetbrains.python.errorProcessing.PyResult
+import com.jetbrains.python.newProject.collector.InterpreterStatisticsInfo
+import com.jetbrains.python.parser.icons.PythonParserIcons
+import com.jetbrains.python.sdk.LOGGER
+import com.jetbrains.python.sdk.ModuleOrProject
+import com.jetbrains.python.sdk.PythonSdkUtil
+import com.jetbrains.python.sdk.configuration.CONDA_TOOL_ID
+import com.jetbrains.python.sdk.configuration.PIPENV_TOOL_ID
+import com.jetbrains.python.sdk.configuration.VENV_TOOL_ID
+import com.jetbrains.python.sdk.createSdkGuessingTypeByPath
+import com.jetbrains.python.sdk.excludeInnerVirtualEnv
+import com.jetbrains.python.statistics.InterpreterTarget
+import com.jetbrains.python.statistics.PythonInterpreterInstallationIdsHolder.Companion.PYTHON_INSTALLATION_INTERRUPTED
+import com.jetbrains.python.target.ui.TargetPanelExtension
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.jetbrains.annotations.ApiStatus
+import javax.swing.Icon
+
+abstract class PythonAddEnvironment<P : PathHolder>(open val model: PythonAddInterpreterModel<P>) {
+
+  val state: AddInterpreterState<P>
+    get() = model.state
+
+  internal val propertyGraph
+    get() = model.propertyGraph
+
+  protected abstract val toolExecutable: ObservableProperty<ValidatedPath.Executable<P>?>?
+  protected abstract val toolExecutablePersister: suspend (P) -> Unit
+
+  /**
+   * Whether the resolved [toolExecutable] should be persisted to the custom-path store when the SDK is
+   * created. Default `false`: an auto-detected tool path must NOT be persisted (detection is cached with
+   * a TTL instead, so it self-heals when the tool moves). Overridden to `true` only when the value is an
+   * explicit user choice (the tool field was browsed/typed) — see [ValidatedPathField.isUserEdited].
+   */
+  protected open val persistToolExecutableOnSetup: Boolean get() = false
+
+  abstract fun setupUI(panel: Panel, validationRequestor: DialogValidationRequestor)
+  abstract fun onShown(scope: CoroutineScope)
+
+  /**
+   * Returns created SDK ready to use
+   *
+   * Error is shown to user. Do not catch all exceptions, only return exceptions valuable to user
+   */
+  protected abstract suspend fun getOrCreateSdk(moduleOrProject: ModuleOrProject): PyResult<PythonInterpreter>
+
+  /**
+   * Creates the interpreter this panel describes, or finds the one that exists. A new SDK gets its module association
+   * when it is created.
+   *
+   * It does not make the interpreter the interpreter of a project. The caller does that with
+   * [com.intellij.python.pyproject.model.evolution.setPythonInterpreter].
+   */
+  @ApiStatus.Internal
+  suspend fun setupSdk(moduleOrProject: ModuleOrProject): PyResult<PythonInterpreter> {
+    savePathToExecutableToProperties()
+    val pythonInterpreter = getOrCreateSdk(moduleOrProject).getOr { return it }
+    moduleOrProject.project.excludeInnerVirtualEnv(pythonInterpreter.getSdkAPI())
+    return Result.success(pythonInterpreter)
+  }
+
+  /**
+   * Persists the user-chosen tool executable to the custom-path store, but only when
+   * [persistToolExecutableOnSetup] is `true` (i.e. the user explicitly picked the path). Auto-detected
+   * paths are intentionally not persisted.
+   */
+  protected suspend fun savePathToExecutableToProperties() {
+    if (!persistToolExecutableOnSetup) return
+    val savingPath = toolExecutable?.get()?.pathHolder?.successOrNull ?: return
+    toolExecutablePersister(savingPath)
+  }
+
+  /** @see PySdkCreator.createPythonModuleStructure */
+  open suspend fun createPythonModuleStructure(module: Module, createGitRepository: Boolean): PyResult<Unit> = Result.success(Unit)
+
+  internal abstract fun createStatisticsInfo(target: PythonInterpreterCreationTargets): InterpreterStatisticsInfo
+}
+
+abstract class PythonNewEnvironmentCreator<P : PathHolder>(override val model: PythonMutableTargetAddInterpreterModel<P>) :
+  PythonAddEnvironment<P>(model) {
+  internal val venvExistenceValidationState: AtomicProperty<VenvExistenceValidationState> =
+    AtomicProperty(VenvExistenceValidationState.Invisible)
+
+  internal fun Row.venvExistenceValidationAlert(validationRequestor: DialogValidationRequestor, onSelectExisting: () -> Unit) {
+    venvExistenceValidationAlert(venvExistenceValidationState, onSelectExisting)
+      .align(Align.FILL)
+      .validationRequestor(validationRequestor and WHEN_PROPERTY_CHANGED(venvExistenceValidationState))
+      .cellValidation { component ->
+        addInputRule {
+          if (!component.isVisible) {
+            return@addInputRule null
+          }
+
+          val state = venvExistenceValidationState.get()
+
+          if (state is VenvExistenceValidationState.Error)
+            ValidationInfo("")
+          else
+            null
+        }
+      }
+  }
+}
+
+internal abstract class PythonExistingEnvironmentConfigurator<P : PathHolder>(model: PythonAddInterpreterModel<P>) :
+  PythonAddEnvironment<P>(model)
+
+
+enum class PythonSupportedEnvironmentManagers(
+  val toolId: ToolId,
+  val nameKey: String,
+  val icon: Icon,
+  val sshAutoUploadRequired: Boolean,
+  val isFSSupported: (FileSystem<*>) -> Boolean = { it.isLocal },
+) {
+  VIRTUALENV(VENV_TOOL_ID, "sdk.create.custom.virtualenv", PythonVenvCommonIcons.VirtualEnv, sshAutoUploadRequired = false, { true }),
+  CONDA(CONDA_TOOL_ID, "sdk.create.custom.conda", PythonCommunityImplCondaCommonIcons.Anaconda, sshAutoUploadRequired = false, { true }),
+  POETRY(POETRY_TOOL_ID, "sdk.create.custom.poetry", PythonCommunityImplPoetryCommonIcons.Poetry, sshAutoUploadRequired = true, { true }),
+  PIPENV(PIPENV_TOOL_ID, "sdk.create.custom.pipenv", PythonCommunityImplPipenvCommonIcons.Pipenv, sshAutoUploadRequired = true, { true }),
+  UV(UV_TOOL_ID, "sdk.create.custom.uv", PythonUvCommonIcons.UV, sshAutoUploadRequired = true, { true }),
+  HATCH(HATCH_TOOL_ID, "sdk.create.custom.hatch", PythonHatchCommonIcons.Logo, sshAutoUploadRequired = true, { true }),
+  PYTHON(VENV_TOOL_ID, "sdk.create.custom.python", PythonParserIcons.PythonFile, sshAutoUploadRequired = false, { true })
+}
+
+enum class PythonInterpreterSelectionMode(val nameKey: String) {
+  PROJECT_VENV("sdk.create.type.project.venv"),
+  PROJECT_UV("sdk.create.type.project.uv"),
+  BASE_CONDA("sdk.create.type.base.conda"),
+  CUSTOM("sdk.create.type.custom")
+}
+
+enum class PythonInterpreterCreationTargets(val nameKey: String, val icon: Icon) {
+  LOCAL_MACHINE("sdk.create.targets.local", AllIcons.Nodes.HomeFolder),
+  SSH("", AllIcons.Nodes.HomeFolder),
+}
+
+internal fun PythonInterpreterCreationTargets.toStatisticsField(): InterpreterTarget {
+  return when (this) {
+    PythonInterpreterCreationTargets.LOCAL_MACHINE -> InterpreterTarget.LOCAL
+    else -> throw NotImplementedError("PythonInterpreterCreationTargets added, but not accounted for in statistics")
+  }
+}
+
+
+enum class PythonInterpreterSelectionMethod {
+  CREATE_NEW, SELECT_EXISTING
+}
+
+internal suspend fun installBaseSdk(installRequest: InstallablePythonSdk): kotlin.Result<PythonInterpreter> {
+  // installBinary (reached via InstallablePythonSdk.install) is @RequiresEdt because it drives a
+  // modal ProgressManager.Task.WithResult. Callers of installBaseSdk run on background coroutines
+  // (PyV3ProjectBaseGenerator → generateAndGetSdk → setupVirtualenv / getOrInstallBasePython), so
+  // hop here instead of pushing the EDT contract onto every caller.
+  val installed = withContext(Dispatchers.EDT) {
+    installRequest.install(null) {
+      PythonSdkUtil.getAllSdks()
+    }
+  }
+
+  // Logs the failure and rethrows control flow exceptions (cancellation must not show the balloon)
+  if (installed.getOrLogException(LOGGER) == null) {
+    val notification = NotificationGroupManager.getInstance()
+      .getNotificationGroup("Python interpreter installation")
+      .createNotification(message("python.sdk.installation.balloon.error.message"), NotificationType.ERROR)
+      .setDisplayId(PYTHON_INSTALLATION_INTERRUPTED)
+    notification.collapseDirection
+
+    notification.addAction(NotificationAction.createSimple(message("python.sdk.installation.balloon.error.action")) {
+      notification.expire()
+      HelpManager.getInstance().invokeHelp("create.python.interpreter")
+    })
+
+    NotificationsManager
+      .getNotificationsManager()
+      .showNotification(notification, IdeFocusManager.getGlobalInstance().lastFocusedFrame?.project)
+  }
+  // A Python just installed always names an interpreter, so a failure here is a bug.
+  return installed.mapCatching { it.pythonInterpreterResultAsync().orThrow() }
+}
+
+
+internal suspend fun <P : PathHolder> InterpreterWithPath<P>.setupSdk(
+  moduleOrProject: ModuleOrProject,
+  fileSystem: FileSystem<P>,
+  targetPanelExtension: TargetPanelExtension?,
+): PyResult<PythonInterpreter> {
+  when (this) {
+    is ExistingSelectableInterpreter -> return PyResult.success(pythonInterpreterWrapper.pythonInterpreter)
+    is DetectedSelectableInterpreter, is ManuallyAddedSelectableInterpreter -> Unit
+  }
+
+  // A plain venv or a system Python: the pip node builds it, as it does for the widget.
+  (homePath as? PathHolder.Eel)?.let { fileSystem.addInterpreterByBinary(moduleOrProject, PipPyTool.getInstance(), it.path) }?.let { return it }
+  // Do our best to guess the flavor
+  return createSdkGuessingTypeByPath(homePath, fileSystem, moduleOrProject, targetPanelExtension)
+}
+
+

@@ -1,0 +1,100 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.execution.multilaunch.core` start
+content_module_jar(module = ":core")
+### auto-generated section `dev intellij.execution.multilaunch.core` end
+
+### auto-generated section `build intellij.execution.multilaunch.core` start
+jvm_library(
+    name = "core",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.execution.multilaunch.core",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/kernel/rpc.lite",
+        "@lib//:kotlin-stdlib",
+        "//platform/analysis-api:analysis",
+        "//platform/core-impl",
+        "//platform/core-api:core",
+        "//platform/platform-util-io:ide-util-io",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/platform-api:ide",
+        "//platform/indexing-api:indexing",
+        "//jps/model-api:model",
+        "//jps/model-serialization",
+        "//platform/lang-api:lang",
+        "//platform/editor-ui-ex:editor-ex",
+        "//platform/lang-core",
+        "//platform/projectModel-api:projectModel",
+        "//platform/remote-core",
+        "//platform/statistics",
+        "//platform/platform-impl:ide-impl",
+        "//platform/macro",
+        "//libraries/miglayout-swing",
+        "//libraries/guava",
+        "//platform/refactoring",
+        "//platform/ide-core-impl",
+        "//platform/ide-core/plugins",
+        "//platform/ide-core",
+        "//libraries/stream",
+        "//platform/util/concurrency",
+        "//platform/observable",
+        "//platform/util-ex",
+        "//platform/projectModel-impl",
+        "//libraries/fastutil",
+        "//platform/core-ui",
+        "//platform/util:util-ui",
+        "//platform/platform-util-io-impl:ide-util-io-impl",
+        "//libraries/jediterm-core",
+        "//libraries/jediterm-ui",
+        "//libraries/pty4j",
+        "//platform/execution",
+        "//platform/execution-impl",
+        "//platform/wsl-impl",
+        "//platform/util/jdom",
+        "//platform/workspace/storage",
+        "//libraries/kotlinx/coroutines/core",
+        "//libraries/hash4j",
+        "//platform/workspace/jps",
+        "//platform/backend/workspace",
+        "//platform/diagnostic",
+        "//platform/project-frame",
+        "//platform/ijent",
+        "//platform/ijent/impl",
+        "//platform/forms_rt:java-guiForms-rt",
+        "//libraries/rd/core",
+        "//platform/rd-platform-community:rd-community",
+        "//platform/util/coroutines",
+        "//platform/eel-provider",
+        "//libraries/kotlinx/serialization/core",
+        "//libraries/kotlinx/serialization/json",
+        "//platform/project/shared:project",
+        "//platform/platform-impl/rpc",
+        "//platform/progress/shared:ide-progress",
+        "//platform/remote-topics/shared:rpc-topics",
+    ],
+)
+### auto-generated section `build intellij.execution.multilaunch.core` end
+
+### auto-generated section `iml intellij.execution.multilaunch.core` start
+exports_files(
+    [
+        "intellij.execution.multilaunch.core.iml",
+        "resources/intellij.execution.multilaunch.core.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.execution.multilaunch.core` end

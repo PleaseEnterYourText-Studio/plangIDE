@@ -1,0 +1,62 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.platform.ide.impl.jcef` start
+content_module_jar(module = ":jcef")
+### auto-generated section `dev intellij.platform.ide.impl.jcef` end
+
+### auto-generated section `build intellij.platform.ide.impl.jcef` start
+jvm_library(
+    name = "jcef",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.ide.impl.jcef",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//libraries/jetbrains/annotations",
+        "//libraries/jcef",
+        "//platform/core-impl",
+        "//platform/platform-impl:ide-impl",
+        "//platform/ui.jcef",
+        "//platform/analysis-api:analysis",
+        "//platform/built-in-server-api:builtInServer",
+        "//platform/util",
+        "//platform/util:util-ui",
+        "//platform/util/coroutines",
+        "//platform/util/concurrency",
+        "//platform/icons",
+        "//platform/platform-api:ide",
+        "//platform/ide-core",
+        "//platform/platform-impl/update-checker",
+        "//platform/platform-util-io:ide-util-io",
+        "//platform/lang-api:lang",
+        "//platform/core-api:core",
+        "//platform/core-ui",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/projectModel-api:projectModel",
+        "//platform/statistics",
+        "//platform/welcome-screen",
+    ],
+)
+### auto-generated section `build intellij.platform.ide.impl.jcef` end
+
+### auto-generated section `iml intellij.platform.ide.impl.jcef` start
+exports_files(
+    [
+        "intellij.platform.ide.impl.jcef.iml",
+        "resources/intellij.platform.ide.impl.jcef.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.ide.impl.jcef` end

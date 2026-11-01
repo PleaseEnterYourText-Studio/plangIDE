@@ -1,0 +1,58 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.markdown.images` start
+content_module_jar(module = ":images")
+### auto-generated section `dev intellij.markdown.images` end
+
+### auto-generated section `build intellij.markdown.images` start
+jvm_library(
+    name = "images",
+    srcs = glob(
+        [
+            "src/main/kotlin/**/*.kt",
+            "src/main/kotlin/**/*.java",
+            "src/main/kotlin/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.markdown.images",
+    resource_strip_prefix = "src/main/resources",
+    resources = glob(
+        ["src/main/resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    runtime_deps = ["//platform/backend"],
+    deps = [
+        # do not sort,
+        "//plugins/markdown/core:markdown",
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//platform/lang-api:lang",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/core-impl",
+        "//platform/projectModel-api:projectModel",
+        "//platform/refactoring",
+        "//xml/xml-psi-api:psi",
+        "//xml/xml-psi-impl:psi-impl",
+        "//platform/core-ui",
+        "//platform/platform-impl:ide-impl",
+        "//platform/ide-core",
+        "//platform/lang-impl",
+        "//images",
+        "//xml/xml-parser:parser",
+        "@lib//:kotlin-stdlib",
+        "//platform/util:util-ui",
+    ],
+)
+### auto-generated section `build intellij.markdown.images` end
+
+### auto-generated section `iml intellij.markdown.images` start
+exports_files(
+    [
+        "intellij.markdown.images.iml",
+        "src/main/resources/intellij.markdown.images.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.markdown.images` end

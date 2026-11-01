@@ -1,0 +1,78 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `build intellij.kotlin.base.plugin.testFramework` start
+jvm_library(
+    name = "kotlin-base-plugin-testFramework",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.kotlin.base.plugin.testFramework",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    runtime_deps = ["//platform/util/trove"],
+    deps = [
+        # do not sort,
+        "//libraries/jetbrains/annotations",
+        "//libraries/commons/compress",
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/platform-impl:ide-impl",
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinc/kotlin-compiler-common:libraries-kotlinc-kotlin-compiler-common",
+        "//libraries/kotlinc/kotlin-jps-common:libraries-kotlinc-kotlin-jps-common",
+        "//libraries/guava",
+        "//libraries/junit4",
+        "//jps/model-api:model",
+        "//jps/model-serialization",
+        "//platform/projectModel-api:projectModel",
+        "//platform/execution",
+        "//plugins/kotlin/base/util",
+        "//plugins/kotlin/base/compiler-configuration",
+        "//platform/util/jdom",
+        "//platform/core-impl",
+        "//platform/projectModel-impl",
+        "//platform/statistics",
+        "//platform/util/xmlDom",
+        "//platform/workspace/storage",
+        "//java/openapi:java",
+        "//java/java-impl:impl",
+        "//java/java-syntax:syntax",
+        "//java/idea-ui:ui",
+        "//aether-dependency-resolver",
+        "//platform/testFramework",
+        "//platform/ide-core",
+        "//platform/core-ui",
+        "//libraries/maven-resolver-provider",
+        "//platform/util",
+        "//platform/bazel-runfiles",
+        "//platform/util:util-ui",
+        "//platform/util-ex",
+        "//platform/build-scripts/downloader",
+        "//platform/lang-core",
+        "//plugins/kotlin/util/project-model-updater",
+        "//platform/platform-impl/update-checker",
+        "//platform/eel-provider",
+        "//plugins/kotlin/base/plugin",
+        "//java/testFramework/shared",
+        "//java/java-psi-api:psi",
+    ],
+)
+### auto-generated section `build intellij.kotlin.base.plugin.testFramework` end
+
+### auto-generated section `iml intellij.kotlin.base.plugin.testFramework` start
+exports_files(
+    [
+        "intellij.kotlin.base.plugin.testFramework.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.kotlin.base.plugin.testFramework` end

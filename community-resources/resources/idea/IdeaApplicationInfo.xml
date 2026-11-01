@@ -1,0 +1,14 @@
+<component xmlns="http://jetbrains.org/intellij/schema/application-info">
+  <version major="2027" minor="1" eap="true"/>
+  <company name="pLang IDE Contributors" url="https://github.com/PleaseEnterYourText-Studio/pLang"/>
+  <build number="PL-__BUILD__" date="__BUILD_DATE__"/>
+  <logo url="/idea_community_logo.png"/>
+  <icon svg="/idea-ce.svg" svg-small="/idea-ce_16.svg"/>
+  <icon-eap svg="/idea-ce-eap.svg" svg-small="/idea-ce-eap_16.svg"/>
+  <names product="pLang IDE" fullname="pLang IDE" script="plangide" motto="An open IDE with pLang language support"/>
+
+  <essential-plugin>com.intellij.idea.customization</essential-plugin>
+  <essential-plugin>com.intellij.java</essential-plugin>
+  <essential-plugin>com.intellij.java.ide</essential-plugin>
+  <essential-plugin>com.intellij.modules.json</essential-plugin>
+</component>

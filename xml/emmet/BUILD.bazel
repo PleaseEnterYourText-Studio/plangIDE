@@ -1,0 +1,77 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library", "jvm_provided_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.xml.emmet` start
+content_module_jar(module = ":emmet")
+### auto-generated section `dev intellij.xml.emmet` end
+
+### auto-generated section `build intellij.xml.emmet` start
+jvm_provided_library(
+    name = "libraries_xerces_provided",
+    lib = "//libraries/xerces",
+)
+
+jvm_provided_library(
+    name = "libraries_kotlinx_serialization_core_provided",
+    lib = "//libraries/kotlinx/serialization/core",
+)
+
+jvm_library(
+    name = "emmet",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.xml.emmet",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//libraries/jetbrains/annotations",
+        "//platform/core-api:core",
+        "//platform/analysis-impl",
+        "//xml/xml-psi-api:psi",
+        "//platform/lang-impl",
+        "@lib//:kotlin-stdlib",
+        "//platform/projectModel-api:projectModel",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/code-style-api:codeStyle",
+        "//xml/xml-psi-impl:psi-impl",
+        "//xml/xml-parser:parser",
+        "//platform/analysis-api:analysis",
+        "//platform/core-impl",
+        "//xml/xml-ui-common:ui-common",
+        "//platform/ide-core",
+        "//platform/platform-impl:ide-impl",
+        "//platform/editor-ui-ex:editor-ex",
+        "//platform/lang-api:lang",
+        "//platform/core-ui",
+        "//platform/refactoring",
+        "//platform/util:util-ui",
+        "//libraries/kotlinx/collections-immutable:libraries-kotlinx-collections-immutable",
+        "//platform/remote-topics/shared:rpc-topics",
+        ":libraries_xerces_provided",
+        ":libraries_kotlinx_serialization_core_provided",
+    ],
+)
+### auto-generated section `build intellij.xml.emmet` end
+
+### auto-generated section `iml intellij.xml.emmet` start
+exports_files(
+    [
+        "intellij.xml.emmet.iml",
+        "resources/intellij.xml.emmet.xml",
+        "resources/liveTemplates/html_xml.xml",
+        "resources/liveTemplates/zen_html.xml",
+        "resources/liveTemplates/zen_xsl.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.xml.emmet` end

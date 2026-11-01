@@ -1,0 +1,83 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+jps_test(
+    name = "frontback-tests_test",
+    timeout = "short",
+    tags = ["community-aggregator"],
+    runtime_deps = [":frontback-tests_test_lib"],
+)
+### skip generation section `test intellij.java.frontback.tests`
+
+### auto-generated section `build intellij.java.frontback.tests` start
+jvm_library(
+    name = "frontback-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "testSrc/**/*.kt",
+            "testSrc/**/*.java",
+            "testSrc/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.java.frontback.tests",
+    visibility = ["//visibility:public"],
+    exports = [
+        # do not sort,
+        "@lib//:easymock",
+        "//libraries/mockito",
+        "//libraries/kotlin/test:libraries-kotlinTest",
+        "//platform/testFramework",
+        "//platform/testFramework/junit5",
+        "//platform/platform-tests:tests_test_lib",
+    ],
+    deps = [
+        # do not sort,
+        "@lib//:easymock",
+        "//libraries/mockito",
+        "//libraries/assertj-core",
+        "//libraries/kotlin/test:libraries-kotlinTest",
+        "//platform/analysis-api:analysis",
+        "//platform/code-style-api:codeStyle",
+        "//platform/core-api:core",
+        "//platform/core-ui",
+        "//platform/core-impl",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/projectModel-api:projectModel",
+        "//platform/testFramework",
+        "//platform/ide-core-impl",
+        "//platform/ide-core",
+        "//java/java-frontback-psi-impl:frontback-psi-impl",
+        "//java/java-frontback-psi-api:frontback-psi",
+        "//platform/testFramework/junit5",
+        "//platform/backend/workspace",
+        "//java/java-frontback-impl:frontback-impl",
+        "//platform/platform-tests:tests_test_lib",
+        "//tools/intellij.tools.ide.metrics.benchmark:ide-metrics-benchmark",
+        "//java/testFramework/shared",
+        "//platform/syntax/syntax-psi:psi",
+        "//platform/syntax/syntax-util:util",
+        "//java/java-syntax:syntax",
+        "//platform/syntax/syntax-tree:tree",
+        "//platform/lang-api:lang",
+        "//java/java-psi-api:psi",
+        "//libraries/jetcheck",
+        "//libraries/kotlinx/collections-immutable:libraries-kotlinx-collections-immutable",
+        "//platform/util/concurrency",
+        "//jps/model-api:model",
+        "//libraries/junit4",
+        "//platform/testFramework/junit5/codeInsight",
+        "//libraries/junit6",
+    ],
+)
+### auto-generated section `build intellij.java.frontback.tests` end
+
+### auto-generated section `iml intellij.java.frontback.tests` start
+exports_files(
+    [
+        "intellij.java.frontback.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.java.frontback.tests` end

@@ -1,0 +1,53 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.grazie.xml` start
+content_module_jar(module = ":xml")
+### auto-generated section `dev intellij.grazie.xml` end
+
+### auto-generated section `build intellij.grazie.xml` start
+jvm_library(
+    name = "xml",
+    srcs = glob(
+        [
+            "main/kotlin/**/*.kt",
+            "main/kotlin/**/*.java",
+            "main/kotlin/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.grazie.xml",
+    resource_strip_prefix = "main/resources",
+    resources = glob(
+        ["main/resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//plugins/grazie/src:core",
+        "//xml/xml-psi-api:psi",
+        "//xml/xml-psi-impl:psi-impl",
+        "//platform/core-api:core",
+        "//platform/util",
+        "//platform/util-ex",
+        "//platform/code-style-api:codeStyle",
+        "//platform/analysis-api:analysis",
+        "//xml/xml-parser:parser",
+        "//xml/xml-ui-common:ui-common",
+        "//spellchecker",
+        "//spellchecker/xml",
+        "//libraries/kotlinx/collections-immutable:libraries-kotlinx-collections-immutable",
+    ],
+)
+### auto-generated section `build intellij.grazie.xml` end
+
+### auto-generated section `iml intellij.grazie.xml` start
+exports_files(
+    [
+        "intellij.grazie.xml.iml",
+        "main/resources/intellij.grazie.xml.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.grazie.xml` end

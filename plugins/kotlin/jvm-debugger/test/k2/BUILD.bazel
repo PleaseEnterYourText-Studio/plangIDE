@@ -1,0 +1,128 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@community//plugins/kotlin:kotlin_test_dependencies.bzl", "all_test_dep_targets")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//build:compiler-options.bzl", "create_kotlinc_options")
+
+jps_test(
+    name = "kotlin-jvm-debugger-test_test",
+    data = [
+        "@community//plugins/kotlin/idea/tests:testData",
+        "@community//plugins/kotlin/jvm-debugger/test:testData",
+    ] + all_test_dep_targets,
+    sandbox = True,
+    runtime_deps = [
+        ":kotlin-jvm-debugger-test_test_lib",
+        "//:main",
+    ],
+)
+
+### skip generation section `test intellij.kotlin.jvm.debugger.test`
+
+### auto-generated section `build intellij.kotlin.jvm.debugger.test` start
+create_kotlinc_options(
+    name = "custom_kotlin-jvm-debugger-test",
+    opt_in = [
+        "org.jetbrains.kotlin.psi.KtExperimentalApi",
+        "org.jetbrains.kotlin.psi.KtNonPublicApi",
+        "org.jetbrains.kotlin.psi.KtIdeApi",
+        "org.jetbrains.kotlin.analysis.api.KaExperimentalApi",
+        "org.jetbrains.kotlin.analysis.api.KaIdeApi",
+        "org.jetbrains.kotlin.analysis.api.KaPlatformInterface",
+        "org.jetbrains.kotlin.analysis.api.fir.diagnostics.KaUnstableDiagnosticApi",
+        "org.jetbrains.kotlin.analysis.api.KaNonPublicApi",
+        "org.jetbrains.kotlin.analysis.api.KaContextParameterApi",
+        "org.jetbrains.kotlin.analysis.api.permissions.KaAllowProhibitedAnalyzeFromWriteAction",
+    ],
+    x_context_parameters = True,
+)
+
+jvm_library(
+    name = "kotlin-jvm-debugger-test_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "test/**/*.kt",
+            "test/**/*.java",
+            "test/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = ":custom_kotlin-jvm-debugger-test",
+    module_name = "intellij.kotlin.jvm.debugger.test",
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//plugins/kotlin:kotlin-plugin-community-main",
+        "//platform/core-api:core",
+        "//plugins/kotlin/gradle/gradle",
+        "//java/java-impl/testFramework",
+        "//xml/plugin",
+        "//platform/structure-view-impl/plugin",
+        "//aether-dependency-resolver/plugin",
+        "//platform/testRunner/plugin",
+        "//platform/vcs/plugin",
+        "//plugins/gradle/plugin",
+        "//plugins/gradle/java/plugin",
+    ],
+    deps = [
+        # do not sort,
+        "//platform/core-ui",
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlin/reflect",
+        "//libraries/kotlin/test:libraries-kotlinTest",
+        "//libraries/asm",
+        "//platform/core-api:core",
+        "//platform/lang-core",
+        "//libraries/guava",
+        "//platform/testFramework",
+        "//java/debugger/jb-jdi:java-debugger-libraries-jb-jdi",
+        "//libraries/kotlinc/kotlin-compiler-common:libraries-kotlinc-kotlin-compiler-common",
+        "//java/testFramework",
+        "@lib//:kotlinc-kotlin-compiler-cli",
+        "//libraries/kotlinc/kotlin-compiler-ir:libraries-kotlinc-kotlin-compiler-ir",
+        "@lib//:kotlinc-kotlin-compiler-tests",
+        "//plugins/kotlin/base/util",
+        "//plugins/kotlin/base/psi",
+        "//plugins/kotlin/base/compiler-configuration",
+        "//plugins/kotlin/base/plugin",
+        "//plugins/kotlin/base/testFramework",
+        "//plugins/kotlin/frontend-independent",
+        "//plugins/kotlin/tests-common:common-tests_test_lib",
+        "//plugins/kotlin/test-framework:test-framework_test_lib",
+        "//plugins/kotlin/jvm-debugger/base/util",
+        "//plugins/kotlin/jvm-debugger/core",
+        "//plugins/kotlin/jvm-debugger/coroutines",
+        "//plugins/kotlin/jvm-debugger/evaluation",
+        "//plugins/kotlin/jvm-debugger/eval4j",
+        "//jps/model-api:model",
+        "//platform/external-system-api:externalSystem",
+        "//platform/xdebugger-impl:debugger-impl",
+        "//platform/xdebugger-testFramework:debugger-testFramework",
+        "//java/debugger/openapi:java-debugger",
+        "//java/debugger/impl",
+        "//plugins/stream-debugger/java",
+        "//aether-dependency-resolver",
+        "//platform/platform-util-io:ide-util-io",
+        "//plugins/kotlin/native",
+        "//java/java-analysis-api:analysis",
+        "//platform/service-container",
+        "//plugins/kotlin/base/project-structure",
+        "//plugins/kotlin/base/scripting/scripting",
+        "//java/debugger/shared",
+        "//java/debugger/backend",
+        "//plugins/kotlin/jvm-debugger/testFramework:testFramework_test_lib",
+        "//plugins/kotlin/jvm-debugger/test/k2/testFramework:testFramework_test_lib",
+        "//libraries/junit4",
+        "//platform/scratch/plugin",
+    ],
+)
+### auto-generated section `build intellij.kotlin.jvm.debugger.test` end
+
+### auto-generated section `iml intellij.kotlin.jvm.debugger.test` start
+exports_files(
+    [
+        "intellij.kotlin.jvm.debugger.test.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.kotlin.jvm.debugger.test` end

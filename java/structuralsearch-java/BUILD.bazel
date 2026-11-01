@@ -1,0 +1,127 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+jps_test(
+    name = "structuralSearch-tests_test",
+    timeout = "moderate",
+    data = ["//platform/structuralsearch:testData"],
+    tags = ["community-java-tests"],
+    runtime_deps = [":structuralSearch-tests_test_lib"],
+)
+### skip generation section `test intellij.java.structuralSearch.tests`
+
+### auto-generated section `dev intellij.java.structuralSearch` start
+content_module_jar(module = ":structuralSearch")
+### auto-generated section `dev intellij.java.structuralSearch` end
+
+### auto-generated section `build intellij.java.structuralSearch` start
+jvm_library(
+    name = "structuralSearch",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.java.structuralSearch",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//java/java-indexing-api:indexing",
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//platform/structuralsearch:structuralSearch",
+        "//platform/lang-impl",
+        "//java/openapi:java",
+        "//java/java-syntax:syntax",
+        "//java/java-psi-api:psi",
+        "//java/java-impl:impl",
+        "//platform/duplicates-analysis",
+        "//java/java-frontback-psi-api:frontback-psi",
+        "//platform/core-impl",
+        "//libraries/kotlinx/collections-immutable:libraries-kotlinx-collections-immutable",
+        "//jps/model-api:model",
+    ],
+)
+### auto-generated section `build intellij.java.structuralSearch` end
+
+### auto-generated section `iml intellij.java.structuralSearch` start
+exports_files(
+    [
+        "intellij.java.structuralSearch.iml",
+        "resources/intellij.java.structuralSearch.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.java.structuralSearch` end
+
+### auto-generated section `build intellij.java.structuralSearch.tests` start
+jvm_library(
+    name = "structuralSearch-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "testSrc/**/*.kt",
+            "testSrc/**/*.java",
+            "testSrc/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.java.structuralSearch.tests",
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//plugins/groovy-scripting",
+        "//aether-dependency-resolver/plugin",
+        "//platform/testRunner/plugin",
+        "//plugins/java-decompiler/plugin:java-decompiler",
+        "//java/langInjection",
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+        "//community-resources:customization",
+    ],
+    deps = [
+        # do not sort,
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/structuralsearch:structuralSearch",
+        "//platform/structuralsearch/plugin",
+        "//platform/structure-view-impl/plugin",
+        "//platform/todo/plugin",
+        "//plugins/groovy/structuralsearch-groovy:structuralSearch",
+        "//platform/lang-impl",
+        "//platform/testFramework",
+        "//java/java-impl:impl",
+        "//java/testFramework",
+        "//java/java-syntax:syntax",
+        "//platform/structuralsearch:structuralSearch-tests_test_lib",
+        "//tools/intellij.tools.ide.metrics.benchmark:ide-metrics-benchmark",
+        "//platform/core-ui",
+        "//platform/core-impl",
+        "//platform/util/jdom",
+        "//platform/projectModel-api:projectModel",
+        "//platform/code-style-api:codeStyle",
+        "//java/structuralsearch-java:structuralSearch",
+        "//java/java-psi-api:psi",
+        "//platform/lang-api:lang",
+        "//libraries/junit4",
+        "//platform/bazel-runfiles",
+    ],
+)
+### auto-generated section `build intellij.java.structuralSearch.tests` end
+
+### auto-generated section `iml intellij.java.structuralSearch.tests` start
+exports_files(
+    [
+        "intellij.java.structuralSearch.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.java.structuralSearch.tests` end

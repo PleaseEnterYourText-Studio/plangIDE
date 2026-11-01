@@ -1,0 +1,153 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+filegroup(
+    name = "testData",
+    srcs = glob(["testData/**"]),
+)
+
+jps_test(
+    name = "tests_test",
+    timeout = "moderate",
+    data = ["@community//plugins/sh/core:testData"],
+    tags = ["shell-script-tests"],
+    runtime_deps = [":tests_test_lib"],
+)
+### skip generation section `test intellij.sh.tests`
+
+### auto-generated section `dev intellij.sh.core` start
+content_module_jar(module = ":core")
+### auto-generated section `dev intellij.sh.core` end
+
+### auto-generated section `build intellij.sh.core` start
+jvm_library(
+    name = "core",
+    srcs = glob(
+        [
+            "gen/**/*.kt",
+            "gen/**/*.java",
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.sh.core",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/code-style-api:codeStyle",
+        "//platform/core-api:core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/lang-api:lang",
+        "//platform/platform-api:ide",
+        "//platform/platform-impl:ide-impl",
+        "//platform/lang-impl",
+        "//platform/usageView",
+        "//platform/refactoring",
+        "//platform/statistics",
+        "//platform/core-ui",
+        "//platform/forms_rt:java-guiForms-rt",
+        "//platform/util:util-ui",
+        "//libraries/fastutil",
+        "//platform/code-style-impl:codeStyle-impl",
+        "//platform/platform-util-io:ide-util-io",
+        "//platform/ide-core",
+        "//platform/util/jdom",
+        "//platform/eel",
+        "//platform/eel-provider",
+        "//platform/eel-impl",
+        "//platform/analysis-api:analysis",
+        "//platform/projectModel-api:projectModel",
+        "//platform/core-impl",
+        "//libraries/kotlinx/collections-immutable:libraries-kotlinx-collections-immutable",
+    ],
+)
+### auto-generated section `build intellij.sh.core` end
+
+### auto-generated section `iml intellij.sh.core` start
+exports_files(
+    [
+        "intellij.sh.core.iml",
+        "resources/colors/ShDarcula.xml",
+        "resources/colors/ShDefault.xml",
+        "resources/intellij.sh.core.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.sh.core` end
+
+### auto-generated section `build intellij.sh.tests` start
+jvm_library(
+    name = "tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "tests/**/*.kt",
+            "tests/**/*.java",
+            "tests/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.sh.tests",
+    resource_strip_prefix = "testResources",
+    resources = glob(
+        ["testResources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//platform/structure-view-impl/plugin",
+        "//plugins/jcef/plugin",
+        "//platform/vcs/plugin",
+        "//plugins/sh/plugin:plugin-main",
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+        "//community-resources:customization",
+    ],
+    deps = [
+        # do not sort,
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//platform/core-ui",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/projectModel-api:projectModel",
+        "//platform/core-impl",
+        "//plugins/sh/core",
+        "//plugins/sh/backend",
+        "//spellchecker",
+        "//plugins/grazie/src:core",
+        "//plugins/grazie/src/test:grazie-tests_test_lib",
+        "//platform/testFramework",
+        "//platform/testFramework/junit5",
+        "//platform/testFramework/junit5/codeInsight",
+        "//libraries/junit6",
+        "//platform/analysis-impl",
+        "//platform/lang-api:lang",
+        "//platform/lang-impl",
+        "//platform/eel",
+        "//platform/eel-provider",
+        "//platform/testRunner",
+        "//libraries/fastutil",
+        "//libraries/kotlinx/collections-immutable:libraries-kotlinx-collections-immutable",
+        "//platform/code-style-api:codeStyle",
+        "//platform/ide-core",
+        "//platform/util:util-ui",
+        "//libraries/junit4",
+        "//platform/bazel-runfiles",
+    ],
+)
+### auto-generated section `build intellij.sh.tests` end
+
+### auto-generated section `iml intellij.sh.tests` start
+exports_files(
+    [
+        "intellij.sh.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.sh.tests` end

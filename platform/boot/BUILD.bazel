@@ -1,0 +1,37 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `build intellij.platform.boot` start
+jvm_library(
+    name = "boot",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = "@community//:k11",
+    module_name = "intellij.platform.boot",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/util-class-loader:util-classLoader",
+        "//libraries/jetbrains/annotations",
+        "//platform/util/zip",
+    ],
+)
+### auto-generated section `build intellij.platform.boot` end
+
+### auto-generated section `iml intellij.platform.boot` start
+exports_files(
+    [
+        "intellij.platform.boot.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.boot` end

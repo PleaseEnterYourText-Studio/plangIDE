@@ -1,0 +1,89 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library", "resourcegroup")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.java` start
+content_module_jar(module = ":java")
+### auto-generated section `dev intellij.java` end
+
+### auto-generated section `build intellij.java` start
+resourcegroup(
+    name = "java_resources",
+    srcs = glob(
+        ["compatibilityResources/**/*"],
+    ),
+    strip_prefix = "compatibilityResources",
+)
+
+jvm_library(
+    name = "java",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.java",
+    resource_jars = [":java_resources"],
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+        allow_empty = True,
+        exclude = ["resources/**/icon-robots.txt"],
+    ),
+    visibility = ["//visibility:public"],
+    exports = [
+        # do not sort,
+        "//platform/util",
+        "//java/java-analysis-api:analysis",
+    ],
+    runtime_deps = ["//platform/backend"],
+    deps = [
+        # do not sort,
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/indexing-api:indexing",
+        "//jps/model-api:model",
+        "//platform/lang-core",
+        "//platform/projectModel-api:projectModel",
+        "//platform/util",
+        "//platform/util/jdom",
+        "//platform/extensions",
+        "//platform/icons",
+        "//platform/workspace/storage",
+        "//platform/platform-api:ide",
+        "//platform/ide-core",
+        "//platform/lang-api:lang",
+        "//xml/dom-openapi:dom",
+        "//platform/refactoring",
+        "//java/java-psi-api:psi",
+        "//java/java-frontback-psi-api:frontback-psi",
+        "//java/java-syntax:syntax",
+        "//java/java-indexing-api:indexing",
+        "//java/java-analysis-api:analysis",
+        "//platform/util:util-ui",
+        "//platform/core-ui",
+        "//platform/external-system-api:externalSystem",
+        "//platform/workspace/jps",
+        "//platform/backend/workspace",
+        "//xml/xml-psi-api:psi",
+        "@lib//:kotlin-stdlib",
+        "//platform/execution",
+        "//libraries/fastutil",
+        "//libraries/kotlinx/collections-immutable:libraries-kotlinx-collections-immutable",
+        "//platform/util/concurrency",
+    ],
+)
+### auto-generated section `build intellij.java` end
+
+### auto-generated section `iml intellij.java` start
+exports_files(
+    [
+        "intellij.java.iml",
+        "resources/intellij.java.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.java` end

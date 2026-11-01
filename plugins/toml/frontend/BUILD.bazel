@@ -1,0 +1,50 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.toml.frontend` start
+content_module_jar(module = ":frontend")
+### auto-generated section `dev intellij.toml.frontend` end
+
+### auto-generated section `build intellij.toml.frontend` start
+jvm_library(
+    name = "frontend",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.toml.frontend",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//plugins/toml/core",
+        "//platform/core-api:core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/platform-api:ide",
+        "//platform/ide-core",
+        "//platform/util:util-ui",
+        "//platform/analysis-api:analysis",
+        "//platform/core-impl",
+        "//platform/lang-api:lang",
+        "//platform/lang-impl",
+    ],
+)
+### auto-generated section `build intellij.toml.frontend` end
+
+### auto-generated section `iml intellij.toml.frontend` start
+exports_files(
+    [
+        "intellij.toml.frontend.iml",
+        "resources/intellij.toml.frontend.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.toml.frontend` end

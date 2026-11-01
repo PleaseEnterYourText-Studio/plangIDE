@@ -1,0 +1,63 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.vcs.git.shared` start
+content_module_jar(module = ":shared")
+### auto-generated section `dev intellij.vcs.git.shared` end
+
+### auto-generated section `build intellij.vcs.git.shared` start
+jvm_library(
+    name = "shared",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.vcs.git.shared",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/kernel/rpc.lite",
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinx/serialization/core",
+        "//libraries/kotlinx/serialization/json",
+        "//platform/core-api:core",
+        "//platform/projectModel-api:projectModel",
+        "//platform/vcs-impl/shared",
+        "//platform/platform-api:ide",
+        "//platform/platform-impl/rpc",
+        "//platform/project/shared:project",
+        "//platform/platform-impl:ide-impl",
+        "//platform/dvcs-impl/shared",
+        "//platform/core-ui",
+        "//platform/util/coroutines",
+        "//platform/editor-ui-api:editor-ui",
+        "//libraries/caffeine",
+        "//platform/analysis-api:analysis",
+        "//platform/util/text-matching",
+        "//platform/platform-impl/ui",
+        "//platform/ide-core",
+        "//platform/diagnostic/telemetry",
+        "//libraries/opentelemetry",
+        "//platform/vcs-api/shared",
+        "//platform/util:util-ui",
+    ],
+)
+### auto-generated section `build intellij.vcs.git.shared` end
+
+### auto-generated section `iml intellij.vcs.git.shared` start
+exports_files(
+    [
+        "intellij.vcs.git.shared.iml",
+        "resources/intellij.vcs.git.shared.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.vcs.git.shared` end

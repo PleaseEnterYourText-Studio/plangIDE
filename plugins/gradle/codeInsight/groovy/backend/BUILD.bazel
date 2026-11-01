@@ -1,0 +1,63 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.gradle.codeInsight.groovy.backend` start
+content_module_jar(module = ":backend")
+### auto-generated section `dev intellij.gradle.codeInsight.groovy.backend` end
+
+### auto-generated section `build intellij.gradle.codeInsight.groovy.backend` start
+jvm_library(
+    name = "backend",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.gradle.codeInsight.groovy.backend",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//platform/backend",
+        "//plugins/gradle/codeInsight",
+        "//plugins/gradle/codeInsight/backend",
+        "//plugins/gradle/codeInsight/groovy",
+        "//plugins/gradle",
+        "//plugins/gradle/java",
+        "//plugins/gradle/java/groovy",
+        "//plugins/gradle/properties",
+        "//plugins/properties/properties-psi-api:psi",
+        "//platform/core-api:core",
+        "//platform/analysis-api:analysis",
+        "//platform/util",
+        "//platform/util-rt",
+        "//platform/projectModel-api:projectModel",
+        "//platform/platform-impl:ide-impl",
+        "//platform/lang-impl",
+        "//uast/uast-common:uast",
+        "//java/java-psi-api:psi",
+        "//java/java-psi-impl:psi-impl",
+        "//plugins/groovy",
+        "//plugins/groovy/groovy-psi:psi",
+        "//platform/util:util-ui",
+        "//platform/editor-ui-api:editor-ui",
+    ],
+)
+### auto-generated section `build intellij.gradle.codeInsight.groovy.backend` end
+
+### auto-generated section `iml intellij.gradle.codeInsight.groovy.backend` start
+exports_files(
+    [
+        "intellij.gradle.codeInsight.groovy.backend.iml",
+        "resources/intellij.gradle.codeInsight.groovy.backend.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.gradle.codeInsight.groovy.backend` end

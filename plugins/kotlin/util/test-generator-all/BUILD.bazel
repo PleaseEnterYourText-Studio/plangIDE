@@ -1,0 +1,51 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+jps_test(
+    name = "test-generator-all_test",
+    tags = ["ultimate-smoke"],
+    runtime_deps = [":test-generator-all_test_lib"],
+)
+### skip generation section `test kotlin.util.test-generator-all`
+
+### auto-generated section `build kotlin.util.test-generator-all` start
+jvm_library(
+    name = "test-generator-all_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "test/**/*.kt",
+            "test/**/*.java",
+            "test/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "kotlin.util.test-generator-all",
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinc/kotlin-compiler-common:libraries-kotlinc-kotlin-compiler-common",
+        "@lib//:kotlinc-kotlin-compiler-tests",
+        "//plugins/kotlin/util/test-generator-api:test-generator-api_test_lib",
+        "//plugins/kotlin/util/test-generator-fir:test-generator-fir_test_lib",
+        "//libraries/junit6",
+        "//plugins/kotlin/base/testFramework",
+        "//plugins/kotlin/tests-common:common-tests_test_lib",
+        "//plugins/kotlin/util/project-model-updater",
+        "//plugins/kotlin/intellij.kotlin.base.test:base-test_test_lib",
+        "//platform/testFramework/common",
+        "//plugins/kotlin/refactorings/kotlin.refactorings.tests.k2:kotlin-refactorings-tests_test_lib",
+        "//platform/scratch/plugin",
+    ],
+)
+### auto-generated section `build kotlin.util.test-generator-all` end
+
+### auto-generated section `iml kotlin.util.test-generator-all` start
+exports_files(
+    [
+        "kotlin.util.test-generator-all.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml kotlin.util.test-generator-all` end

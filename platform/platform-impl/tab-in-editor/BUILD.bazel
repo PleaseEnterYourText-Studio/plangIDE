@@ -1,0 +1,115 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.platform.ide.tabInEditor` start
+content_module_jar(module = ":tab-in-editor")
+### auto-generated section `dev intellij.platform.ide.tabInEditor` end
+
+### auto-generated section `build intellij.platform.ide.tabInEditor` start
+jvm_library(
+    name = "tab-in-editor",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.ide.tabInEditor",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    runtime_deps = ["//platform/platform-resources-en:resources-en"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/jetbrains/annotations",
+        "//libraries/kotlinx/coroutines/core",
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//platform/core-ui",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/platform-api:ide",
+        "//platform/ide-core",
+        "//platform/ide-core-impl",
+        "//platform/platform-impl:ide-impl",
+        "//platform/platform-impl/rpc",
+        "//platform/projectModel-api:projectModel",
+        "//platform/statistics",
+        "//platform/util",
+        "//platform/util/coroutines",
+        "//platform/util/jdom",
+        "//platform/util:util-ui",
+    ],
+)
+### auto-generated section `build intellij.platform.ide.tabInEditor` end
+
+### auto-generated section `iml intellij.platform.ide.tabInEditor` start
+exports_files(
+    [
+        "intellij.platform.ide.tabInEditor.iml",
+        "resources/intellij.platform.ide.tabInEditor.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.ide.tabInEditor` end
+
+### auto-generated section `build intellij.platform.ide.tabInEditor.tests` start
+jvm_library(
+    name = "ide-tabInEditor-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "testSrc/**/*.kt",
+            "testSrc/**/*.java",
+            "testSrc/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    associates = ["//platform/platform-impl/tab-in-editor"],
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/assertj-core",
+        "//libraries/junit6",
+        "//libraries/kotlinx/coroutines/core",
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//platform/core-ui",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/platform-api:ide",
+        "//platform/ide-core",
+        "//platform/ide-core-impl",
+        "//platform/platform-impl:ide-impl",
+        "//platform/projectModel-api:projectModel",
+        "//platform/testFramework",
+        "//platform/testFramework/common",
+        "//platform/testFramework/junit5",
+        "//platform/util",
+        "//platform/util/coroutines",
+        "//platform/util/jdom",
+        "//platform/util:util-ui",
+    ],
+)
+### auto-generated section `build intellij.platform.ide.tabInEditor.tests` end
+
+### auto-generated section `iml intellij.platform.ide.tabInEditor.tests` start
+exports_files(
+    [
+        "intellij.platform.ide.tabInEditor.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.ide.tabInEditor.tests` end
+
+### auto-generated section `test intellij.platform.ide.tabInEditor.tests` start
+jps_test(
+    name = "ide-tabInEditor-tests_test",
+    runtime_deps = [":ide-tabInEditor-tests_test_lib"],
+)
+### auto-generated section `test intellij.platform.ide.tabInEditor.tests` end

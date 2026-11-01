@@ -1,0 +1,46 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.java.terminal.frontend` start
+content_module_jar(module = ":frontend")
+### auto-generated section `dev intellij.java.terminal.frontend` end
+
+### auto-generated section `build intellij.java.terminal.frontend` start
+jvm_library(
+    name = "frontend",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.java.terminal.frontend",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//platform/ide-core",
+        "//platform/core-api:core",
+        "//platform/platform-impl:ide-impl",
+        "//java/terminal/shared",
+        "//platform/projectModel-api:projectModel",
+        "//plugins/terminal/frontend",
+    ],
+)
+### auto-generated section `build intellij.java.terminal.frontend` end
+
+### auto-generated section `iml intellij.java.terminal.frontend` start
+exports_files(
+    [
+        "intellij.java.terminal.frontend.iml",
+        "resources/intellij.java.terminal.frontend.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.java.terminal.frontend` end

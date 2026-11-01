@@ -1,0 +1,77 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//build:compiler-options.bzl", "create_kotlinc_options")
+
+jps_test(
+    name = "tests_test",
+    timeout = "moderate",
+    tags = ["community-aggregator"],
+    runtime_deps = [":tests_test_lib"],
+)
+### skip generation section `test intellij.python.pytools.tests`
+
+### auto-generated section `build intellij.python.pytools.tests` start
+create_kotlinc_options(
+    name = "custom_tests",
+    opt_in = ["com.jetbrains.python.PyInternalExecApi"],
+    warn = "error",
+    x_warning_level = ["DEPRECATION:warning"],
+)
+
+jvm_library(
+    name = "tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "testSrc/**/*.kt",
+            "testSrc/**/*.java",
+            "testSrc/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = ":custom_tests",
+    module_name = "intellij.python.pytools.tests",
+    resource_strip_prefix = "testResources",
+    resources = glob(
+        ["testResources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/jetbrains/annotations",
+        "//libraries/junit6",
+        "//libraries/kotlinx/coroutines/core",
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//platform/core-ui",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/platform-api:ide",
+        "//platform/ide-core",
+        "//platform/ide-core-impl",
+        "//platform/lang-api:lang",
+        "//platform/lang-core",
+        "//platform/lang-impl",
+        "//platform/projectModel-api:projectModel",
+        "//platform/testFramework",
+        "//platform/testFramework/common",
+        "//platform/testFramework/junit5",
+        "//platform/util",
+        "//platform/util/jdom",
+        "//python/openapi:community",
+        "//python/junit5Tests-framework:community-junit5Tests-framework_test_lib",
+        "//python/python-lsp-core:lsp-core",
+        "//python/python-pytools/backend",
+        "//python/python-pytools/common",
+    ],
+)
+### auto-generated section `build intellij.python.pytools.tests` end
+
+### auto-generated section `iml intellij.python.pytools.tests` start
+exports_files(
+    [
+        "intellij.python.pytools.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.python.pytools.tests` end

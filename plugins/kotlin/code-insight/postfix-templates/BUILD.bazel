@@ -1,0 +1,173 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//build:compiler-options.bzl", "create_kotlinc_options")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.kotlin.codeInsight.postfixTemplates` start
+content_module_jar(module = ":postfix-templates")
+### auto-generated section `dev intellij.kotlin.codeInsight.postfixTemplates` end
+
+### auto-generated section `build intellij.kotlin.codeInsight.postfixTemplates` start
+create_kotlinc_options(
+    name = "custom_postfix-templates",
+    opt_in = [
+        "org.jetbrains.kotlin.psi.KtExperimentalApi",
+        "org.jetbrains.kotlin.psi.KtNonPublicApi",
+        "org.jetbrains.kotlin.psi.KtIdeApi",
+        "org.jetbrains.kotlin.analysis.api.KaExperimentalApi",
+        "org.jetbrains.kotlin.analysis.api.KaIdeApi",
+        "org.jetbrains.kotlin.analysis.api.KaPlatformInterface",
+        "org.jetbrains.kotlin.analysis.api.fir.diagnostics.KaUnstableDiagnosticApi",
+        "org.jetbrains.kotlin.analysis.api.KaNonPublicApi",
+        "org.jetbrains.kotlin.analysis.api.KaContextParameterApi",
+        "org.jetbrains.kotlin.analysis.api.permissions.KaAllowProhibitedAnalyzeFromWriteAction",
+    ],
+    x_context_parameters = True,
+)
+
+jvm_library(
+    name = "postfix-templates",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = ":custom_postfix-templates",
+    module_name = "intellij.kotlin.codeInsight.postfixTemplates",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinc/kotlin-compiler-common:libraries-kotlinc-kotlin-compiler-common",
+        "//libraries/kotlinc/analysis-api:libraries-kotlinc-analysis-api",
+        "//platform/analysis-api:analysis",
+        "//platform/core-impl",
+        "//platform/core-api:core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/refactoring",
+        "//plugins/kotlin/base/util",
+        "//plugins/kotlin/base/psi",
+        "//plugins/kotlin/base/plugin",
+        "//plugins/kotlin/base/code-insight",
+        "//plugins/kotlin/code-insight/impl-base:kotlin-codeInsight-shared",
+        "//plugins/kotlin/code-insight/live-templates-k2:kotlin-codeInsight-liveTemplates",
+        "//platform/lang-api:lang",
+        "//platform/lang-impl",
+        "//java/openapi:java",
+        "//java/java-psi-api:psi",
+        "//plugins/kotlin/refactorings/kotlin.refactorings.common:kotlin-refactorings-base",
+        "//plugins/kotlin/frontend-independent",
+        "//plugins/kotlin/base/analysis-api/analysis-api-utils:kotlin-base-analysis-utils",
+        "//plugins/kotlin/code-insight/utils",
+        "//platform/util:util-ui",
+        "//platform/projectModel-api:projectModel",
+        "//platform/ide-core",
+        "//platform/util",
+        "//platform/util/jdom",
+        "//plugins/kotlin/base/project-structure",
+    ],
+)
+### auto-generated section `build intellij.kotlin.codeInsight.postfixTemplates` end
+
+### auto-generated section `iml intellij.kotlin.codeInsight.postfixTemplates` start
+exports_files(
+    [
+        "intellij.kotlin.codeInsight.postfixTemplates.iml",
+        "resources/intellij.kotlin.codeInsight.postfixTemplates.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.kotlin.codeInsight.postfixTemplates` end
+
+### auto-generated section `build intellij.kotlin.codeInsight.postfixTemplates.tests` start
+create_kotlinc_options(
+    name = "custom_kotlin-codeInsight-postfixTemplates-tests",
+    opt_in = [
+        "org.jetbrains.kotlin.psi.KtExperimentalApi",
+        "org.jetbrains.kotlin.psi.KtNonPublicApi",
+        "org.jetbrains.kotlin.psi.KtIdeApi",
+        "org.jetbrains.kotlin.analysis.api.KaExperimentalApi",
+        "org.jetbrains.kotlin.analysis.api.KaIdeApi",
+        "org.jetbrains.kotlin.analysis.api.KaPlatformInterface",
+        "org.jetbrains.kotlin.analysis.api.fir.diagnostics.KaUnstableDiagnosticApi",
+        "org.jetbrains.kotlin.analysis.api.KaNonPublicApi",
+        "org.jetbrains.kotlin.analysis.api.KaContextParameterApi",
+        "org.jetbrains.kotlin.analysis.api.permissions.KaAllowProhibitedAnalyzeFromWriteAction",
+    ],
+    x_context_parameters = True,
+)
+
+jvm_library(
+    name = "kotlin-codeInsight-postfixTemplates-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "test/**/*.kt",
+            "test/**/*.java",
+            "test/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    associates = ["//plugins/kotlin/code-insight/postfix-templates"],
+    kotlinc_opts = ":custom_kotlin-codeInsight-postfixTemplates-tests",
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//plugins/kotlin:kotlin-plugin-community-main",
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+    ],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinc/kotlin-compiler-common:libraries-kotlinc-kotlin-compiler-common",
+        "@lib//:kotlinc-kotlin-compiler-tests",
+        "//libraries/junit4",
+        "//platform/analysis-api:analysis",
+        "//platform/core-impl",
+        "//platform/core-api:core",
+        "//platform/core-ui",
+        "//platform/editor-ui-api:editor-ui",
+        "//plugins/kotlin/base/util",
+        "//plugins/kotlin/base/psi",
+        "//plugins/kotlin/base/plugin",
+        "//plugins/kotlin/base/testFramework",
+        "//plugins/kotlin/base/code-insight",
+        "//plugins/kotlin/code-insight/impl-base:kotlin-codeInsight-shared",
+        "//platform/lang-api:lang",
+        "//platform/lang-impl",
+        "//platform/testFramework",
+        "//java/java-psi-api:psi",
+        "//java/testFramework",
+        "//plugins/kotlin/refactorings/kotlin.refactorings.common:kotlin-refactorings-base",
+        "//plugins/kotlin/intellij.kotlin.base.test:base-test_test_lib",
+        "//plugins/kotlin/base/pluginTestFramework:kotlin-base-plugin-testFramework",
+        "//platform/util/jdom",
+        "//platform/testFramework/junit5",
+        "//platform/projectModel-api:projectModel",
+        "//platform/scratch/plugin",
+    ],
+)
+### auto-generated section `build intellij.kotlin.codeInsight.postfixTemplates.tests` end
+
+### auto-generated section `iml intellij.kotlin.codeInsight.postfixTemplates.tests` start
+exports_files(
+    [
+        "intellij.kotlin.codeInsight.postfixTemplates.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.kotlin.codeInsight.postfixTemplates.tests` end
+
+### auto-generated section `test intellij.kotlin.codeInsight.postfixTemplates.tests` start
+jps_test(
+    name = "kotlin-codeInsight-postfixTemplates-tests_test",
+    runtime_deps = [":kotlin-codeInsight-postfixTemplates-tests_test_lib"],
+)
+### auto-generated section `test intellij.kotlin.codeInsight.postfixTemplates.tests` end

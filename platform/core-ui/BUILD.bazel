@@ -1,0 +1,47 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.platform.core.ui` start
+content_module_jar(module = ":core-ui")
+### auto-generated section `dev intellij.platform.core.ui` end
+
+### auto-generated section `build intellij.platform.core.ui` start
+jvm_library(
+    name = "core-ui",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.core.ui",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/util",
+        "//platform/core-api:core",
+        "//platform/util:util-ui",
+        "//platform/util/multiplatform",
+        "//platform/util/base",
+        "@lib//:kotlin-stdlib",
+        "//libraries/hash4j",
+        "//platform/icons-api",
+    ],
+)
+### auto-generated section `build intellij.platform.core.ui` end
+
+### auto-generated section `iml intellij.platform.core.ui` start
+exports_files(
+    [
+        "intellij.platform.core.ui.iml",
+        "resources/intellij.platform.core.ui.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.core.ui` end

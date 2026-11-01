@@ -1,0 +1,124 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library", "jvm_provided_library")
+
+### auto-generated section `build intellij.java.testFramework` start
+jvm_provided_library(
+    name = "libraries_junit6_provided",
+    lib = "//libraries/junit6",
+)
+
+jvm_provided_library(
+    name = "libraries_junit6-params_provided",
+    lib = "//libraries/junit6-params",
+)
+
+jvm_library(
+    name = "testFramework",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.java.testFramework",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    exports = [
+        # do not sort,
+        "//java/openapi:java",
+        "//java/testFramework/shared",
+        "//java/java-impl:impl",
+        "//java/java-backend:backend",
+    ],
+    runtime_deps = [
+        # do not sort,
+        "//java/plugin",
+        "//platform/external-system-impl:externalSystem-impl",
+    ],
+    deps = [
+        # do not sort,
+        "//java/openapi:java",
+        "//java/testFramework/shared",
+        "//platform/analysis-api:analysis",
+        "//platform/code-style-api:codeStyle",
+        "//platform/core-api:core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/indexing-api:indexing",
+        "//jps/model-api:model",
+        "//jps/model-serialization",
+        "//platform/lang-core",
+        "//platform/projectModel-api:projectModel",
+        "//platform/refactoring",
+        "//platform/structure-view-impl:structureView",
+        "//platform/util",
+        "//libraries/junit4",
+        "//platform/util/jdom",
+        "//platform/util:util-ui",
+        "//platform/lang-api:lang",
+        "//platform/bazel-runfiles",
+        "//platform/backend/workspace",
+        "//platform/lang-impl",
+        "//platform/problemsView/backend",
+        "//java/compiler/impl",
+        "//java/debugger/openapi:java-debugger",
+        "//java/java-impl:impl",
+        "//java/java-backend:backend",
+        "//platform/ide-core-impl",
+        "//platform/ide-core",
+        "//java/execution/impl",
+        "//platform/editor-ui-ex:editor-ex",
+        "//platform/testFramework",
+        "//platform/workspace/storage",
+        "//java/idea-ui:ui",
+        "//java/debugger/impl",
+        "//java/execution/openapi:java-execution",
+        "//jps/jps-builders:build",
+        "//libraries/stream",
+        "//libraries/fastutil",
+        "//platform/core-ui",
+        "//platform/core-impl",
+        "//platform/code-style-impl:codeStyle-impl",
+        "//platform/platform-util-io:ide-util-io",
+        "//platform/progress/shared:ide-progress",
+        "//libraries/asm",
+        "//libraries/groovy",
+        "//java/java-impl-refactorings:impl-refactorings",
+        "//platform/xdebugger-impl:debugger-impl",
+        "//platform/backend/observation",
+        "//java/debugger/shared",
+        "//platform/xdebugger-testFramework:debugger-testFramework",
+        "//xml/xml-psi-api:psi",
+        "//java/java-syntax:syntax",
+        "//xml/xml-parser:parser",
+        "//platform/eel",
+        "//java/java-psi-api:psi",
+        "//platform/execution",
+        "//platform/consoleView",
+        "//platform/testFramework/junit5",
+        "//platform/testFramework/junit5/codeInsight",
+        "//java/java-frontback-psi-impl:frontback-psi-impl",
+        "//java/java-frontback-psi-api:frontback-psi",
+        "//platform/xdebugger-impl/shared",
+        "//java/testFramework/backend",
+        "//libraries/kotlinx/collections-immutable:libraries-kotlinx-collections-immutable",
+        "//platform/util/concurrency",
+        "//java/java-indexing-api:indexing",
+        ":libraries_junit6_provided",
+        ":libraries_junit6-params_provided",
+    ],
+)
+### auto-generated section `build intellij.java.testFramework` end
+
+### auto-generated section `iml intellij.java.testFramework` start
+exports_files(
+    [
+        "intellij.java.testFramework.iml",
+        "resources/intellij.java.testFramework.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.java.testFramework` end

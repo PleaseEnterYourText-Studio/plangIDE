@@ -1,0 +1,32 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `build intellij.platform.externalSystem.rt` start
+jvm_library(
+    name = "externalSystem-rt",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = "@community//:k8",
+    module_name = "intellij.platform.externalSystem.rt",
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/object-serializer:objectSerializer-annotations",
+        "//libraries/jetbrains/annotations",
+    ],
+)
+### auto-generated section `build intellij.platform.externalSystem.rt` end
+
+### auto-generated section `iml intellij.platform.externalSystem.rt` start
+exports_files(
+    [
+        "intellij.platform.externalSystem.rt.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.externalSystem.rt` end

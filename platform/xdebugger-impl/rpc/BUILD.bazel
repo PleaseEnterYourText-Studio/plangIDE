@@ -1,0 +1,55 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.platform.debugger.impl.rpc` start
+content_module_jar(module = ":rpc")
+### auto-generated section `dev intellij.platform.debugger.impl.rpc` end
+
+### auto-generated section `build intellij.platform.debugger.impl.rpc` start
+jvm_library(
+    name = "rpc",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.debugger.impl.rpc",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/kernel/rpc",
+        "@lib//:kotlin-stdlib",
+        "//platform/xdebugger-api:debugger",
+        "//libraries/kotlinx/serialization/core",
+        "//libraries/kotlinx/serialization/json",
+        "//platform/project/shared:project",
+        "//platform/platform-impl:ide-impl",
+        "//platform/platform-impl/rpc",
+        "//platform/core-ui",
+        "//platform/execution-impl",
+        "//platform/remote-topics/shared:rpc-topics",
+        "//platform/core-api:core",
+        "//platform/execution",
+        "//platform/consoleView",
+        "//platform/util/concurrency",
+    ],
+)
+### auto-generated section `build intellij.platform.debugger.impl.rpc` end
+
+### auto-generated section `iml intellij.platform.debugger.impl.rpc` start
+exports_files(
+    [
+        "intellij.platform.debugger.impl.rpc.iml",
+        "resources/intellij.platform.debugger.impl.rpc.content.xml",
+        "resources/intellij.platform.debugger.impl.rpc.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.debugger.impl.rpc` end

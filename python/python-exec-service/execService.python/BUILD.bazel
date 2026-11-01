@@ -1,0 +1,58 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//build:compiler-options.bzl", "create_kotlinc_options")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.python.community.execService.python` start
+content_module_jar(module = ":execService.python")
+### auto-generated section `dev intellij.python.community.execService.python` end
+
+### auto-generated section `build intellij.python.community.execService.python` start
+create_kotlinc_options(
+    name = "custom_execService.python",
+    warn = "error",
+    x_warning_level = ["DEPRECATION:warning"],
+)
+
+jvm_library(
+    name = "execService.python",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = ":custom_execService.python",
+    module_name = "intellij.python.community.execService.python",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//python/python-exec-service:community-execService",
+        "//python/openapi:community",
+        "//libraries/jetbrains/annotations",
+        "//libraries/kotlinx/coroutines/core",
+        "//platform/eel",
+        "//platform/eel-provider",
+        "//python/impl.helperLocator:community-helpersLocator",
+        "//platform/util",
+        "//platform/core-api:core",
+        "//platform/util/annotations",
+    ],
+)
+### auto-generated section `build intellij.python.community.execService.python` end
+
+### auto-generated section `iml intellij.python.community.execService.python` start
+exports_files(
+    [
+        "intellij.python.community.execService.python.iml",
+        "resources/intellij.python.community.execService.python.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.python.community.execService.python` end

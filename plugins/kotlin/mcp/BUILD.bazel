@@ -1,0 +1,131 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.kotlin.mcp` start
+content_module_jar(module = ":mcp")
+### auto-generated section `dev intellij.kotlin.mcp` end
+
+### auto-generated section `build intellij.kotlin.mcp` start
+jvm_library(
+    name = "mcp",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.kotlin.mcp",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    runtime_deps = ["//platform/backend"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//plugins/mcp-server:mcpserver",
+        "//plugins/kotlin/code-insight/fixes-k2:kotlin-codeInsight-fixes",
+        "//plugins/kotlin/references",
+        "//plugins/kotlin/code-insight/api",
+        "//platform/core-impl",
+        "//plugins/kotlin/base/analysis-api/analysis-api-utils:kotlin-base-analysis-utils",
+        "//java/java-psi-api:psi",
+        "//plugins/kotlin/frontend-independent",
+        "//libraries/kotlinc/kotlin-compiler-common:libraries-kotlinc-kotlin-compiler-common",
+        "//platform/core-api:core",
+        "//platform/analysis-api:analysis",
+        "//platform/indexing-api:indexing",
+        "//platform/projectModel-api:projectModel",
+        "//platform/util",
+        "//java/java-indexing-api:indexing",
+        "//platform/code-style-api:codeStyle",
+        "//platform/code-style-impl:codeStyle-impl",
+    ],
+)
+### auto-generated section `build intellij.kotlin.mcp` end
+
+### auto-generated section `iml intellij.kotlin.mcp` start
+exports_files(
+    [
+        "intellij.kotlin.mcp.iml",
+        "resources/intellij.kotlin.mcp.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.kotlin.mcp` end
+
+### auto-generated section `build intellij.kotlin.mcp.tests` start
+jvm_library(
+    name = "mcp-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "testSrc/**/*.kt",
+            "testSrc/**/*.java",
+            "testSrc/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.kotlin.mcp.tests",
+    resource_strip_prefix = "testResources",
+    resources = glob(
+        ["testResources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//plugins/kotlin/mcp",
+        "//plugins/mcp-server/mcpserver.plugin",
+        "//platform/structure-view-impl/plugin",
+        "//platform/structuralsearch/plugin",
+        "//aether-dependency-resolver/plugin",
+        "//platform/testRunner/plugin",
+        "//plugins/kotlin:kotlin-plugin-community-main",
+        "//xml/plugin",
+        "//platform/vcs/plugin",
+        "//java/plugin",
+    ],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//plugins/kotlin/formatter/minimal",
+        "//platform/code-style-api:codeStyle",
+        "//libraries/junit6",
+        "//libraries/junit6-jupiter",
+        "//libraries/kotlin/test:libraries-kotlinTest",
+        "//libraries/kotlin/test-assertions-core-jvm:libraries-kotlinTestAssertionsCoreJvm",
+        "//libraries/kotlinx/coroutines/core",
+        "//libraries/kotlinx/serialization/json",
+        "//libraries/mcp-kotlin-sdk",
+        "//plugins/mcp-server:mcpserver",
+        "//plugins/mcp-server/mcpserver.testFramework",
+        "//plugins/mcp-server/mcpserver.toolsets",
+        "//platform/core-api:core",
+        "//platform/projectModel-api:projectModel",
+        "//platform/testFramework",
+        "//platform/testFramework/junit5",
+        "//plugins/kotlin/base/pluginTestFramework:kotlin-base-plugin-testFramework",
+        "//platform/scratch/plugin",
+    ],
+)
+### auto-generated section `build intellij.kotlin.mcp.tests` end
+
+### auto-generated section `iml intellij.kotlin.mcp.tests` start
+exports_files(
+    [
+        "intellij.kotlin.mcp.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.kotlin.mcp.tests` end
+
+### auto-generated section `test intellij.kotlin.mcp.tests` start
+jps_test(
+    name = "mcp-tests_test",
+    runtime_deps = [":mcp-tests_test_lib"],
+)
+### auto-generated section `test intellij.kotlin.mcp.tests` end

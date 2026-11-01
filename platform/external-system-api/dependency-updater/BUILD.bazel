@@ -1,0 +1,121 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+jps_test(
+    name = "externalSystem-dependencyUpdater-tests_test",
+    timeout = "long",
+    tags = ["community-aggregator"],
+    runtime_deps = [":externalSystem-dependencyUpdater-tests_test_lib"],
+)
+### skip generation section `test intellij.platform.externalSystem.dependencyUpdater.tests`
+
+### auto-generated section `dev intellij.platform.externalSystem.dependencyUpdater` start
+content_module_jar(module = ":dependency-updater")
+### auto-generated section `dev intellij.platform.externalSystem.dependencyUpdater` end
+
+### auto-generated section `build intellij.platform.externalSystem.dependencyUpdater` start
+jvm_library(
+    name = "dependency-updater",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.externalSystem.dependencyUpdater",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/core-api:core",
+        "//platform/core-ui",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/lang-api:lang",
+        "//platform/platform-api:ide",
+        "//platform/platform-impl:ide-impl",
+        "@lib//:kotlin-stdlib",
+        "//platform/util",
+    ],
+)
+### auto-generated section `build intellij.platform.externalSystem.dependencyUpdater` end
+
+### auto-generated section `iml intellij.platform.externalSystem.dependencyUpdater` start
+exports_files(
+    [
+        "intellij.platform.externalSystem.dependencyUpdater.iml",
+        "resources/intellij.platform.externalSystem.dependencyUpdater.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.externalSystem.dependencyUpdater` end
+
+### auto-generated section `build intellij.platform.externalSystem.dependencyUpdater.tests` start
+jvm_library(
+    name = "externalSystem-dependencyUpdater-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "testSrc/**/*.kt",
+            "testSrc/**/*.java",
+            "testSrc/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.externalSystem.dependencyUpdater.tests",
+    resource_strip_prefix = "testData",
+    resources = glob(
+        ["testData/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+        "//community-resources:customization",
+    ],
+    deps = [
+        # do not sort,
+        "//platform/core-api:core",
+        "//platform/external-system-api/dependency-updater",
+        "//java/openapi:java",
+        "@lib//:kotlin-stdlib",
+        "//plugins/groovy/groovy-psi:psi",
+        "//plugins/gradle",
+        "//platform/external-system-impl:externalSystem-tests_test_lib",
+        "//plugins/gradle/java",
+        "//plugins/gradle/java/plugin",
+        "//plugins/gradle/java/groovy",
+        "//plugins/gradle:gradle-tests_test_lib",
+        "//plugins/gradle/gradle-dependency-updater:dependencyUpdater",
+        "//android/gradle-dsl-groovy",
+        "//plugins/maven",
+        "//plugins/maven/plugin",
+        "//plugins/maven/testFramework",
+        "//platform/structuralsearch/plugin",
+        "//plugins/properties/properties-common:properties",
+        "//platform/vcs/plugin",
+        "//xml/xml-psi-api:psi",
+        "//platform/testFramework",
+        "//java/java-runtime:rt",
+        "//jps/model-api:model",
+        "//libraries/junit4",
+        "//libraries/junit6",
+        "//platform/testFramework/junit5",
+        "//libraries/junit6-params",
+    ],
+)
+### auto-generated section `build intellij.platform.externalSystem.dependencyUpdater.tests` end
+
+### auto-generated section `iml intellij.platform.externalSystem.dependencyUpdater.tests` start
+exports_files(
+    [
+        "intellij.platform.externalSystem.dependencyUpdater.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.externalSystem.dependencyUpdater.tests` end

@@ -1,0 +1,74 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.platform.diff.impl` start
+content_module_jar(module = ":diff-impl")
+### auto-generated section `dev intellij.platform.diff.impl` end
+
+### auto-generated section `build intellij.platform.diff.impl` start
+jvm_library(
+    name = "diff-impl",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.diff.impl",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/analysis-api:analysis",
+        "//platform/code-style-api:codeStyle",
+        "//platform/util/concurrency",
+        "//platform/core-api:core",
+        "//platform/diff-api:diff",
+        "//platform/core-impl",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/platform-api:ide",
+        "//platform/platform-impl:ide-impl",
+        "//platform/analysis-impl",
+        "//platform/editor-ui-ex:editor-ex",
+        "//platform/lang-api:lang",
+        "//platform/consoleView",
+        "//platform/consoleView/impl",
+        "//libraries/guava",
+        "//platform/ide-core-impl",
+        "//platform/ide-core",
+        "//platform/projectModel-api:projectModel",
+        "//platform/statistics",
+        "//platform/boot",
+        "//platform/core-ui",
+        "//platform/util:util-ui",
+        "//platform/forms_rt:java-guiForms-rt",
+        "//libraries/fastutil",
+        "//platform/platform-util-io-impl:ide-util-io-impl",
+        "//libraries/kotlinx/coroutines/core",
+        "//platform/util/coroutines",
+        "//platform/util/diff",
+        "//platform/util/jdom",
+        "//libraries/kotlinx/serialization/core",
+        "//libraries/kotlinx/serialization/json",
+        "//libraries/kotlinx/collections-immutable:libraries-kotlinx-collections-immutable",
+        "//platform/platform-util-io:ide-util-io",
+        "//platform/progress/shared:ide-progress",
+    ],
+)
+### auto-generated section `build intellij.platform.diff.impl` end
+
+### auto-generated section `iml intellij.platform.diff.impl` start
+exports_files(
+    [
+        "intellij.platform.diff.impl.iml",
+        "resources/intellij.platform.diff.impl.actions.xml",
+        "resources/intellij.platform.diff.impl.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.diff.impl` end

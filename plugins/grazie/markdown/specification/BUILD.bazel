@@ -1,0 +1,65 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.grazie.markdown.specification` start
+content_module_jar(
+    libraries = ["@lib//:grazie-markdown-specification-ai-grazie-tasks-library-model-jvm"],
+    module = ":specification",
+)
+### auto-generated section `dev intellij.grazie.markdown.specification` end
+
+### auto-generated section `build intellij.grazie.markdown.specification` start
+jvm_library(
+    name = "specification",
+    srcs = glob(
+        [
+            "src/main/kotlin/**/*.kt",
+            "src/main/kotlin/**/*.java",
+            "src/main/kotlin/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.grazie.markdown.specification",
+    resource_strip_prefix = "src/main/resources",
+    resources = glob(
+        ["src/main/resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/ai-grazie-semantic-engine",
+        "@lib//:grazie-markdown-specification-ai-grazie-tasks-library-model-jvm",
+        "//plugins/grazie/src:core",
+        "//libraries/ai.grazie.spell.gec.engine.local",
+        "//plugins/markdown/core:markdown",
+        "//platform/core-api:core",
+        "//platform/core-impl",
+        "//platform/ide-core-impl",
+        "//platform/util",
+        "//platform/util-ex",
+        "//platform/analysis-api:analysis",
+        "//platform/analysis-impl",
+        "//platform/projectModel-api:projectModel",
+        "//platform/core-ui",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/statistics",
+        "//platform/lang-impl",
+        "//platform/ide-core",
+        "//plugins/markdown/core/backend",
+        "//platform/util:util-ui",
+        "//platform/lang-api:lang",
+        "//platform/indexing-api:indexing",
+    ],
+)
+### auto-generated section `build intellij.grazie.markdown.specification` end
+
+### auto-generated section `iml intellij.grazie.markdown.specification` start
+exports_files(
+    [
+        "intellij.grazie.markdown.specification.iml",
+        "src/main/resources/intellij.grazie.markdown.specification.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.grazie.markdown.specification` end

@@ -1,0 +1,14 @@
+package a.b.c
+
+import <caret> org.*
+
+class A {
+  def foo() {
+    switch (k){
+
+    }
+  }
+}
+-----
+module
+static

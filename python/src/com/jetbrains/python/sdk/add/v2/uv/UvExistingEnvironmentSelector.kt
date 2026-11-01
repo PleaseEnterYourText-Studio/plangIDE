@@ -1,0 +1,74 @@
+// Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+package com.jetbrains.python.sdk.add.v2.uv
+
+import com.jetbrains.python.sdk.add.v2.addInterpreterByBinary
+import com.intellij.openapi.module.Module
+import com.intellij.openapi.observable.properties.ObservableProperty
+import com.intellij.openapi.ui.validation.DialogValidationRequestor
+import com.intellij.python.community.impl.uv.common.UV_UI_INFO
+import com.intellij.python.sdk.backend.PythonInterpreter
+import com.intellij.ui.dsl.builder.Panel
+import com.jetbrains.python.PyBundle
+import com.jetbrains.python.errorProcessing.PyResult
+import com.jetbrains.python.sdk.ModuleOrProject
+import com.jetbrains.python.sdk.workingDirectory
+import com.jetbrains.python.sdk.add.v2.CustomExistingEnvironmentSelector
+import com.jetbrains.python.sdk.add.v2.DetectedSelectableInterpreter
+import com.jetbrains.python.sdk.add.v2.PathHolder
+import com.jetbrains.python.sdk.add.v2.PythonMutableTargetAddInterpreterModel
+import com.jetbrains.python.sdk.add.v2.ToolValidator
+import com.jetbrains.python.sdk.add.v2.ValidatedPath
+import com.intellij.python.uv.backend.UvPyTool
+import com.jetbrains.python.sdk.add.v2.pathHolder
+import com.jetbrains.python.sdk.uv.initUvProjectIfNeeded
+import com.jetbrains.python.sdk.uv.setupExistingEnvAndSdk
+import com.jetbrains.python.statistics.InterpreterType
+import com.jetbrains.python.uv.sdk.configuration.isUvEnv
+import java.nio.file.Path
+
+
+internal class UvExistingEnvironmentSelector<P : PathHolder>(model: PythonMutableTargetAddInterpreterModel<P>, module: Module?) :
+  CustomExistingEnvironmentSelector<P>("uv", model, module) {
+  override val interpreterType: InterpreterType = InterpreterType.UV
+  override val toolState: ToolValidator<P> = model.uvViewModel.toolValidator
+  override val toolExecutable: ObservableProperty<ValidatedPath.Executable<P>?> = model.uvViewModel.uvExecutable
+  override val toolExecutablePersister: suspend (P) -> Unit = { pathHolder ->
+    model.fileSystem.persistCustomToolPath(pathHolder, UvPyTool.getInstance())
+  }
+
+  override fun setupUI(panel: Panel, validationRequestor: DialogValidationRequestor) {
+    super.setupUI(panel, validationRequestor)
+    panel.uvProjectModeRow(model.uvViewModel).visibleIf(toolState.isValidationSuccessful)
+  }
+
+  override suspend fun getOrCreateSdk(moduleOrProject: ModuleOrProject): PyResult<PythonInterpreter> {
+    val sdkHomePath = selectedEnv.get()?.homePath
+    val selectedInterpreterPath =
+      sdkHomePath ?: return PyResult.localizedError(PyBundle.message("python.sdk.provided.path.is.invalid", sdkHomePath))
+
+    val workingDir = moduleOrProject.workingDirectory
+                     ?: return PyResult.localizedError(PyBundle.message("python.sdk.project.working.directory.not.found"))
+
+    val uvPath = toolExecutable.get()!!.pathHolder.getOr { return it }
+    val mode = model.uvViewModel.mode
+    initUvProjectIfNeeded(uvPath, workingDir, model.fileSystem, mode).getOr { return it }
+    val uv = UvPyTool.getInstance()
+    (selectedInterpreterPath as? PathHolder.Eel)?.let { model.fileSystem.addInterpreterByBinary(moduleOrProject, uv, it.path) }?.let { return it }
+    return setupExistingEnvAndSdk(
+      moduleOrProject = moduleOrProject,
+      pythonBinary = selectedInterpreterPath,
+      workingDir = workingDir,
+      fileSystem = model.fileSystem,
+      mode = mode,
+    )
+  }
+
+  override suspend fun detectEnvironments(modulePath: Path): List<DetectedSelectableInterpreter<P>> {
+    return model.fileSystem.detectEnvironments(modulePath) { pythonBinary ->
+      when (pythonBinary) {
+        is PathHolder.Eel -> if (pythonBinary.path.isUvEnv()) UV_UI_INFO else null
+        is PathHolder.Target -> UV_UI_INFO
+      }
+    }
+  }
+}

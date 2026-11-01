@@ -1,0 +1,114 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library", "jvm_provided_library")
+load("//build:compiler-options.bzl", "create_kotlinc_options")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.kotlin.jvm.debugger.coroutines` start
+content_module_jar(module = ":coroutines")
+### auto-generated section `dev intellij.kotlin.jvm.debugger.coroutines` end
+
+### auto-generated section `build intellij.kotlin.jvm.debugger.coroutines` start
+create_kotlinc_options(
+    name = "custom_coroutines",
+    opt_in = [
+        "org.jetbrains.kotlin.psi.KtExperimentalApi",
+        "org.jetbrains.kotlin.psi.KtNonPublicApi",
+        "org.jetbrains.kotlin.psi.KtIdeApi",
+        "org.jetbrains.kotlin.analysis.api.KaExperimentalApi",
+        "org.jetbrains.kotlin.analysis.api.KaIdeApi",
+        "org.jetbrains.kotlin.analysis.api.KaPlatformInterface",
+        "org.jetbrains.kotlin.analysis.api.fir.diagnostics.KaUnstableDiagnosticApi",
+        "org.jetbrains.kotlin.analysis.api.KaNonPublicApi",
+        "org.jetbrains.kotlin.analysis.api.KaContextParameterApi",
+        "org.jetbrains.kotlin.analysis.api.permissions.KaAllowProhibitedAnalyzeFromWriteAction",
+        "org.jetbrains.kotlin.utils.addToStdlib.UnsafeCastFunction",
+    ],
+    x_context_parameters = True,
+)
+
+jvm_provided_library(
+    name = "java_rt_provided",
+    lib = "//java/java-runtime:rt",
+)
+
+jvm_library(
+    name = "coroutines",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = ":custom_coroutines",
+    module_name = "intellij.kotlin.jvm.debugger.coroutines",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinc/kotlin-compiler-common:libraries-kotlinc-kotlin-compiler-common",
+        "//java/debugger/openapi:java-debugger",
+        "//libraries/kotlinc/analysis-api:libraries-kotlinc-analysis-api",
+        "//libraries/maven-resolver-provider",
+        "//libraries/gson",
+        "//libraries/asm",
+        "//platform/analysis-api:analysis",
+        "//platform/util/concurrency",
+        "//platform/core-api:core",
+        "//platform/lang-api:lang",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/platform-api:ide",
+        "//platform/lang-core",
+        "//platform/projectModel-api:projectModel",
+        "//platform/refactoring",
+        "//plugins/kotlin/base/util",
+        "//plugins/kotlin/base/psi",
+        "//plugins/kotlin/base/analysis",
+        "//plugins/kotlin/frontend-independent",
+        "//plugins/kotlin/jvm-debugger/base/util",
+        "//plugins/kotlin/jvm-debugger/core",
+        "//platform/lang-impl",
+        "//platform/xdebugger-impl:debugger-impl",
+        "//platform/xdebugger-impl/shared",
+        "//platform/xdebugger-impl/ui",
+        "//platform/execution-impl",
+        "//platform/external-system-impl:externalSystem-impl",
+        "//platform/core-ui",
+        "//platform/core-impl",
+        "//platform/platform-util-io:ide-util-io",
+        "//platform/smRunner",
+        "//platform/threadDumpParser",
+        "//java/java-psi-api:psi",
+        "//platform/platform-impl:ide-impl",
+        "//platform/ide-core",
+        "//java/execution/impl",
+        "//java/debugger/impl",
+        "//plugins/kotlin/code-insight/utils",
+        "//plugins/kotlin/base/code-insight",
+        "//libraries/kotlinx/serialization/core",
+        "//libraries/kotlinx/serialization/json",
+        "//java/java-impl:impl",
+        "//java/debugger/shared",
+        "//platform/xdebugger-impl/rpc",
+        "//platform/execution",
+        "//platform/consoleView",
+        "//platform/statistics",
+        "//platform/util:util-ui",
+        ":java_rt_provided",
+    ],
+)
+### auto-generated section `build intellij.kotlin.jvm.debugger.coroutines` end
+
+### auto-generated section `iml intellij.kotlin.jvm.debugger.coroutines` start
+exports_files(
+    [
+        "intellij.kotlin.jvm.debugger.coroutines.iml",
+        "resources/intellij.kotlin.jvm.debugger.coroutines.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.kotlin.jvm.debugger.coroutines` end

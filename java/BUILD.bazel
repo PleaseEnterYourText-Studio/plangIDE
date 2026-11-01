@@ -1,0 +1,20 @@
+exports_files(
+    ["mockJDK-1.8/jre/lib/rt.jar"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "mockJDK",
+    srcs = glob(
+        [
+            "mockJDK-1.4/**",
+            "mockJDK-1.7/**",
+            "mockJDK-1.8/**",
+            "mockJDK-1.9/**",
+        ],
+        allow_empty = False,
+    ) + [
+        "//java/jdkAnnotations:annotation_files",
+    ],
+    visibility = ["//visibility:public"],
+)

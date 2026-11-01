@@ -1,0 +1,65 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.platform.tasks.impl` start
+content_module_jar(module = ":tasks-impl")
+### auto-generated section `dev intellij.platform.tasks.impl` end
+
+### auto-generated section `build intellij.platform.tasks.impl` start
+jvm_library(
+    name = "tasks-impl",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.tasks.impl",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/analysis-api:analysis",
+        "//platform/util/concurrency",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/projectModel-api:projectModel",
+        "//platform/tasks-platform-api:tasks",
+        "//platform/core-api:core",
+        "//platform/projectModel-impl",
+        "//platform/platform-api:ide",
+        "//platform/vcs-api:vcs",
+        "@lib//:kotlin-stdlib",
+        "//libraries/gson",
+        "//platform/platform-impl:ide-impl",
+        "//platform/ide-core",
+        "//platform/lang-impl",
+        "//platform/forms_rt:java-guiForms-rt",
+        "//platform/execution",
+        "//platform/execution-impl",
+        "//platform/vcs-impl",
+        "//platform/core-ui",
+        "//platform/util/jdom",
+        "//libraries/kotlinx/coroutines/core",
+        "//platform/util/text-matching",
+        "//platform/util:util-ui",
+        "//platform/statistics",
+        "//platform/lang-api:lang",
+        "//libraries/fastutil",
+    ],
+)
+### auto-generated section `build intellij.platform.tasks.impl` end
+
+### auto-generated section `iml intellij.platform.tasks.impl` start
+exports_files(
+    [
+        "intellij.platform.tasks.impl.iml",
+        "resources/intellij.platform.tasks.impl.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.tasks.impl` end

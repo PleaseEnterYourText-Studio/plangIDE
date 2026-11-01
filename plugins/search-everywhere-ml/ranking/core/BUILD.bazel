@@ -1,0 +1,163 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+jps_test(
+    name = "searchEverywhereMl-ranking-core-tests_test",
+    timeout = "moderate",
+    tags = ["community-aggregator"],
+    runtime_deps = [":searchEverywhereMl-ranking-core-tests_test_lib"],
+)
+### skip generation section `test intellij.searchEverywhereMl.ranking.core.tests`
+
+### auto-generated section `dev intellij.searchEverywhereMl.ranking.core` start
+content_module_jar(
+    libraries = [
+        # do not sort,
+        "@lib//:search_everywhere_ml-ranking-core-find-action-model",
+        "@lib//:search_everywhere_ml-ranking-core-find-file-model",
+        "@lib//:search_everywhere_ml-ranking-core-find-classes-model",
+    ],
+    module = ":core",
+)
+### auto-generated section `dev intellij.searchEverywhereMl.ranking.core` end
+
+### auto-generated section `build intellij.searchEverywhereMl.ranking.core` start
+jvm_library(
+    name = "core",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.searchEverywhereMl.ranking.core",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/jackson3/jackson:libraries-jackson3",
+        "//libraries/jackson3/databind",
+        "//libraries/jackson3/module-kotlin:libraries-jackson3-module-kotlin",
+        "//platform/analysis-api:analysis",
+        "//platform/util/concurrency",
+        "//platform/core-api:core",
+        "//platform/lang-api:lang",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/platform-impl:ide-impl",
+        "//libraries/caffeine",
+        "//platform/core-impl",
+        "//platform/indexing-api:indexing",
+        "//jps/model-api:model",
+        "//platform/lang-impl",
+        "//platform/projectModel-api:projectModel",
+        "//platform/refactoring",
+        "//platform/usageView",
+        "//platform/statistics",
+        "//platform/ml-impl",
+        "//platform/platform-impl/internal",
+        "//platform/ide-core",
+        "//platform/core-ui",
+        "//platform/execution-impl",
+        "//json/backend",
+        "@lib//:search_everywhere_ml-ranking-core-find-action-model",
+        "@lib//:search_everywhere_ml-ranking-core-find-file-model",
+        "@lib//:search_everywhere_ml-ranking-core-find-classes-model",
+        "//libraries/search-everywhere-find-all-model",
+        "//libraries/search-everywhere-find-ec-model",
+        "//plugins/search-everywhere-ml/ranking/ext",
+        "//plugins/search-everywhere-ml",
+        "//platform/execution",
+        "//platform/searchEverywhere/frontend",
+        "//platform/util:util-ui",
+    ],
+)
+### auto-generated section `build intellij.searchEverywhereMl.ranking.core` end
+
+### auto-generated section `iml intellij.searchEverywhereMl.ranking.core` start
+exports_files(
+    [
+        "intellij.searchEverywhereMl.ranking.core.iml",
+        "resources/intellij.searchEverywhereMl.ranking.core.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.searchEverywhereMl.ranking.core` end
+
+### auto-generated section `build intellij.searchEverywhereMl.ranking.core.tests` start
+jvm_library(
+    name = "searchEverywhereMl-ranking-core-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "test/**/*.kt",
+            "test/**/*.java",
+            "test/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    associates = ["//plugins/search-everywhere-ml/ranking/core"],
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+        "//community-resources:customization",
+    ],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//platform/lang-api:lang",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/platform-impl:ide-impl",
+        "//platform/core-impl",
+        "//jps/model-api:model",
+        "//platform/lang-core",
+        "//platform/lang-impl",
+        "//platform/projectModel-api:projectModel",
+        "//platform/refactoring",
+        "//platform/statistics",
+        "//platform/ml-impl",
+        "//platform/platform-impl/internal",
+        "//platform/core-ui",
+        "//platform/execution-impl",
+        "//libraries/lucene.common",
+        "//platform/testFramework",
+        "//platform/testFramework/junit5",
+        "@lib//:search_everywhere_ml-ranking-core-tests-find-action-model",
+        "@lib//:search_everywhere_ml-ranking-core-tests-find-file-model",
+        "@lib//:search_everywhere_ml-ranking-core-tests-find-classes-model",
+        "//plugins/search-everywhere-ml",
+        "//platform/ml-logs",
+        "//plugins/search-everywhere-ml/typos",
+        "//platform/bookmarks",
+        "//platform/statistics/testFramework",
+        "//platform/execution",
+        "//platform/searchEverywhere/frontend",
+        "//platform/util:util-ui",
+        "//plugins/search-everywhere-ml/ranking/java",
+        "//plugins/search-everywhere-ml/ranking/yaml",
+        "//plugins/search-everywhere-ml/ranking/vcs",
+        "//libraries/junit4",
+        "//libraries/junit6",
+        "//libraries/junit6-params",
+        "//platform/scratch/plugin",
+    ],
+)
+### auto-generated section `build intellij.searchEverywhereMl.ranking.core.tests` end
+
+### auto-generated section `iml intellij.searchEverywhereMl.ranking.core.tests` start
+exports_files(
+    [
+        "intellij.searchEverywhereMl.ranking.core.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.searchEverywhereMl.ranking.core.tests` end

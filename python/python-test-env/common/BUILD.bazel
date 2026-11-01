@@ -1,0 +1,77 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//build:compiler-options.bzl", "create_kotlinc_options")
+
+### auto-generated section `build intellij.python.test.env.common` start
+create_kotlinc_options(
+    name = "custom_common",
+    warn = "error",
+    x_warning_level = ["DEPRECATION:warning"],
+)
+
+jvm_library(
+    name = "common_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = ":custom_common",
+    module_name = "intellij.python.test.env.common",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    exports = [
+        # do not sort,
+        "//python/python-test-env/core:core_test_lib",
+        "//python/python-test-env/conda:conda_test_lib",
+        "//python/python-test-env/plain:plain_test_lib",
+        "//python/python-test-env/uv:uv_test_lib",
+    ],
+    deps = [
+        # do not sort,
+        "//libraries/jetbrains/annotations",
+        "//python/python-test-env/core:core_test_lib",
+        "//python/python-test-env/conda:conda_test_lib",
+        "@lib//:kotlin-stdlib",
+        "//python/python-test-env/plain:plain_test_lib",
+        "//python/python-test-env/uv:uv_test_lib",
+        "//platform/execution",
+        "//python:python-community-impl",
+        "//python/python-sdk/backend",
+        "//platform/projectModel-api:projectModel",
+        "//libraries/kotlinx/coroutines/core",
+        "//platform/remote-core",
+        "//platform/core-api:core",
+        "//platform/lang-impl",
+        "//platform/lang-core",
+        "//platform/ide-core",
+        "//python/services/system-python",
+        "//platform/platform-impl:ide-impl",
+        "//platform/eel",
+        "//platform/eel-provider",
+    ],
+)
+### auto-generated section `build intellij.python.test.env.common` end
+
+### auto-generated section `iml intellij.python.test.env.common` start
+exports_files(
+    [
+        "intellij.python.test.env.common.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.python.test.env.common` end
+
+### auto-generated section `test intellij.python.test.env.common` start
+jps_test(
+    name = "common_test",
+    runtime_deps = [":common_test_lib"],
+)
+### auto-generated section `test intellij.python.test.env.common` end

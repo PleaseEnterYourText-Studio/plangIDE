@@ -1,0 +1,92 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library", "kt_javac_options")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.platform.vfs.impl` start
+content_module_jar(module = ":vfs-impl")
+### auto-generated section `dev intellij.platform.vfs.impl` end
+
+### auto-generated section `build intellij.platform.vfs.impl` start
+kt_javac_options(
+    name = "custom-javac-options",
+    add_exports = ["java.base/sun.nio.fs=ALL-UNNAMED"],
+    no_proc = True,
+    warn = "off",
+    x_ep_disable_all_checks = True,
+)
+
+jvm_library(
+    name = "vfs-impl",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    javac_opts = ":custom-javac-options",
+    module_name = "intellij.platform.vfs.impl",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    runtime_deps = ["//platform/platform-resources-en:resources-en"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/fastutil",
+        "//libraries/jetbrains/annotations",
+        "//libraries/kotlinx/coroutines/core",
+        "//libraries/lz4",
+        "//libraries/opentelemetry",
+        "//platform/analysis-api:analysis",
+        "//platform/analysis-impl",
+        "//platform/backend/observation",
+        "//platform/backend/workspace",
+        "//platform/built-in-server-api:builtInServer",
+        "//platform/util/concurrency",
+        "//platform/core-api:core",
+        "//platform/core-impl",
+        "//platform/core-nio-fs",
+        "//platform/core-ui",
+        "//platform/diagnostic",
+        "//platform/diagnostic/telemetry",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/eel",
+        "//platform/eel-impl",
+        "//platform/eel-nioFs-impl",
+        "//platform/eel-provider",
+        "//platform/extensions",
+        "//platform/platform-api:ide",
+        "//platform/ide-core",
+        "//platform/ide-core-impl",
+        "//platform/progress/shared:ide-progress",
+        "//platform/platform-util-io:ide-util-io",
+        "//platform/ijent/impl",
+        "//platform/indexing-api:indexing",
+        "//jps/model-api:model",
+        "//jps/model-serialization",
+        "//platform/lang-core",
+        "//platform/projectModel-api:projectModel",
+        "//platform/projectModel-impl",
+        "//platform/statistics",
+        "//platform/util",
+        "//platform/util/coroutines",
+        "//platform/util-ex",
+        "//platform/util/storages",
+        "//platform/util:util-ui",
+        "//platform/workspace/storage",
+    ],
+)
+### auto-generated section `build intellij.platform.vfs.impl` end
+
+### auto-generated section `iml intellij.platform.vfs.impl` start
+exports_files(
+    [
+        "intellij.platform.vfs.impl.iml",
+        "resources/intellij.platform.vfs.impl.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.vfs.impl` end

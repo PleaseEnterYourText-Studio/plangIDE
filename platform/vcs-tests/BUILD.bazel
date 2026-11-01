@@ -1,0 +1,201 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library", "jvm_provided_library")
+
+### auto-generated section `build intellij.platform.vcs.testFramework` start
+jvm_provided_library(
+    name = "libraries_junit6_provided",
+    lib = "//libraries/junit6",
+)
+
+jvm_library(
+    name = "vcs-testFramework",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.vcs.testFramework",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//platform/core-api:core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/projectModel-api:projectModel",
+        "//platform/testFramework",
+        "//platform/vcs-api:vcs",
+        "//platform/vcs-impl",
+        "//platform/projectModel-impl",
+        "//platform/ide-core-impl",
+        "//platform/ide-core",
+        "//platform/diff-api:diff",
+        "//platform/analysis-api:analysis",
+        "//libraries/junit4",
+        "//platform/indexing-impl",
+        "//platform/core-ui",
+        "//platform/platform-util-io:ide-util-io",
+        "//platform/testFramework/junit5",
+        "//platform/testFramework/junit5/eel",
+        "//platform/lang-api:lang",
+        "//platform/lang-core",
+        "//platform/util-ex",
+        ":libraries_junit6_provided",
+    ],
+)
+### auto-generated section `build intellij.platform.vcs.testFramework` end
+
+### auto-generated section `iml intellij.platform.vcs.testFramework` start
+exports_files(
+    [
+        "intellij.platform.vcs.testFramework.iml",
+        "resources/intellij.platform.vcs.testFramework.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.vcs.testFramework` end
+
+### auto-generated section `build intellij.platform.vcs.tests` start
+jvm_library(
+    name = "vcs-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "testSrc/**/*.kt",
+            "testSrc/**/*.java",
+            "testSrc/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.vcs.tests",
+    visibility = ["//visibility:public"],
+    exports = ["//platform/vcs-tests:vcs-testFramework"],
+    runtime_deps = [
+        # do not sort,
+        "//platform/vcs/plugin",
+        "//platform/todo/plugin",
+        "//platform/structure-view-impl/plugin",
+        "//xml/plugin",
+        "//java/plugin",
+        "//java/java-backend:backend",
+        "//aether-dependency-resolver/plugin",
+        "//community-resources:customization",
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+    ],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//platform/analysis-api:analysis",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/indexing-api:indexing",
+        "//jps/model-api:model",
+        "//jps/model-serialization",
+        "//platform/lang-core",
+        "//platform/projectModel-api:projectModel",
+        "//platform/util/diff",
+        "//platform/vcs-tests:vcs-testFramework",
+        "//platform/vcs-impl",
+        "//platform/vcs-impl/backend",
+        "//platform/lang-impl",
+        "//platform/vcs-impl/lang",
+        "//platform/vcs-impl/lang/todo",
+        "//platform/vcs-api/vcs-api-core:vcs-core",
+        "//platform/vcs-api:vcs",
+        "//platform/core-api:core",
+        "//platform/ide-core-impl",
+        "//platform/ide-core",
+        "//platform/projectModel-impl",
+        "//libraries/junit4",
+        "//platform/util-ex",
+        "//platform/indexing-impl",
+        "//platform/platform-api:ide",
+        "//platform/diff-impl/tests:tests_test_lib",
+        "//libraries/mockito",
+        "//platform/util:util-tests_test_lib",
+        "//platform/testFramework",
+        "//platform/testFramework/junit5",
+        "//libraries/junit6",
+        "//platform/diff-impl",
+        "//libraries/assertj-core",
+        "//platform/core-ui",
+        "//libraries/fastutil",
+        "//platform/util/jdom",
+        "//platform/util:util-ui",
+        "//xml/xml-psi-api:psi",
+        "//tools/intellij.tools.ide.metrics.benchmark:ide-metrics-benchmark",
+        "//platform/vcs-impl/shared",
+        "//platform/core-impl",
+        "@lib//:app-cash-turbine-jvm",
+        "//libraries/mockito-kotlin",
+        "//platform/vcs-impl:vcs-impl-tests_test_lib",
+        "//platform/code-style-api:codeStyle",
+        "//platform/lang-api:lang",
+    ],
+)
+### auto-generated section `build intellij.platform.vcs.tests` end
+
+### auto-generated section `iml intellij.platform.vcs.tests` start
+exports_files(
+    [
+        "intellij.platform.vcs.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.vcs.tests` end
+
+### auto-generated section `test intellij.platform.vcs.tests` start
+jps_test(
+    name = "vcs-tests_test",
+    runtime_deps = [":vcs-tests_test_lib"],
+)
+### auto-generated section `test intellij.platform.vcs.tests` end
+
+### auto-generated section `build intellij.platform.vcs.tests.main` start
+jvm_library(
+    name = "vcs-tests-main_test_lib",
+    testonly = True,
+    srcs = glob(
+        [],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.vcs.tests.main",
+    resource_strip_prefix = "testResources",
+    resources = glob(
+        ["testResources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//platform/bootstrap/coroutine",
+        "//platform/vcs-impl:vcs-impl-tests_test_lib",
+        "//platform/vcs-log/graph:vcs-log-graph-impl-tests_test_lib",
+        "//platform/vcs-log/impl:vcs-log-impl-tests_test_lib",
+        "//platform/vcs-tests:vcs-tests_test_lib",
+        "//plugins/tasks/tests/base:tasks-tests_test_lib",
+        "//plugins/tasks/tests/vcs:vcs_test_lib",
+        "//plugins/git4idea/intellij.vcs.git.coverage:vcs-git-coverage-tests_test_lib",
+        "//plugins/git4idea/terminal:vcs-git-terminal-tests_test_lib",
+        "//plugins/git4idea:vcs-git-backend-tests_test_lib",
+        "//plugins/github/github-core:vcs-github-tests_test_lib",
+        "//plugins/gitlab/gitlab-core:vcs-gitlab-tests_test_lib",
+        "//plugins/gitlab/gitlab-yaml:vcs-gitlab-yaml-tests_test_lib",
+        "//plugins/hg4idea:vcs-hg-tests_test_lib",
+        "//plugins/svn4idea:vcs-svn-tests_test_lib",
+    ],
+)
+### auto-generated section `build intellij.platform.vcs.tests.main` end
+
+### auto-generated section `iml intellij.platform.vcs.tests.main` start
+exports_files(
+    [
+        "intellij.platform.vcs.tests.main.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.vcs.tests.main` end

@@ -1,0 +1,64 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.kotlin.runConfigurations.testng` start
+content_module_jar(module = ":testng")
+### auto-generated section `dev intellij.kotlin.runConfigurations.testng` end
+
+### auto-generated section `build intellij.kotlin.runConfigurations.testng` start
+jvm_library(
+    name = "testng",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.kotlin.runConfigurations.testng",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinc/kotlin-compiler-common:libraries-kotlinc-kotlin-compiler-common",
+        "//libraries/kotlinc/analysis-api:libraries-kotlinc-analysis-api",
+        "//libraries/kotlinc/symbol-light-classes:libraries-kotlinc-symbol-light-classes",
+        "//platform/core-api:core",
+        "//platform/execution-impl",
+        "//plugins/kotlin/base/util",
+        "//plugins/kotlin/base/facet",
+        "//platform/smRunner",
+        "//plugins/kotlin/base/project-structure",
+        "//plugins/kotlin/base/analysis",
+        "//plugins/kotlin/base/code-insight",
+        "//plugins/kotlin/run-configurations/jvm",
+        "//platform/util/jdom",
+        "//platform/core-impl",
+        "//platform/lang-api:lang",
+        "//java/java-psi-api:psi",
+        "//java/execution/impl",
+        "//plugins/testng",
+        "//java/java-impl:impl",
+        "//plugins/kotlin/base/plugin",
+        "//platform/execution",
+        "//platform/ide-core",
+        "//platform/testRunner",
+        "//platform/statistics",
+    ],
+)
+### auto-generated section `build intellij.kotlin.runConfigurations.testng` end
+
+### auto-generated section `iml intellij.kotlin.runConfigurations.testng` start
+exports_files(
+    [
+        "intellij.kotlin.runConfigurations.testng.iml",
+        "resources/intellij.kotlin.runConfigurations.testng.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.kotlin.runConfigurations.testng` end

@@ -1,0 +1,62 @@
+// Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+package com.intellij.platform.eel.nioFs.impl
+
+import com.intellij.openapi.extensions.ExtensionPointName
+import com.intellij.platform.util.annotations.VisibleToClasses
+import com.intellij.platform.util.annotations.paths.NioPath
+import org.jetbrains.annotations.ApiStatus
+import java.nio.file.FileStore
+import java.nio.file.FileSystem
+
+/**
+ * An extension point for [com.intellij.platform.core.nio.fs.MultiRoutingFileSystem.BackendProvider].
+ *
+ * *Note:* the implementation MUST NOT load classes during initialization.
+ * Otherwise, a deadlock in the classloader is `com.intellij.util.lang.UrlClassLoader` is possible.
+ */
+@ApiStatus.Internal
+@VisibleToClasses(
+  "com.intellij.docker.ijent.mrfs.EelDockerMrfsBackend",
+  "com.intellij.platform.eel.tcp.TcpEelMrfsBackend",
+  "com.intellij.platform.ide.bootstrap.AppServicePreloadingKt",
+  "com.intellij.platform.ide.impl.wsl.EelWslMrfsBackend",
+  "com.intellij.platform.ijent.benchmarks.MultiRoutingFileSystemBackendBenchmark",
+  "com.intellij.platform.ijent.community.ui.actions.IjentVerificationActionsKt",
+  "com.intellij.platform.ijent.ssh.impl.SshEelMrfsBackend",
+  "com.intellij.platform.ijent.testFramework.functional.fixture.LocalWslFixture",
+  "com.intellij.platform.testFramework.junit5.eel.impl.UtilKt",
+)
+interface MultiRoutingFileSystemBackend {
+  companion object {
+    @JvmField
+    val EP_NAME: ExtensionPointName<MultiRoutingFileSystemBackend> = ExtensionPointName("com.intellij.multiRoutingFileSystemBackend")
+  }
+
+  /**
+   * Initialization of this interface assigns [MultiRoutingFileSystemBackend] as the backend provider.
+   */
+  @ApiStatus.Internal
+  interface InitializationService
+
+  /**
+   * *Note:* it must never return `localFS`.
+   * Otherwise, the behavior is undefined.
+   *
+   * *Note:* this function MUST NOT throw any error.
+   * Otherwise, the behavior is undefined.
+   *
+   * *Note:* the implementation MUST NOT load classes if [sanitizedPath] belongs to a local path.
+   * Otherwise, a deadlock in `com.intellij.util.lang.UrlClassLoader` is possible.
+   */
+  fun compute(localFS: FileSystem, sanitizedPath: String): FileSystem?
+
+  /**
+   * This function is used in [FileSystem.getRootDirectories].
+   *
+   * The implementation SHOULD avoid I/O operations
+   * because [getRootDirectories](java.nio.file.FileSystem.getRootDirectories) can be called from inside a read action.
+   */
+  fun getCustomRoots(): Collection<@NioPath String>
+
+  fun getCustomFileStores(localFS: FileSystem): Collection<FileStore>
+}

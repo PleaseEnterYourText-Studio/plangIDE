@@ -1,0 +1,51 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `build intellij.tools.testsBootstrap` start
+jvm_library(
+    name = "tools-testsBootstrap",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.tools.testsBootstrap",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//platform/boot",
+        "//libraries/junit6-vintage",
+        "//libraries/junit6-jupiter",
+    ],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/junit4",
+        "//libraries/junit6-launcher",
+        "//libraries/junit6",
+        "//libraries/teamcity/service-messages:libraries-teamcity-service-messages",
+        "//libraries/opentest4j",
+        "//platform/core-nio-fs",
+        "//libraries/asm-tools",
+        "//platform/bazel-runfiles",
+        "//platform/util/base",
+        "//platform/util",
+    ],
+)
+### auto-generated section `build intellij.tools.testsBootstrap` end
+
+### auto-generated section `iml intellij.tools.testsBootstrap` start
+exports_files(
+    [
+        "intellij.tools.testsBootstrap.iml",
+        "resources/intellij.tools.testsBootstrap.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.tools.testsBootstrap` end

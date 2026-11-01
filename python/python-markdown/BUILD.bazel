@@ -1,0 +1,99 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.python.markdown` start
+content_module_jar(module = ":markdown")
+### auto-generated section `dev intellij.python.markdown` end
+
+### auto-generated section `build intellij.python.markdown` start
+jvm_library(
+    name = "markdown",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.python.markdown",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    runtime_deps = ["//platform/backend"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//platform/analysis-api:analysis",
+        "//plugins/markdown/core:markdown",
+        "//platform/core-api:core",
+        "//platform/lang-impl",
+        "//python/python-psi-impl:psi-impl",
+        "//python/python-psi-api:psi",
+    ],
+)
+### auto-generated section `build intellij.python.markdown` end
+
+### auto-generated section `iml intellij.python.markdown` start
+exports_files(
+    [
+        "intellij.python.markdown.iml",
+        "resources/intellij.python.markdown.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.python.markdown` end
+
+### auto-generated section `build intellij.python.markdown.tests` start
+jvm_library(
+    name = "markdown-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "test/**/*.kt",
+            "test/**/*.java",
+            "test/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.python.markdown.tests",
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//platform/backend",
+        "//python/python-markdown:markdown",
+    ],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//plugins/markdown/plugin:plugin-main",
+        "//python/python-psi-impl:psi-impl",
+        "//python/python-psi-api:psi",
+        "//python:python-community-tests_test_lib",
+        "//platform/testFramework",
+        "//libraries/junit4",
+        "//platform/scratch/plugin",
+    ],
+)
+### auto-generated section `build intellij.python.markdown.tests` end
+
+### auto-generated section `iml intellij.python.markdown.tests` start
+exports_files(
+    [
+        "intellij.python.markdown.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.python.markdown.tests` end
+
+### auto-generated section `test intellij.python.markdown.tests` start
+jps_test(
+    name = "markdown-tests_test",
+    runtime_deps = [":markdown-tests_test_lib"],
+)
+### auto-generated section `test intellij.python.markdown.tests` end

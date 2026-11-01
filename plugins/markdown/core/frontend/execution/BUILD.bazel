@@ -1,0 +1,54 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.markdown.frontend.execution` start
+content_module_jar(module = ":execution")
+### auto-generated section `dev intellij.markdown.frontend.execution` end
+
+### auto-generated section `build intellij.markdown.frontend.execution` start
+jvm_library(
+    name = "execution",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.markdown.frontend.execution",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    runtime_deps = ["//platform/platform-frontend:frontend"],
+    deps = [
+        # do not sort,
+        "//plugins/markdown/core:markdown",
+        "//plugins/markdown/execution",
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinx/coroutines/core",
+        "//libraries/jetbrains/annotations",
+        "//platform/core-api:core",
+        "//platform/util",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/platform-impl:ide-impl",
+        "//platform/project/shared:project",
+        "//platform/platform-impl/rpc",
+        "//fleet/rpc",
+        "//platform/execution",
+        "//platform/statistics",
+    ],
+)
+### auto-generated section `build intellij.markdown.frontend.execution` end
+
+### auto-generated section `iml intellij.markdown.frontend.execution` start
+exports_files(
+    [
+        "intellij.markdown.frontend.execution.iml",
+        "resources/intellij.markdown.frontend.execution.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.markdown.frontend.execution` end

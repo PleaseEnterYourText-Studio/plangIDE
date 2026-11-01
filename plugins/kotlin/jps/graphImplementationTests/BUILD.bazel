@@ -1,0 +1,64 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `build kotlin.jps.graphImplementationTests` start
+jvm_library(
+    name = "graphImplementationTests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "tests/**/*.kt",
+            "tests/**/*.java",
+            "tests/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "kotlin.jps.graphImplementationTests",
+    resource_strip_prefix = "testResources",
+    resources = glob(
+        ["testResources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    runtime_deps = ["//platform/util/trove"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//platform/util",
+        "@lib//:kotlinc-kotlin-jps-plugin-classpath-bootstrap-for-tests",
+        "@lib//:kotlinc-kotlin-jps-plugin-tests",
+        "@lib//:kotlinc-kotlin-compiler-tests",
+        "@lib//:kotlinc-incremental-compilation-impl-tests",
+        "//plugins/kotlin/tests-common:common-tests_test_lib",
+        "//plugins/kotlin/base/testFramework",
+        "//plugins/kotlin/test-framework:test-framework_test_lib",
+        "//platform/testFramework",
+        "//plugins/kotlin/base/plugin",
+        "//libraries/kotlinc/kotlin-compiler-common:libraries-kotlinc-kotlin-compiler-common",
+        "//plugins/devkit/jps-plugin:jps",
+        "//java/testFramework",
+        "//jps/jps-builders:build-tests_test_lib",
+        "//jps/model-api:model",
+        "//platform/core-api:core",
+        "//libraries/kotlin/reflect",
+        "//plugins/kotlin/tests-from-compiler:tests-from-compiler_test_lib",
+        "//plugins/kotlin/base/pluginTestFramework:kotlin-base-plugin-testFramework",
+        "//libraries/junit4",
+    ],
+)
+### auto-generated section `build kotlin.jps.graphImplementationTests` end
+
+### auto-generated section `iml kotlin.jps.graphImplementationTests` start
+exports_files(
+    [
+        "kotlin.jps.graphImplementationTests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml kotlin.jps.graphImplementationTests` end
+
+### auto-generated section `test kotlin.jps.graphImplementationTests` start
+jps_test(
+    name = "graphImplementationTests_test",
+    runtime_deps = [":graphImplementationTests_test_lib"],
+)
+### auto-generated section `test kotlin.jps.graphImplementationTests` end

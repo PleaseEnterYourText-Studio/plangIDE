@@ -1,0 +1,226 @@
+// Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+package git4idea.workingTrees
+
+import com.intellij.ide.impl.ProjectUtil
+import com.intellij.openapi.application.readAction
+import com.intellij.openapi.ui.getPresentablePath
+import com.intellij.testFramework.junit5.TestApplication
+import com.intellij.testFramework.utils.io.deleteRecursively
+import git4idea.GitWorkingTree
+import git4idea.commands.Git
+import git4idea.test.GitSingleRepoContext
+import git4idea.test.git
+import git4idea.test.gitSingleRepoContextFixture
+import git4idea.util.EelUtils.getEel
+import git4idea.workingTrees.dialog.GitWorkingTreeDialog
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Test
+import java.io.File
+import kotlin.io.path.pathString
+
+@TestApplication
+internal class GitCreateWorkingTreeTest {
+  private val contextFixture = gitSingleRepoContextFixture()
+  private val context: GitSingleRepoContext get() = contextFixture.get()
+
+  @Test
+  fun `test computeInitialParentPath for a normal project does not fall back to base dir`(): Unit = with(context) {
+    val unrelatedSystemTempDir = testNioRoot.resolveSibling("notTemp")
+    val initialParentPath = runBlocking {
+      val eel = withContext(Dispatchers.IO) { getEel(project)!! }
+      readAction {
+        GitCreateWorkingTreeService.getInstance().computeInitialParentPath(project, repo, unrelatedSystemTempDir) {
+          GitCreateWorkingTreeService.getDefaultParentDir(eel)
+        }
+      }
+    }
+
+    assertThat(initialParentPath).isEqualTo(testNioRoot.pathString)
+  }
+
+  @Test
+  fun `test computeInitialParentPath falls back to base dir when guessed root is under the system temp dir`(): Unit = with(context) {
+    val initialParentPath = runBlocking {
+      val eel = withContext(Dispatchers.IO) { getEel(project)!! }
+      readAction {
+        GitCreateWorkingTreeService.getInstance().computeInitialParentPath(project, repo, systemTempDir = testNioRoot) {
+          GitCreateWorkingTreeService.getDefaultParentDir(eel)
+        }
+      }
+    }
+
+    assertThat(initialParentPath).isEqualTo(ProjectUtil.getBaseDir())
+  }
+
+  @Test
+  fun `test worktree path validation blank parent path returns error`() {
+    assertThat(GitWorkingTreeDialog.validateWorktreeParentPath("")).isNotNull()
+    assertThat(GitWorkingTreeDialog.validateWorktreeParentPath("   ")).isNotNull()
+  }
+
+  @Test
+  fun `test worktree path validation valid parent path on input returns no error`() {
+    assertThat(GitWorkingTreeDialog.validateWorktreeParentPath("/some/path")).isNull()
+  }
+
+  @Test
+  fun `test worktree path validation invalid parent path on input returns error`() {
+    assertThat(GitWorkingTreeDialog.validateWorktreeParentPath("/path\u0000invalid")).isNotNull()
+  }
+
+  @Test
+  fun `test worktree path validation invalid parent path returns error`() {
+    assertThat(GitWorkingTreeDialog.validateWorktreePath("/path\u0000invalid", "myworktree")).isNotNull()
+  }
+
+  @Test
+  fun `test worktree path validation invalid dir name returns error`(): Unit = with(context)
+  {
+    assertThat(GitWorkingTreeDialog.validateWorktreePath(repo.root.path, "dir\u0000name")).isNotNull()
+  }
+
+  @Test
+  fun `test worktree path validation blank dir name only validates parent`(): Unit = with(context) {
+    assertThat(GitWorkingTreeDialog.validateWorktreePath(repo.root.path, "")).isNull()
+    assertThat(GitWorkingTreeDialog.validateWorktreePath(repo.root.path, "   ")).isNull()
+  }
+
+  @Test
+  fun `test worktree path validation non-existing parent is valid`() {
+    val nonExistingParent = "/tmp/non-existing-parent-${System.currentTimeMillis()}"
+    assertThat(GitWorkingTreeDialog.validateWorktreePath(nonExistingParent, "myworktree")).isNull()
+  }
+
+  @Test
+  fun `test worktree path validation target is a file shows target error not parent error`(): Unit = with(context) {
+    val targetFile = File(repo.root.path, "worktreeTarget")
+    assertThat(targetFile.createNewFile()).isTrue()
+
+    // Target is a file but parent is a valid directory — must report target error, not any parent error
+    val validationMessage = GitWorkingTreeDialog.validateWorktreePath(repo.root.path, "worktreeTarget")
+    assertThat(validationMessage).isEqualTo("'${getPresentablePath(targetFile.path)}' is a file")
+  }
+
+  @Test
+  fun `test worktree path validation non-existing target is valid`(): Unit = with(context) {
+    val nonExisting = "non-existing-worktree-dir-${System.currentTimeMillis()}"
+    assertThat(GitWorkingTreeDialog.validateWorktreePath(repo.root.path, nonExisting)).isNull()
+  }
+
+  @Test
+  fun `test worktree path validation empty target directory is valid`(): Unit = with(context) {
+    val emptyDir = "emptyWorktreeDir"
+    assertThat(File(repo.root.path, emptyDir).mkdir()).isTrue()
+
+    assertThat(GitWorkingTreeDialog.validateWorktreePath(repo.root.path, emptyDir)).isNull()
+  }
+
+  @Test
+  fun `test worktree path validation non-empty target directory returns error`(): Unit = with(context) {
+    val workingTreeDir = "worktreeDir"
+    val dir = File(repo.root.path, workingTreeDir)
+    assertThat(dir.mkdir()).isTrue()
+    assertThat(dir.resolve("a.txt").createNewFile()).isTrue()
+
+    val validationMessage = GitWorkingTreeDialog.validateWorktreePath(repo.root.path, workingTreeDir)
+    assertThat(validationMessage).isEqualTo("'${getPresentablePath(dir.path)}' is not empty")
+  }
+
+  @Test
+  fun `test worktree path validation target is a file returns error`(): Unit = with(context) {
+    val workingTreeDir = "worktreeDir"
+    val file = File(repo.root.path, workingTreeDir)
+    assertThat(file.createNewFile()).isTrue()
+
+    val validationMessage = GitWorkingTreeDialog.validateWorktreePath(repo.root.path, workingTreeDir)
+    assertThat(validationMessage).isEqualTo("'${getPresentablePath(file.path)}' is a file")
+  }
+
+  @Test
+  fun `test listing locked working tree`(): Unit = with(context) {
+    val branch = "tree"
+    val treeRoot = "treeRoot"
+
+    git("worktree add -B $branch ../$treeRoot")
+    git("worktree lock ../$treeRoot")
+
+    repo.ensureWorkingTreesUpToDateForTests()
+    val workingTrees = repo.workingTreeHolder.getWorkingTrees()
+    val expected = listOf(
+      GitWorkingTree(repo.root.path,
+                     repo.currentBranch!!.fullName,
+                     true, true),
+      GitWorkingTree("${testNioRoot.pathString}/$treeRoot",
+                     branch,
+                     false, false,
+                     isLocked = true)
+    )
+
+    assertThat(workingTrees).containsExactlyInAnyOrderElementsOf(expected)
+  }
+
+  @Test
+  fun `test listing locked with a reason working tree`(): Unit = with(context) {
+    val branch = "tree"
+    val treeRoot = "treeRoot"
+
+    git("worktree add -B $branch ../$treeRoot")
+    git("worktree lock --reason Because ../$treeRoot")
+
+    repo.ensureWorkingTreesUpToDateForTests()
+    val workingTrees = repo.workingTreeHolder.getWorkingTrees()
+    val expected = listOf(
+      GitWorkingTree(repo.root.path,
+                     repo.currentBranch!!.fullName,
+                     true, true),
+      GitWorkingTree("${testNioRoot.pathString}/$treeRoot",
+                     branch,
+                     false, false,
+                     isLocked = true)
+    )
+
+    assertThat(workingTrees).containsExactlyInAnyOrderElementsOf(expected)
+  }
+
+  @Test
+  fun `test listing prunable working tree`(): Unit = with(context) {
+    val branch = "tree"
+    val treeRoot = "treeRoot"
+
+    git("worktree add -B $branch ../$treeRoot")
+    testNioRoot.resolve(treeRoot).deleteRecursively()
+
+    repo.ensureWorkingTreesUpToDateForTests()
+    val workingTrees = repo.workingTreeHolder.getWorkingTrees()
+    val expected = listOf(
+      GitWorkingTree(repo.root.path,
+                     repo.currentBranch!!.fullName,
+                     true, true),
+      GitWorkingTree("${testNioRoot.pathString}/$treeRoot",
+                     branch,
+                     false, false,
+                     isPrunable = true)
+    )
+
+    assertThat(workingTrees).containsExactlyInAnyOrderElementsOf(expected)
+  }
+
+  @Test
+  fun `test prune removes stale worktree entries`(): Unit = with(context) {
+    val branch = "tree"
+    val treeRoot = "treeRoot"
+
+    git("worktree add -B $branch ../$treeRoot")
+    testNioRoot.resolve(treeRoot).deleteRecursively()
+
+    Git.getInstance().pruneWorktrees(repo)
+
+    repo.ensureWorkingTreesUpToDateForTests()
+    assertThat(repo.workingTreeHolder.getWorkingTrees().any { it.isPrunable })
+      .describedAs("Stale entry should be gone after prune")
+      .isFalse()
+  }
+}

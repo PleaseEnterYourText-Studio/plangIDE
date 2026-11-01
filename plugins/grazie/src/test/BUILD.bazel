@@ -1,0 +1,134 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+filegroup(
+    name = "testData",
+    srcs = glob(["testData/**"]),
+    visibility = ["//plugins/maven/proofreading:__pkg__"],
+)
+
+jps_test(
+    name = "grazie-tests_test",
+    data = [
+        "@community//plugins/grazie/src/test:testData",
+        "@community//spellchecker:testData",
+    ],
+    jvm_flags = [
+        ## mirror settings set by org.jetbrains.intellij.build.impl.TestingTasksImpl.prepareEnvForTestRun
+        "-Djavax.xml.parsers.SAXParserFactory=com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl",
+    ],
+    tags = ["grazie-tests"],
+    runtime_deps = [":grazie-tests_test_lib"],
+)
+### skip generation section `test intellij.grazie.tests`
+
+### auto-generated section `build intellij.grazie.tests` start
+jvm_library(
+    name = "grazie-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "kotlin/**/*.kt",
+            "kotlin/**/*.java",
+            "kotlin/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.grazie.tests",
+    resource_strip_prefix = "testResources",
+    resources = glob(
+        ["testResources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    exports = ["//plugins/grazie"],
+    runtime_deps = [
+        # do not sort,
+        "//xml/dom-impl",
+        "//platform/structuralsearch:structuralSearch",
+        "//platform/structuralsearch/plugin",
+        "//platform/structure-view-impl/plugin",
+        "//platform/todo/plugin",
+        "//platform/vcs/plugin",
+        "//aether-dependency-resolver/plugin",
+        "//xml/plugin",
+        "//json/spellchecker",
+        "//plugins/yaml/spellchecker",
+        "//spellchecker/xml/backend",
+        "//platform/testRunner/plugin",
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+        "//community-resources:customization",
+    ],
+    deps = [
+        # do not sort,
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//platform/core-ui",
+        "//platform/core-impl",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/lang-api:lang",
+        "//platform/projectModel-api:projectModel",
+        "//platform/util/jdom",
+        "//platform/util:util-ui",
+        "//spellchecker",
+        "//plugins/grazie",
+        "//plugins/grazie/src:core",
+        "//libraries/kotlin/test:libraries-kotlinTest",
+        "//java/testFramework",
+        "//java/java-psi-api:psi",
+        "@lib//:grazie-tests-ai-grazie-spell-hunspell-de",
+        "@lib//:grazie-tests-ai-grazie-spell-hunspell-ru",
+        "@lib//:grazie-tests-ai-grazie-spell-hunspell-uk",
+        "@lib//:grazie-tests-org-jetbrains-intellij-deps-languagetool-languagetool-core",
+        "@lib//:grazie-tests-org-jetbrains-intellij-deps-languagetool-language-ru",
+        "@lib//:grazie-tests-org-jetbrains-intellij-deps-languagetool-language-zh",
+        "@lib//:grazie-tests-org-jetbrains-intellij-deps-languagetool-language-de",
+        "@lib//:grazie-tests-org-jetbrains-intellij-deps-languagetool-language-it",
+        "@lib//:grazie-tests-jetbrains-intellij-deps-languagetool-language-ja",
+        "@lib//:grazie-tests-jetbrains-intellij-deps-languagetool-language-uk",
+        "@lib//:grazie-tests-jetbrains-intellij-deps-languagetool-language-be",
+        "@lib//:grazie-tests-org-jetbrains-intellij-deps-languagetool-language-pt",
+        "//libraries/ai.grazie.spell.gec.engine.local",
+        "@lib//:grazie-tests-org-languagetool-portuguese-pos-dict",
+        "//libraries/stream",
+        "//RegExpSupport:regexp",
+        "//platform/vcs-impl",
+        "//xml/xml-psi-api:psi",
+        "//xml/xml-parser:parser",
+        "//plugins/grazie/java",
+        "//plugins/grazie/properties",
+        "//platform/vcs-api:vcs",
+        "//plugins/markdown/core:markdown",
+        "//plugins/markdown/plugin:plugin-main",
+        "//libraries/kotlinx/coroutines/core",
+        "//platform/testFramework",
+        "//plugins/grazie/markdown",
+        "//plugins/grazie/todo",
+        "//plugins/grazie/vcs",
+        "//libraries/assertj-core",
+        "//platform/testFramework/junit5",
+        "//platform/testFramework/junit5/codeInsight",
+        "//tools/intellij.tools.ide.metrics.benchmark:ide-metrics-benchmark",
+        "//libraries/jetcheck",
+        "//plugins/grazie/markdown/specification/test:grazie-markdown-specification-tests_test_lib",
+        "//platform/ide-core",
+        "//libraries/fastutil",
+        "//libraries/kotlinx/collections-immutable:libraries-kotlinx-collections-immutable",
+        "//libraries/junit4",
+        "//libraries/junit6",
+        "//libraries/junit6-params",
+        "//libraries/ai-grazie-semantic-engine",
+        "//libraries/gson",
+        "//xml/relaxng",
+        "//platform/bazel-runfiles",
+    ],
+)
+### auto-generated section `build intellij.grazie.tests` end
+
+### auto-generated section `iml intellij.grazie.tests` start
+exports_files(
+    [
+        "intellij.grazie.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.grazie.tests` end

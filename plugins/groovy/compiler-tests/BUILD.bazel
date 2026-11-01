@@ -1,0 +1,75 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `build intellij.groovy.compiler.tests` start
+jvm_library(
+    name = "compiler-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "testSrc/**/*.kt",
+            "testSrc/**/*.java",
+            "testSrc/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.groovy.compiler.tests",
+    resource_strip_prefix = "testResources",
+    resources = glob(
+        ["testResources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+        "//community-resources:customization",
+    ],
+    deps = [
+        # do not sort,
+        "//plugins/groovy:groovy-tests_test_lib",
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/execution-impl",
+        "//platform/core-impl",
+        "//platform/lang-core",
+        "//platform/projectModel-api:projectModel",
+        "//java/debugger/openapi:java-debugger",
+        "//java/java-syntax:syntax",
+        "//java/java-psi-api:psi",
+        "//plugins/groovy/rt-constants:constants-rt",
+        "//java/compiler/impl",
+        "//platform/ide-core",
+        "//java/debugger/impl",
+        "//java/execution/impl",
+        "//java/testFramework",
+        "//jps/jps-builders:build",
+        "//plugins/groovy/jps-plugin:jps",
+        "//platform/platform-util-io:ide-util-io",
+        "//libraries/asm",
+        "//platform/util-ex",
+        "//platform/build-scripts/downloader",
+        "//platform/testFramework",
+        "//platform/execution",
+        "//plugins/groovy",
+        "//platform/statistics",
+        "//libraries/junit4",
+    ],
+)
+### auto-generated section `build intellij.groovy.compiler.tests` end
+
+### auto-generated section `iml intellij.groovy.compiler.tests` start
+exports_files(
+    [
+        "intellij.groovy.compiler.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.groovy.compiler.tests` end
+
+### auto-generated section `test intellij.groovy.compiler.tests` start
+jps_test(
+    name = "compiler-tests_test",
+    runtime_deps = [":compiler-tests_test_lib"],
+)
+### auto-generated section `test intellij.groovy.compiler.tests` end

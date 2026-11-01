@@ -1,0 +1,55 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//build:compiler-options.bzl", "create_kotlinc_options")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.python.ast` start
+content_module_jar(module = ":ast")
+### auto-generated section `dev intellij.python.ast` end
+
+### auto-generated section `build intellij.python.ast` start
+create_kotlinc_options(
+    name = "custom_ast",
+    warn = "error",
+    x_warning_level = ["DEPRECATION:warning"],
+)
+
+jvm_library(
+    name = "ast",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = ":custom_ast",
+    module_name = "intellij.python.ast",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//platform/util",
+        "//platform/util/base",
+        "//platform/core-api:core",
+        "//python/python-parser:parser",
+        "//platform/core-impl",
+        "//libraries/stream",
+        "//libraries/kotlinx/collections-immutable:libraries-kotlinx-collections-immutable",
+    ],
+)
+### auto-generated section `build intellij.python.ast` end
+
+### auto-generated section `iml intellij.python.ast` start
+exports_files(
+    [
+        "intellij.python.ast.iml",
+        "resources/intellij.python.ast.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.python.ast` end

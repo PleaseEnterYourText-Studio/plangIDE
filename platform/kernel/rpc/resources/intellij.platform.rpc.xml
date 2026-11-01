@@ -1,0 +1,13 @@
+<idea-plugin visibility="public">
+  <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+  <dependencies>
+    <module name="fleet.rpc"/>
+    <module name="intellij.platform.core"/>
+    <module name="intellij.platform.klogger"/>
+    <module name="intellij.platform.rpc.lite"/>
+  </dependencies>
+  <!-- endregion -->
+  <extensions defaultExtensionNs="com.intellij">
+    <platform.rpc.lite.remoteApiProvider implementation="com.intellij.platform.rpc.impl.RemoteApiProviderServiceLiteProvider"/>
+  </extensions>
+</idea-plugin>

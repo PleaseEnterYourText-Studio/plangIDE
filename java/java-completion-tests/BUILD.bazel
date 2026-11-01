@@ -1,0 +1,111 @@
+load("@community//build:bazel_targets_json.bzl", "current_bazel_targets_json")
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+BAZEL_TARGETS_JSON = current_bazel_targets_json()
+
+jps_test(
+    name = "completion-tests_test",
+    timeout = "long",
+    data = [
+        BAZEL_TARGETS_JSON,
+        "@community//java/java-tests:testData",
+    ],
+    jvm_flags = [
+        "-Dintellij.build.bazel.targets.json.file=$(rlocationpath %s)" % BAZEL_TARGETS_JSON,
+    ],
+    tags = ["community-java-tests"],
+    runtime_deps = [":completion-tests_test_lib"],
+)
+### skip generation section `test intellij.java.completion.tests`
+
+### auto-generated section `build intellij.java.completion.tests` start
+jvm_library(
+    name = "completion-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "testSrc/**/*.kt",
+            "testSrc/**/*.java",
+            "testSrc/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.java.completion.tests",
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//platform/structuralsearch:structuralSearch",
+        "//platform/structuralsearch/plugin",
+        "//platform/structure-view-impl/plugin",
+        "//platform/todo/plugin",
+        "//xml/plugin",
+        "//aether-dependency-resolver/plugin",
+        "//platform/testRunner/plugin",
+        "//java/langInjection",
+        "//plugins/completion-ml-ranking",
+        "//platform/vcs/plugin",
+        "//plugins/java-i18n",
+        "//plugins/java-decompiler/plugin:java-decompiler",
+        "//xml/emmet",
+        "//java/manifest",
+        "//plugins/groovy",
+        "//plugins/groovy-scripting",
+        "//plugins/textmate/plugin",
+        "//plugins/textmate",
+        "//libraries/byte-buddy",
+        "//platform/structure-view-impl/backend",
+        "//community-resources:customization",
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+    ],
+    deps = [
+        # do not sort,
+        "//platform/analysis-api:analysis",
+        "//platform/code-style-api:codeStyle",
+        "//platform/util/concurrency",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/lang-core",
+        "//platform/projectModel-api:projectModel",
+        "//platform/refactoring",
+        "//platform/testFramework",
+        "//java/testFramework",
+        "//java/java-impl:impl",
+        "//platform/platform-api:ide",
+        "//java/compiler/impl",
+        "//platform/platform-impl/internal",
+        "//libraries/kotlin/test:libraries-kotlinTest",
+        "//libraries/assertj-core",
+        "//libraries/stream",
+        "//platform/core-ui",
+        "//platform/ide-core",
+        "//java/java-frontback-psi-api:frontback-psi",
+        "//java/java-impl-inspections:impl-inspections",
+        "//platform/lang-api:lang",
+        "//java/java-impl-refactorings:impl-refactorings",
+        "//platform/util",
+        "//platform/core-api:core",
+        "//platform/core-impl",
+        "//tools/intellij.tools.ide.metrics.benchmark:ide-metrics-benchmark",
+        "//platform/util:util-ui",
+        "//platform/util-ex",
+        "//platform/syntax/syntax-psi:psi",
+        "//java/java-syntax:syntax",
+        "//platform/lang-impl",
+        "//java/java-psi-api:psi",
+        "//java/java-psi-impl:psi-impl",
+        "//java/testFramework/backend",
+        "//libraries/junit4",
+        "//libraries/junit6-params",
+        "//platform/util/jdom",
+    ],
+)
+### auto-generated section `build intellij.java.completion.tests` end
+
+### auto-generated section `iml intellij.java.completion.tests` start
+exports_files(
+    [
+        "intellij.java.completion.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.java.completion.tests` end

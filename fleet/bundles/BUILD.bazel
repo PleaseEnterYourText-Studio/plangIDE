@@ -1,0 +1,72 @@
+load("@community//fleet/build:fleet.bzl", "fleet_wasmjs_module")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//build:compiler-options.bzl", "create_kotlinc_options")
+
+fleet_wasmjs_module(
+    name = "wasmjs_module",
+    kotlinc_opts = ":custom_bundles",
+    module_name = "fleet.bundles",
+    plugins = ["@lib//:kotlin-serialization-plugin"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "@community//fleet/bifurcan:wasmjs_module_lib",
+        "@community//fleet/modules/api:wasmjs_module_lib",
+        "@community//fleet/util/core:wasmjs_module_lib",
+        "@kmp_deps_wasmjs//:org_jetbrains_intellij_deps_kotlinx_kotlinx_coroutines_core",
+        "@kmp_deps_wasmjs//:org_jetbrains_kotlin_kotlin_stdlib",
+        "@kmp_deps_wasmjs//:org_jetbrains_kotlinx_kotlinx_serialization_core",
+        "@kmp_deps_wasmjs//:org_jetbrains_kotlinx_kotlinx_serialization_json",
+    ],
+)
+
+### auto-generated section `build fleet.bundles` start
+create_kotlinc_options(
+    name = "custom_bundles",
+    opt_in = [
+        "kotlinx.coroutines.ExperimentalCoroutinesApi",
+        "kotlin.ExperimentalStdlibApi",
+    ],
+    x_consistent_data_class_copy_visibility = True,
+    x_context_parameters = True,
+    x_jvm_default = "all-compatibility",
+    x_lambdas = "class",
+)
+
+jvm_library(
+    name = "bundles",
+    srcs = glob(
+        [
+            "srcCommonMain/**/*.kt",
+            "srcCommonMain/**/*.java",
+            "srcCommonMain/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = ":custom_bundles",
+    module_name = "fleet.bundles",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinx/serialization/core",
+        "//libraries/kotlinx/serialization/json",
+        "//libraries/kotlinx/coroutines/core",
+        "//fleet/util/core",
+        "//fleet/modules/api",
+        "//fleet/bifurcan",
+    ],
+)
+### auto-generated section `build fleet.bundles` end
+
+### auto-generated section `iml fleet.bundles` start
+exports_files(
+    [
+        "fleet.bundles.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml fleet.bundles` end

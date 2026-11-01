@@ -1,0 +1,186 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@jps_dynamic_deps_community//:targets.bzl", "dev_dist_plugin")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+jps_test(
+    name = "xpath-tests_test",
+    timeout = "moderate",
+    tags = ["community-aggregator"],
+    runtime_deps = [":xpath-tests_test_lib"],
+)
+### skip generation section `test intellij.xpath.tests`
+
+### auto-generated section `dev intellij.xpath` start
+dev_dist_plugin(
+    content_modules = [
+        # do not sort,
+        "intellij.xml.langInjection.xpath",
+        "intellij.xpath.rt",
+    ],
+    descriptor = "xpath-lang/resources/META-INF/plugin.xml",
+    jars = {
+        "lib/xpath.jar": ["intellij.xpath"],
+        "lib/rt/xslt-rt.jar": ["intellij.xpath.rt"],
+    },
+    main_module = "intellij.xpath",
+    mode_refused_content_modules = {
+        "frontend": ["intellij.xml.langInjection.xpath"],
+    },
+)
+### auto-generated section `dev intellij.xpath` end
+
+### auto-generated section `build intellij.xpath` start
+jvm_library(
+    name = "xpath",
+    srcs = glob(
+        [
+            "xpath-lang/src/**/*.kt",
+            "xpath-lang/src/**/*.java",
+            "xpath-lang/src/**/*.form",
+            "xpath-view/src/**/*.kt",
+            "xpath-view/src/**/*.java",
+            "xpath-view/src/**/*.form",
+            "xpath-lang/gen/**/*.kt",
+            "xpath-lang/gen/**/*.java",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.xpath",
+    resource_strip_prefix = "xpath-lang/resources",
+    resources = glob(
+        ["xpath-lang/resources/**/*"],
+        allow_empty = True,
+        exclude = ["xpath-lang/resources/**/icon-robots.txt"],
+    ),
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//xml/dom-impl",
+        "//platform/backend",
+    ],
+    deps = [
+        # do not sort,
+        "//platform/analysis-api:analysis",
+        "//platform/code-style-api:codeStyle",
+        "//platform/core-api:core",
+        "//platform/core-impl",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/indexing-api:indexing",
+        "//jps/model-api:model",
+        "//platform/lang-core",
+        "//platform/projectModel-api:projectModel",
+        "//platform/structure-view-impl:structureView",
+        "//platform/platform-impl/concurrency",
+        "//platform/lang-api:lang",
+        "//platform/platform-impl:ide-impl",
+        "//platform/refactoring",
+        "//platform/indexing-impl",
+        "//platform/lang-impl",
+        "//platform/usageView",
+        "//xml/xml-parser:parser",
+        "//xml/impl",
+        "//platform/editor-ui-ex:editor-ex",
+        "//RegExpSupport:regexp",
+        "//xml/xml-psi-api:psi",
+        "//libraries/jaxen",
+        "//platform/util/nanoxml",
+        "//libraries/fastutil",
+        "//platform/core-ui",
+        "//platform/code-style-impl:codeStyle-impl",
+        "//platform/platform-util-io:ide-util-io",
+        "//platform/ide-core",
+        "//platform/util/jdom",
+        "//platform/execution",
+        "//platform/consoleView",
+        "//platform/consoleView/impl",
+        "//platform/forms_rt:java-guiForms-rt",
+        "//libraries/kotlinx/collections-immutable:libraries-kotlinx-collections-immutable",
+        "//platform/util/concurrency",
+        "//platform/util:util-ui",
+        "//platform/util-ex",
+    ],
+)
+### auto-generated section `build intellij.xpath` end
+
+### auto-generated section `iml intellij.xpath` start
+exports_files(
+    [
+        "intellij.xpath.iml",
+        "xpath-lang/resources/META-INF/plugin.xml",
+        "xpath-lang/resources/liveTemplates/xsl.xml",
+        "xpath-lang/resources/org/intellij/lang/xpath/xslt/resources/documentation.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.xpath` end
+
+### auto-generated section `build intellij.xpath.tests` start
+jvm_library(
+    name = "xpath-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "xpath-lang/test/**/*.kt",
+            "xpath-lang/test/**/*.java",
+            "xpath-lang/test/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.xpath.tests",
+    resource_strip_prefix = "xpath-lang/testData",
+    resources = glob(
+        ["xpath-lang/testData/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//platform/vcs/plugin",
+        "//xml/dom-impl",
+        "//xml/plugin",
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+        "//community-resources:customization",
+    ],
+    deps = [
+        # do not sort,
+        "//platform/platform-impl/internal",
+        "//platform/analysis-api:analysis",
+        "//platform/code-style-api:codeStyle",
+        "//platform/core-api:core",
+        "//platform/core-impl",
+        "//platform/editor-ui-api:editor-ui",
+        "//xml/xml-analysis-api:analysis",
+        "//platform/projectModel-api:projectModel",
+        "//platform/structure-view-impl:structureView",
+        "//platform/lang-api:lang",
+        "//platform/platform-impl:ide-impl",
+        "//platform/refactoring",
+        "//platform/indexing-impl",
+        "//platform/lang-impl",
+        "//xml/xml-parser:parser",
+        "//xml/impl",
+        "//platform/editor-ui-ex:editor-ex",
+        "//xml/xml-psi-api:psi",
+        "//plugins/xpath/xslt-rt:rt",
+        "//libraries/jaxen",
+        "//libraries/junit4",
+        "//platform/testFramework/junit5",
+        "//platform/testFramework/junit5/codeInsight",
+        "//libraries/junit6",
+        "//platform/testFramework",
+        "//platform/util/nanoxml",
+        "//platform/core-ui",
+        "//tools/intellij.tools.ide.metrics.benchmark:ide-metrics-benchmark",
+        "//plugins/xpath",
+        "//platform/structure-view-impl/plugin",
+    ],
+)
+### auto-generated section `build intellij.xpath.tests` end
+
+### auto-generated section `iml intellij.xpath.tests` start
+exports_files(
+    [
+        "intellij.xpath.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.xpath.tests` end

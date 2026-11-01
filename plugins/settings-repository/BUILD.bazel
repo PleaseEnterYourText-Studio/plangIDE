@@ -1,0 +1,161 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@jps_dynamic_deps_community//:targets.bzl", "dev_dist_plugin")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `dev intellij.settingsRepository` start
+dev_dist_plugin(
+    content_modules = [
+        # do not sort,
+        "intellij.libraries.sshd.osgi",
+        "intellij.libraries.jgit.ssh",
+    ],
+    descriptor = "resources/META-INF/plugin.xml",
+    jars = {
+        "lib/intellij.libraries.sshd.osgi.jar": [
+            "intellij.libraries.sshd.osgi",
+            "@lib//:libraries-sshd-osgi-apache-sshd-osgi",
+        ],
+        "lib/intellij.libraries.jgit.ssh.jar": [
+            "intellij.libraries.jgit.ssh",
+            "@lib//:libraries-jgit-ssh-eclipse-jgit-ssh-apache",
+            "@lib//:libraries-jgit-ssh-eclipse-jgit-ssh-apache-agent",
+        ],
+        "lib/settingsRepository.jar": ["intellij.settingsRepository"],
+    },
+    main_module = "intellij.settingsRepository",
+)
+### auto-generated section `dev intellij.settingsRepository` end
+
+### auto-generated section `build intellij.settingsRepository` start
+jvm_library(
+    name = "settings-repository",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.settingsRepository",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    exports = [
+        # do not sort,
+        "//libraries/jgit",
+        "//libraries/jgit-ssh",
+    ],
+    deps = [
+        # do not sort,
+        "//platform/core-api:core",
+        "//platform/credential-store",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/platform-api:ide",
+        "//platform/platform-impl:ide-impl",
+        "//libraries/jgit",
+        "//libraries/jgit-ssh",
+        "//platform/projectModel-api:projectModel",
+        "//platform/vcs-impl",
+        "//platform/projectModel-impl",
+        "//libraries/jzlib",
+        "@lib//:kotlin-stdlib",
+        "@lib//:slf4j-api",
+        "@lib//:slf4j-jdk14",
+        "//platform/configuration-store-impl:configurationStore-impl",
+        "//platform/util/progress",
+        "//platform/credential-store-ui:credentialStore-ui",
+        "//platform/core-impl",
+        "//libraries/jackson3/jackson:libraries-jackson3",
+        "//libraries/jackson3/databind",
+        "//libraries/kotlinx/coroutines/core",
+        "//platform/vcs-api:vcs",
+        "//platform/statistics",
+        "//platform/core-ui",
+        "//libraries/caffeine",
+        "//platform/platform-util-io:ide-util-io",
+        "//platform/ide-core",
+        "//platform/progress/shared:ide-progress",
+        "//platform/util/coroutines",
+        "//platform/credential-store-impl:credentialStore-impl",
+        "//libraries/sshd-osgi",
+        "//platform/util:util-ui",
+        "//platform/util-ex",
+    ],
+)
+### auto-generated section `build intellij.settingsRepository` end
+
+### auto-generated section `iml intellij.settingsRepository` start
+exports_files(
+    [
+        "intellij.settingsRepository.iml",
+        "resources/META-INF/plugin.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.settingsRepository` end
+
+### auto-generated section `build intellij.settingsRepository.tests` start
+jvm_library(
+    name = "settingsRepository-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "testSrc/**/*.kt",
+            "testSrc/**/*.java",
+            "testSrc/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.settingsRepository.tests",
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/core-api:core",
+        "//platform/credential-store",
+        "//platform/platform-api:ide",
+        "//platform/platform-impl:ide-impl",
+        "//platform/ide-core",
+        "//platform/progress/shared:ide-progress",
+        "//platform/projectModel-api:projectModel",
+        "//platform/vcs-impl",
+        "//platform/projectModel-impl",
+        "//platform/testFramework",
+        "@lib//:kotlin-stdlib",
+        "//libraries/jna",
+        "//libraries/junit4",
+        "//platform/core-impl",
+        "//platform/vcs-api:vcs",
+        "//platform/configuration-store-impl:configurationStore-impl",
+        "//platform/util:util-tests_test_lib",
+        "//plugins/settings-repository",
+        "//libraries/assertj-core",
+        "//platform/credential-store-ui:credentialStore-ui",
+        "//platform/testFramework/extensions:testExtensions",
+        "//platform/configuration-store-impl:configurationStore-tests_test_lib",
+        "//libraries/kotlinx/coroutines/core",
+        "//libraries/fastutil",
+        "//platform/util/jdom",
+        "//platform/util-ex",
+        "//platform/workspace/jps",
+    ],
+)
+### auto-generated section `build intellij.settingsRepository.tests` end
+
+### auto-generated section `iml intellij.settingsRepository.tests` start
+exports_files(
+    [
+        "intellij.settingsRepository.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.settingsRepository.tests` end
+
+### auto-generated section `test intellij.settingsRepository.tests` start
+jps_test(
+    name = "settingsRepository-tests_test",
+    runtime_deps = [":settingsRepository-tests_test_lib"],
+)
+### auto-generated section `test intellij.settingsRepository.tests` end

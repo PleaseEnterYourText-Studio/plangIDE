@@ -1,0 +1,51 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.platform.vcs.log` start
+content_module_jar(module = ":vcs-log")
+### auto-generated section `dev intellij.platform.vcs.log` end
+
+### auto-generated section `build intellij.platform.vcs.log` start
+jvm_library(
+    name = "vcs-log",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.vcs.log",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    exports = ["//platform/vcs-log/graph-api:vcs-log-graph"],
+    deps = [
+        # do not sort,
+        "//platform/util-rt",
+        "//platform/vcs-log/graph-api:vcs-log-graph",
+        "//platform/core-api:core",
+        "//platform/vcs-api/vcs-api-core:vcs-core",
+        "//platform/util",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/vcs-api:vcs",
+        "@lib//:kotlin-stdlib",
+        "//platform/ide-core",
+        "//platform/core-ui",
+        "//platform/diff-api:diff",
+    ],
+)
+### auto-generated section `build intellij.platform.vcs.log` end
+
+### auto-generated section `iml intellij.platform.vcs.log` start
+exports_files(
+    [
+        "intellij.platform.vcs.log.iml",
+        "resources/intellij.platform.vcs.log.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.vcs.log` end

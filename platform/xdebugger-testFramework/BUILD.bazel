@@ -1,0 +1,61 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library", "jvm_provided_library")
+
+### auto-generated section `build intellij.platform.debugger.testFramework` start
+jvm_provided_library(
+    name = "libraries_junit4_provided",
+    lib = "//libraries/junit4",
+)
+
+jvm_library(
+    name = "debugger-testFramework",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.debugger.testFramework",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//platform/util/concurrency",
+        "//platform/core-api:core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/execution-impl",
+        "//platform/projectModel-api:projectModel",
+        "//platform/testFramework",
+        "//platform/xdebugger-impl:debugger-impl",
+        "//platform/xdebugger-api:debugger",
+        "//platform/testFramework/extensions:testExtensions",
+        "//platform/lang-impl",
+        "//platform/core-ui",
+        "//platform/xdebugger-impl/rpc",
+        "//platform/xdebugger-impl/shared",
+        "//platform/xdebugger-impl/ui",
+        "//platform/execution",
+        "//platform/consoleView",
+        "//platform/consoleView/impl",
+        "//platform/lang-api:lang",
+        "//platform/progress/shared:ide-progress",
+        "//platform/util:util-ui",
+        ":libraries_junit4_provided",
+    ],
+)
+### auto-generated section `build intellij.platform.debugger.testFramework` end
+
+### auto-generated section `iml intellij.platform.debugger.testFramework` start
+exports_files(
+    [
+        "intellij.platform.debugger.testFramework.iml",
+        "resources/intellij.platform.debugger.testFramework.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.debugger.testFramework` end

@@ -1,0 +1,147 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@intellij_add_opens//:intellij_add_opens.bzl", "INTELLIJ_ADD_OPENS")
+load("@jps_dynamic_deps_community//:targets.bzl", "ALL_COMMUNITY_TARGETS", "BAZEL_TARGETS_JSON_COMMUNITY")
+load("@rules_java//java:defs.bzl", "java_binary")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//build:compiler-options.bzl", "create_kotlinc_options")
+
+# The product images directory of PyCharm Community. The split platform set of the ultimate checkout reads it as an
+# extra project file.
+filegroup(
+    name = "images",
+    srcs = glob(["images/**"]),
+    visibility = ["//visibility:public"],
+)
+
+# `PyCharmCommunityProperties` reads the bundled plugin list; the split platform set of the ultimate checkout reads it
+# as an extra project file.
+exports_files(
+    ["plugin-list.txt"],
+    visibility = ["//visibility:public"],
+)
+
+# Can't name the target 'installers' since it triggers elevation in Windows
+java_binary(
+    name = "i_build_target",
+    add_opens = INTELLIJ_ADD_OPENS,
+    data = ALL_COMMUNITY_TARGETS + [BAZEL_TARGETS_JSON_COMMUNITY],
+    jvm_flags = [
+        "-Dintellij.build.bazel.targets.json.file=$(rlocationpath %s)" % BAZEL_TARGETS_JSON_COMMUNITY,
+    ],
+    main_class = "PyCharmCommunityInstallersBuildTarget",
+    runtime_deps = [":build"],
+)
+
+### auto-generated section `build intellij.pycharm.community.build` start
+create_kotlinc_options(
+    name = "custom_build",
+    warn = "error",
+    x_warning_level = ["DEPRECATION:warning"],
+)
+
+jvm_library(
+    name = "build",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = ":custom_build",
+    module_name = "intellij.pycharm.community.build",
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//build",
+        "@lib//:kotlin-stdlib",
+        "//platform/util",
+        "//libraries/kotlinx/collections-immutable:libraries-kotlinx-collections-immutable",
+        "//libraries/kotlinx/coroutines/core",
+        "//platform/build-scripts/downloader",
+        "//build/tasks",
+        "//libraries/opentelemetry",
+        "//libraries/opentelemetry-semconv",
+        "//libraries/opentelemetry-extension-kotlin",
+        "//platform/core-api:core",
+        "//platform/platform-util-io:ide-util-io",
+        "//platform/ide-core",
+        "//python/python-sdk/backend",
+        "//python/python-pixi/common",
+        "//python/python-parser:parser",
+        "//jps/model-api:model",
+        "//libraries/jsoup",
+        "//libraries/jackson/annotations",
+        "//libraries/jackson3/jackson:libraries-jackson3",
+        "//libraries/jackson3/databind",
+        "//libraries/jackson3/module-kotlin:libraries-jackson3-module-kotlin",
+        "//platform/eel",
+    ],
+)
+### auto-generated section `build intellij.pycharm.community.build` end
+
+### auto-generated section `iml intellij.pycharm.community.build` start
+exports_files(
+    [
+        "intellij.pycharm.community.build.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.pycharm.community.build` end
+
+### auto-generated section `build intellij.pycharm.community.build.tests` start
+create_kotlinc_options(
+    name = "custom_pycharm-community-build-tests",
+    warn = "error",
+    x_warning_level = ["DEPRECATION:warning"],
+)
+
+jvm_library(
+    name = "pycharm-community-build-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "testSrc/**/*.kt",
+            "testSrc/**/*.java",
+            "testSrc/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    associates = ["//python/build"],
+    kotlinc_opts = ":custom_pycharm-community-build-tests",
+    visibility = ["//visibility:public"],
+    runtime_deps = ["//libraries/byte-buddy"],
+    deps = [
+        # do not sort,
+        "//build",
+        "//platform/build-scripts/testFramework",
+        "@lib//:kotlin-stdlib",
+        "//platform/util",
+        "//platform/build-scripts/downloader",
+        "//build/tasks",
+        "//libraries/junit6",
+        "//libraries/assertj-core",
+        "//platform/core-api:core",
+        "//platform/platform-util-io:ide-util-io",
+        "//platform/ide-core",
+        "//python/python-sdk/backend",
+    ],
+)
+### auto-generated section `build intellij.pycharm.community.build.tests` end
+
+### auto-generated section `iml intellij.pycharm.community.build.tests` start
+exports_files(
+    [
+        "intellij.pycharm.community.build.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.pycharm.community.build.tests` end
+
+### auto-generated section `test intellij.pycharm.community.build.tests` start
+jps_test(
+    name = "pycharm-community-build-tests_test",
+    runtime_deps = [":pycharm-community-build-tests_test_lib"],
+)
+### auto-generated section `test intellij.pycharm.community.build.tests` end

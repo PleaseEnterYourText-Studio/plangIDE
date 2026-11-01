@@ -1,0 +1,70 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `build kotlin.completion.tests.shared` start
+jvm_library(
+    name = "kotlin-completion-tests-shared_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "test/**/*.kt",
+            "test/**/*.java",
+            "test/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "kotlin.completion.tests.shared",
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinc/kotlin-compiler-common:libraries-kotlinc-kotlin-compiler-common",
+        "@lib//:kotlinc-kotlin-compiler-tests",
+        "//libraries/guava",
+        "//platform/analysis-api:analysis",
+        "//platform/code-style-api:codeStyle",
+        "//platform/core-api:core",
+        "//java/java-psi-api:psi",
+        "//platform/core-ui",
+        "//platform/core-impl",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/projectModel-api:projectModel",
+        "//platform/lang-api:lang",
+        "//platform/testFramework",
+        "//plugins/kotlin/base/testFramework",
+        "//libraries/gson",
+        "//plugins/kotlin/base/plugin",
+        "//plugins/kotlin/base/util",
+        "//java/testFramework",
+        "//plugins/kotlin/base/platforms",
+        "//plugins/kotlin/base/analysis",
+        "//plugins/kotlin/formatter",
+        "//plugins/kotlin/completion/api",
+        "//plugins/kotlin/tests-common:common-tests_test_lib",
+        "//plugins/kotlin/test-framework:test-framework_test_lib",
+        "//platform/analysis-impl",
+        "//platform/service-container",
+        "//plugins/kotlin/intellij.kotlin.base.test:base-test_test_lib",
+        "//jps/model-api:model",
+        "//platform/util:util-ui",
+        "//libraries/junit4",
+        "//plugins/kotlin/completion/impl-k2:kotlin-completion-impl",
+    ],
+)
+### auto-generated section `build kotlin.completion.tests.shared` end
+
+### auto-generated section `iml kotlin.completion.tests.shared` start
+exports_files(
+    [
+        "kotlin.completion.tests.shared.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml kotlin.completion.tests.shared` end
+
+### auto-generated section `test kotlin.completion.tests.shared` start
+jps_test(
+    name = "kotlin-completion-tests-shared_test",
+    runtime_deps = [":kotlin-completion-tests-shared_test_lib"],
+)
+### auto-generated section `test kotlin.completion.tests.shared` end

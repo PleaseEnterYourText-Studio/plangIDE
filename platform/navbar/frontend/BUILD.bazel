@@ -1,0 +1,110 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.platform.navbar.frontend` start
+content_module_jar(module = ":frontend")
+### auto-generated section `dev intellij.platform.navbar.frontend` end
+
+### auto-generated section `build intellij.platform.navbar.frontend` start
+jvm_library(
+    name = "frontend",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.navbar.frontend",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    exports = ["//platform/navbar/shared:navbar"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//platform/analysis-api:analysis",
+        "//platform/projectModel-api:projectModel",
+        "//platform/util/coroutines",
+        "//platform/util:util-ui",
+        "//platform/util",
+        "//platform/ide-core-impl",
+        "//platform/core-ui",
+        "//platform/core-api:core",
+        "//platform/ide-core",
+        "//platform/platform-api:ide",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/service-container",
+        "//platform/statistics",
+        "//platform/navbar/shared:navbar",
+        "//platform/platform-impl:ide-impl",
+        "//platform/lang-impl",
+        "//platform/lang-api:lang",
+        "//platform/project-frame",
+        "//platform/util/concurrency",
+    ],
+)
+### auto-generated section `build intellij.platform.navbar.frontend` end
+
+### auto-generated section `iml intellij.platform.navbar.frontend` start
+exports_files(
+    [
+        "intellij.platform.navbar.frontend.iml",
+        "resources/intellij.platform.navbar.frontend.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.navbar.frontend` end
+
+### auto-generated section `build intellij.platform.navbar.frontend.tests` start
+jvm_library(
+    name = "frontend-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "test/**/*.kt",
+            "test/**/*.java",
+            "test/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    associates = ["//platform/navbar/frontend"],
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinx/coroutines/core",
+        "//libraries/junit6",
+        "//libraries/assertj-core",
+        "//platform/testFramework/junit5",
+        "//platform/testFramework/common",
+        "//platform/util",
+        "//platform/util-ex",
+        "//platform/core-ui",
+        "//platform/core-api:core",
+        "//platform/core-impl",
+        "//platform/navbar/shared:navbar",
+        "//platform/editor-ui-api:editor-ui",
+    ],
+)
+### auto-generated section `build intellij.platform.navbar.frontend.tests` end
+
+### auto-generated section `iml intellij.platform.navbar.frontend.tests` start
+exports_files(
+    [
+        "intellij.platform.navbar.frontend.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.navbar.frontend.tests` end
+
+### auto-generated section `test intellij.platform.navbar.frontend.tests` start
+jps_test(
+    name = "frontend-tests_test",
+    runtime_deps = [":frontend-tests_test_lib"],
+)
+### auto-generated section `test intellij.platform.navbar.frontend.tests` end

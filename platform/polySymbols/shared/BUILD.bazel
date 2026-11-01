@@ -1,0 +1,59 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.platform.polySymbols` start
+content_module_jar(module = ":polySymbols")
+### auto-generated section `dev intellij.platform.polySymbols` end
+
+### auto-generated section `build intellij.platform.polySymbols` start
+jvm_library(
+    name = "polySymbols",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.polySymbols",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/ide-core",
+        "//platform/analysis-api:analysis",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/indexing-api:indexing",
+        "//platform/lang-impl",
+        "//platform/platform-impl:ide-impl",
+        "//platform/ide-core-impl",
+        "//platform/core-ui",
+        "//platform/util-ex",
+        "//platform/editor-ui-ex:editor-ex",
+        "//platform/core-api:core",
+        "//libraries/fastutil",
+        "//libraries/commons/compress",
+        "//libraries/markdown",
+        "//libraries/gson",
+        "//platform/projectModel-api:projectModel",
+        "//platform/markdown-utils",
+        "//platform/indexing-impl",
+        "//platform/core-impl",
+        "//platform/util:util-ui",
+    ],
+)
+### auto-generated section `build intellij.platform.polySymbols` end
+
+### auto-generated section `iml intellij.platform.polySymbols` start
+exports_files(
+    [
+        "intellij.platform.polySymbols.iml",
+        "resources/intellij.platform.polySymbols.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.polySymbols` end

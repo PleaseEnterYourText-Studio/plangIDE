@@ -1,0 +1,111 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library", "jvm_provided_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+jps_test(
+    name = "telemetry-tests_test",
+    timeout = "moderate",
+    tags = ["community-aggregator"],
+    runtime_deps = [":telemetry-tests_test_lib"],
+)
+### skip generation section `test intellij.platform.diagnostic.telemetry.tests`
+
+### auto-generated section `dev intellij.platform.diagnostic.telemetry` start
+content_module_jar(module = ":telemetry")
+### auto-generated section `dev intellij.platform.diagnostic.telemetry` end
+
+### auto-generated section `build intellij.platform.diagnostic.telemetry` start
+jvm_provided_library(
+    name = "libraries_kotlinx_coroutines_core_provided",
+    lib = "//libraries/kotlinx/coroutines/core",
+)
+
+jvm_provided_library(
+    name = "libraries_opentelemetry_provided",
+    lib = "//libraries/opentelemetry",
+)
+
+jvm_provided_library(
+    name = "libraries_opentelemetry-extension-kotlin_provided",
+    lib = "//libraries/opentelemetry-extension-kotlin",
+)
+
+jvm_library(
+    name = "telemetry",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = "@community//:k8",
+    module_name = "intellij.platform.diagnostic.telemetry",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    exports = ["//platform/diagnostic"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//platform/util",
+        "//platform/util/base",
+        "//platform/diagnostic",
+        ":libraries_kotlinx_coroutines_core_provided",
+        ":libraries_opentelemetry_provided",
+        ":libraries_opentelemetry-extension-kotlin_provided",
+    ],
+)
+### auto-generated section `build intellij.platform.diagnostic.telemetry` end
+
+### auto-generated section `iml intellij.platform.diagnostic.telemetry` start
+exports_files(
+    [
+        "intellij.platform.diagnostic.telemetry.iml",
+        "resources/intellij.platform.diagnostic.telemetry.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.diagnostic.telemetry` end
+
+### auto-generated section `build intellij.platform.diagnostic.telemetry.tests` start
+jvm_library(
+    name = "telemetry-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "testSrc/**/*.kt",
+            "testSrc/**/*.java",
+            "testSrc/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.diagnostic.telemetry.tests",
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinx/coroutines/core",
+        "//libraries/opentelemetry",
+        "//libraries/opentelemetry-semconv",
+        "//libraries/opentelemetry-extension-kotlin",
+        "//libraries/junit6",
+        "//libraries/kotlin/test-assertions-core-jvm:libraries-kotlinTestAssertionsCoreJvm",
+        "//platform/diagnostic/telemetry",
+        "//platform/diagnostic/telemetry.exporters",
+        "//libraries/jackson3/jackson:libraries-jackson3",
+    ],
+)
+### auto-generated section `build intellij.platform.diagnostic.telemetry.tests` end
+
+### auto-generated section `iml intellij.platform.diagnostic.telemetry.tests` start
+exports_files(
+    [
+        "intellij.platform.diagnostic.telemetry.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.diagnostic.telemetry.tests` end

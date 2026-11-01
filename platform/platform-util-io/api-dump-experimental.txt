@@ -1,0 +1,84 @@
+*c:com.intellij.execution.configurations.CompositeParameterTargetedValue
+- <init>():V
+- <init>(java.lang.String):V
+- addLocalPart(java.lang.String):com.intellij.execution.configurations.CompositeParameterTargetedValue
+- addPathPart(java.io.File):com.intellij.execution.configurations.CompositeParameterTargetedValue
+- addPathPart(java.lang.String):com.intellij.execution.configurations.CompositeParameterTargetedValue
+- addPathSeparator():com.intellij.execution.configurations.CompositeParameterTargetedValue
+- addTargetPart(java.lang.String,org.jetbrains.concurrency.Promise):com.intellij.execution.configurations.CompositeParameterTargetedValue
+- getLocalValue():java.lang.String
+- getParts():java.util.List
+- s:targetizeParameters(java.util.List):java.util.Collection
+c:com.intellij.execution.configurations.GeneralCommandLine
+- com.intellij.openapi.util.UserDataHolder
+- *:withWrappingCommand(java.lang.String,java.lang.String[]):com.intellij.execution.configurations.GeneralCommandLine
+*:com.intellij.execution.configurations.ParameterTargetValue
+- a:getLocalValue():java.lang.String
+*a:com.intellij.execution.configurations.ParameterTargetValuePart
+- com.intellij.execution.configurations.ParameterTargetValue
+- getLocalValue():java.lang.String
+- getPathToUpload():java.lang.String
+*f:com.intellij.execution.configurations.ParameterTargetValuePart$Const
+- com.intellij.execution.configurations.ParameterTargetValuePart
+- <init>(java.lang.String):V
+*f:com.intellij.execution.configurations.ParameterTargetValuePart$Path
+- com.intellij.execution.configurations.ParameterTargetValuePart
+- <init>(java.io.File):V
+- <init>(java.lang.String):V
+- getPathToUpload():java.lang.String
+*f:com.intellij.execution.configurations.ParameterTargetValuePart$PathSeparator
+- com.intellij.execution.configurations.ParameterTargetValuePart
+- sf:INSTANCE:com.intellij.execution.configurations.ParameterTargetValuePart$PathSeparator
+*f:com.intellij.execution.configurations.ParameterTargetValuePart$PromiseValue
+- com.intellij.execution.configurations.ParameterTargetValuePart
+- <init>(java.lang.String,org.jetbrains.concurrency.Promise):V
+- f:getTargetValue():org.jetbrains.concurrency.Promise
+f:com.intellij.execution.configurations.ParametersList
+- java.lang.Cloneable
+- *:add(com.intellij.execution.configurations.CompositeParameterTargetedValue):V
+- *:getTargetedList():java.util.List
+- *:prepend(com.intellij.execution.configurations.CompositeParameterTargetedValue):V
+f:com.intellij.execution.configurations.PathEnvironmentVariableUtil
+- *s:findAll(java.lang.String):java.util.List
+- *s:findFirst(java.lang.String):java.nio.file.Path
+- *s:findFirst(java.lang.String,java.lang.String):java.nio.file.Path
+*:com.intellij.execution.portsWatcher.ListeningPort
+- a:getPid():java.lang.Long
+- a:getPort():I
+*:com.intellij.execution.portsWatcher.ListeningPortHandler
+- onPortListeningEnded(com.intellij.execution.portsWatcher.ListeningPort):V
+- a:onPortListeningStarted(com.intellij.execution.portsWatcher.ListeningPort):V
+*e:com.intellij.execution.portsWatcher.PortListeningOptions
+- java.lang.Enum
+- sf:INCLUDE_CHILDREN:com.intellij.execution.portsWatcher.PortListeningOptions
+- sf:INCLUDE_SELF:com.intellij.execution.portsWatcher.PortListeningOptions
+- sf:INCLUDE_SELF_AND_CHILDREN:com.intellij.execution.portsWatcher.PortListeningOptions
+- s:getEntries():kotlin.enums.EnumEntries
+- f:includesChildren():Z
+- f:includesSelf():Z
+- s:valueOf(java.lang.String):com.intellij.execution.portsWatcher.PortListeningOptions
+- s:values():com.intellij.execution.portsWatcher.PortListeningOptions[]
+*:com.intellij.execution.portsWatcher.ProcessPortsWatcher
+- *sf:Companion:com.intellij.execution.portsWatcher.ProcessPortsWatcher$Companion
+- a:resetDelay():V
+*f:com.intellij.execution.portsWatcher.ProcessPortsWatcher$Companion
+- f:startWatching(com.intellij.platform.eel.EelDescriptor,J,com.intellij.execution.portsWatcher.ListeningPortHandler,kotlinx.coroutines.CoroutineScope,com.intellij.execution.portsWatcher.PortListeningOptions):com.intellij.execution.portsWatcher.ProcessPortsWatcher
+- bs:startWatching$default(com.intellij.execution.portsWatcher.ProcessPortsWatcher$Companion,com.intellij.platform.eel.EelDescriptor,J,com.intellij.execution.portsWatcher.ListeningPortHandler,kotlinx.coroutines.CoroutineScope,com.intellij.execution.portsWatcher.PortListeningOptions,I,java.lang.Object):com.intellij.execution.portsWatcher.ProcessPortsWatcher
+c:com.intellij.execution.process.KillableProcessHandler
+- com.intellij.execution.process.OSProcessHandler
+- com.intellij.execution.KillableProcess
+- com.intellij.execution.process.SoftlyKillableProcessHandler
+- *:setShouldKillProcessSoftlyWithWinP(Z):V
+*:com.intellij.execution.process.SoftlyKillableProcessHandler
+- a:shouldKillProcessSoftly():Z
+*f:com.intellij.util.ShellEnvironmentReader
+- s:powerShellCommand(java.nio.file.Path,java.util.List):java.lang.ProcessBuilder
+- s:readEnvironment(java.lang.ProcessBuilder,J):com.intellij.openapi.util.Pair
+- s:shellCommand(java.lang.String,java.nio.file.Path,java.util.List):java.lang.ProcessBuilder
+- s:shellCommand(java.lang.String,java.nio.file.Path,Z,java.util.List):java.lang.ProcessBuilder
+- s:winShellCommand(java.nio.file.Path,java.util.List):java.lang.ProcessBuilder
+*f:com.intellij.util.io.TrashBin
+- s:canMoveToTrash(com.intellij.openapi.vfs.VirtualFile):Z
+- s:canMoveToTrash(java.nio.file.Path):Z
+- s:isSupported():Z
+- s:moveToTrash(java.nio.file.Path):V

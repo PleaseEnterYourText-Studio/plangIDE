@@ -1,0 +1,133 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+jps_test(
+    name = "vcs-dvcs-impl-tests_test",
+    timeout = "moderate",
+    tags = ["community-aggregator"],
+    runtime_deps = [":vcs-dvcs-impl-tests_test_lib"],
+)
+
+### skip generation section `test intellij.platform.vcs.dvcs.impl.tests`
+
+### auto-generated section `dev intellij.platform.vcs.dvcs.impl` start
+content_module_jar(module = ":vcs-dvcs-impl")
+### auto-generated section `dev intellij.platform.vcs.dvcs.impl` end
+
+### auto-generated section `build intellij.platform.vcs.dvcs.impl` start
+jvm_library(
+    name = "vcs-dvcs-impl",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.vcs.dvcs.impl",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/analysis-api:analysis",
+        "//platform/util/concurrency",
+        "//platform/core-api:core",
+        "//platform/lang-api:lang",
+        "//platform/diff-api:diff",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/lvcs-api:lvcs",
+        "//platform/projectModel-api:projectModel",
+        "//platform/vcs-impl",
+        "//platform/project/shared:project",
+        "//platform/vcs-impl/shared",
+        "//platform/core-impl",
+        "//platform/platform-impl:ide-impl",
+        "//platform/vcs-log/api:vcs-log",
+        "//platform/vcs-log/impl",
+        "//platform/lang-impl",
+        "//platform/vcs-api:vcs",
+        "//platform/ide-core-impl",
+        "//platform/ide-core",
+        "//platform/progress/shared:ide-progress",
+        "//platform/dvcs-api:vcs-dvcs",
+        "//libraries/miglayout-swing",
+        "//platform/util/jdom",
+        "//platform/util:util-ui",
+        "//platform/core-ui",
+        "//platform/diff-impl",
+        "//platform/workspace/jps",
+        "//platform/backend/workspace",
+        "//platform/util/coroutines",
+        "//platform/workspace/storage",
+        "//platform/dvcs-impl/shared",
+        "//fleet/rpc",
+        "//jps/model-api:model",
+        "//platform/lang-core",
+    ],
+)
+### auto-generated section `build intellij.platform.vcs.dvcs.impl` end
+
+### auto-generated section `iml intellij.platform.vcs.dvcs.impl` start
+exports_files(
+    [
+        "intellij.platform.vcs.dvcs.impl.iml",
+        "resources/VcsProductivityFeatures.xml",
+        "resources/intellij.platform.vcs.dvcs.impl.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.vcs.dvcs.impl` end
+
+### auto-generated section `build intellij.platform.vcs.dvcs.impl.tests` start
+jvm_library(
+    name = "vcs-dvcs-impl-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "testSrc/**/*.kt",
+            "testSrc/**/*.java",
+            "testSrc/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.vcs.dvcs.impl.tests",
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/projectModel-api:projectModel",
+        "//platform/vcs-impl",
+        "//platform/vcs-impl/shared",
+        "//platform/core-impl",
+        "//platform/platform-impl:ide-impl",
+        "//platform/lang-impl",
+        "//platform/vcs-api:vcs",
+        "//platform/dvcs-api:vcs-dvcs",
+        "//platform/testFramework",
+        "//libraries/mockito",
+        "//platform/vcs-tests:vcs-testFramework",
+        "//platform/core-ui",
+        "//platform/kernel/rpc.backend",
+        "//platform/lang-core",
+        "//platform/dvcs-impl:vcs-dvcs-impl",
+        "//libraries/junit4",
+        "//libraries/junit6",
+    ],
+)
+### auto-generated section `build intellij.platform.vcs.dvcs.impl.tests` end
+
+### auto-generated section `iml intellij.platform.vcs.dvcs.impl.tests` start
+exports_files(
+    [
+        "intellij.platform.vcs.dvcs.impl.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.vcs.dvcs.impl.tests` end

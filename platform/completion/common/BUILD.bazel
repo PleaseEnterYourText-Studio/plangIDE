@@ -1,0 +1,99 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+jps_test(
+    name = "common-tests_test",
+    timeout = "moderate",
+    tags = ["community-aggregator"],
+    runtime_deps = [":common-tests_test_lib"],
+)
+
+### skip generation section `test intellij.platform.completion.common.tests`
+
+### auto-generated section `dev intellij.platform.completion.common` start
+content_module_jar(module = ":common")
+### auto-generated section `dev intellij.platform.completion.common` end
+
+### auto-generated section `build intellij.platform.completion.common` start
+jvm_library(
+    name = "common",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.completion.common",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/kernel/rpc",
+        "@lib//:kotlin-stdlib",
+        "//libraries/jetbrains/annotations",
+        "//platform/lang-impl",
+        "//platform/core-api:core",
+        "//platform/platform-impl:ide-impl",
+        "//platform/project/shared:project",
+        "//libraries/kotlinx/serialization/core",
+        "//platform/util:util-ui",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/analysis-api:analysis",
+        "//platform/platform-impl/rpc",
+        "//platform/lang-api:lang",
+    ],
+)
+### auto-generated section `build intellij.platform.completion.common` end
+
+### auto-generated section `iml intellij.platform.completion.common` start
+exports_files(
+    [
+        "intellij.platform.completion.common.iml",
+        "resources/intellij.platform.completion.common.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.completion.common` end
+
+### auto-generated section `build intellij.platform.completion.common.tests` start
+jvm_library(
+    name = "common-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "testSrc/**/*.kt",
+            "testSrc/**/*.java",
+            "testSrc/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.completion.common.tests",
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//platform/lang-impl",
+        "//platform/core-api:core",
+        "//platform/testFramework",
+        "//platform/testFramework/junit5",
+        "//libraries/kotlinx/serialization/json",
+        "//libraries/junit6",
+        "//platform/completion/common",
+    ],
+)
+### auto-generated section `build intellij.platform.completion.common.tests` end
+
+### auto-generated section `iml intellij.platform.completion.common.tests` start
+exports_files(
+    [
+        "intellij.platform.completion.common.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.completion.common.tests` end

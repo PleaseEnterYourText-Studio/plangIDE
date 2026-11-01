@@ -1,0 +1,107 @@
+// Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+package com.jetbrains.python.inspections.quickfix;
+
+import com.google.common.collect.Maps;
+import com.intellij.modcommand.ModPsiUpdater;
+import com.intellij.modcommand.PsiUpdateModCommandQuickFix;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Pair;
+import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.util.PsiTreeUtil;
+import com.jetbrains.python.PyPsiBundle;
+import com.jetbrains.python.inspections.PyDictCreationInspection;
+import com.jetbrains.python.psi.LanguageLevel;
+import com.jetbrains.python.psi.PyAssignmentStatement;
+import com.jetbrains.python.psi.PyDictLiteralExpression;
+import com.jetbrains.python.psi.PyDoubleStarExpression;
+import com.jetbrains.python.psi.PyElementGenerator;
+import com.jetbrains.python.psi.PyExpression;
+import com.jetbrains.python.psi.PyKeyValueExpression;
+import com.jetbrains.python.psi.PyStatement;
+import com.jetbrains.python.psi.PySubscriptionExpression;
+import com.jetbrains.python.psi.PyTupleExpression;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import static com.jetbrains.python.psi.PyUtil.as;
+
+public class DictCreationQuickFix extends PsiUpdateModCommandQuickFix {
+  @Override
+  public @NotNull String getFamilyName() {
+    return PyPsiBundle.message("QFIX.dict.creation");
+  }
+
+  @Override
+  public void applyFix(@NotNull Project project, @NotNull PsiElement element, @NotNull ModPsiUpdater updater) {
+    final PyElementGenerator elementGenerator = PyElementGenerator.getInstance(project);
+    final Map<String, String> statementsMap = Maps.newLinkedHashMap();
+    final PyAssignmentStatement myStatement = as(element, PyAssignmentStatement.class);
+    if (myStatement == null) return;
+    final PyExpression assignedValue = myStatement.getAssignedValue();
+    if (assignedValue instanceof PyDictLiteralExpression) {
+      for (PsiElement expression : assignedValue.getChildren()) {
+        if (expression instanceof PyKeyValueExpression kvExpr) {
+          final PyExpression value = kvExpr.getValue();
+          if (value != null) {
+            statementsMap.put(kvExpr.getKey().getText(), value.getText());
+          }
+        }
+        else if (expression instanceof PyDoubleStarExpression) {
+          statementsMap.put(expression.getText(), null);
+        }
+      }
+
+      PyStatement statement = PsiTreeUtil.getNextSiblingOfType(myStatement, PyStatement.class);
+      while (statement instanceof PyAssignmentStatement assignmentStatement) {
+        final PyExpression target = myStatement.getTargets()[0];
+        final String targetName = target.getName();
+        if (targetName != null) {
+          final List<Pair<PyExpression, PyExpression>> targetsToValues =
+            PyDictCreationInspection.getDictTargets(target, targetName, assignmentStatement);
+          final PyStatement nextStatement = PsiTreeUtil.getNextSiblingOfType(statement, PyStatement.class);
+          if (targetsToValues == null || targetsToValues.isEmpty()) break;
+          for (Pair<PyExpression, PyExpression> targetToValue : targetsToValues) {
+            final PySubscriptionExpression subscription = (PySubscriptionExpression)targetToValue.first;
+            final PyExpression indexExpression = subscription.getIndexExpression();
+            assert indexExpression != null;
+            final String indexText;
+            if (indexExpression instanceof PyTupleExpression) {
+              indexText = "(" + indexExpression.getText() + ")";
+            }
+            else {
+              indexText = indexExpression.getText();
+            }
+
+            final String valueText;
+            if (targetToValue.second instanceof PyTupleExpression) {
+              valueText = "(" + targetToValue.second.getText() + ")";
+            }
+            else {
+              valueText = targetToValue.second.getText();
+            }
+
+            statementsMap.put(indexText, valueText);
+            statement.delete();
+          }
+          statement = nextStatement;
+        }
+      }
+      List<String> statements = new ArrayList<>();
+      for (Map.Entry<String, String> entry : statementsMap.entrySet()) {
+        if (entry.getValue() != null) {
+          statements.add(entry.getKey() + ": " + entry.getValue());
+        }
+        else {
+          statements.add(entry.getKey());
+        }
+      }
+      final PyExpression expression =
+        elementGenerator.createExpressionFromText(LanguageLevel.forElement(myStatement), "{" + StringUtil.join(statements, ", ") + "}");
+      assignedValue.replace(expression);
+    }
+  }
+}

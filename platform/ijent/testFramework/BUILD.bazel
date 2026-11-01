@@ -1,0 +1,41 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `build intellij.platform.ijent.community.testFramework` start
+jvm_library(
+    name = "testFramework",
+    srcs = glob(
+        [],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.ijent.community.testFramework",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinx/coroutines/core",
+        "//platform/core-api:core",
+        "//platform/eel-impl",
+        "//platform/eel-provider",
+        "//platform/platform-impl:ide-impl",
+        "//platform/testFramework",
+        "//platform/util/coroutines",
+        "//platform/platform-impl/eel:ide-impl-wsl",
+        "//platform/execution",
+        "//platform/eel-nioFs-impl",
+    ],
+)
+### auto-generated section `build intellij.platform.ijent.community.testFramework` end
+
+### auto-generated section `iml intellij.platform.ijent.community.testFramework` start
+exports_files(
+    [
+        "intellij.platform.ijent.community.testFramework.iml",
+        "resources/intellij.platform.ijent.community.testFramework.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.ijent.community.testFramework` end

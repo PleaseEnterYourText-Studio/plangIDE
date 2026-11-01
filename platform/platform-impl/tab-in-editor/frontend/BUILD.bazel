@@ -1,0 +1,44 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.platform.ide.tabInEditor.frontend` start
+content_module_jar(module = ":frontend")
+### auto-generated section `dev intellij.platform.ide.tabInEditor.frontend` end
+
+### auto-generated section `build intellij.platform.ide.tabInEditor.frontend` start
+jvm_library(
+    name = "frontend",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.ide.tabInEditor.frontend",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    runtime_deps = ["//platform/platform-frontend:frontend"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//platform/platform-impl/tab-in-editor",
+    ],
+)
+### auto-generated section `build intellij.platform.ide.tabInEditor.frontend` end
+
+### auto-generated section `iml intellij.platform.ide.tabInEditor.frontend` start
+exports_files(
+    [
+        "intellij.platform.ide.tabInEditor.frontend.iml",
+        "resources/intellij.platform.ide.tabInEditor.frontend.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.ide.tabInEditor.frontend` end

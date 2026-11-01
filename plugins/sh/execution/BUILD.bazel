@@ -1,0 +1,59 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.sh.execution` start
+content_module_jar(module = ":execution")
+### auto-generated section `dev intellij.sh.execution` end
+
+### auto-generated section `build intellij.sh.execution` start
+jvm_library(
+    name = "execution",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.sh.execution",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//plugins/sh/core",
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//platform/core-impl",
+        "//platform/core-ui",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/platform-api:ide",
+        "//platform/ide-core",
+        "//platform/platform-util-io:ide-util-io",
+        "//platform/projectModel-api:projectModel",
+        "//platform/util",
+        "//platform/util/jdom",
+        "//platform/util:util-ui",
+        "//platform/eel",
+        "//platform/eel-provider",
+        "//platform/execution",
+        "//platform/execution-impl",
+        "//platform/lang-impl",
+        "//platform/consoleView",
+        "//platform/forms_rt:java-guiForms-rt",
+    ],
+)
+### auto-generated section `build intellij.sh.execution` end
+
+### auto-generated section `iml intellij.sh.execution` start
+exports_files(
+    [
+        "intellij.sh.execution.iml",
+        "resources/intellij.sh.execution.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.sh.execution` end

@@ -1,0 +1,55 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//build:compiler-options.bzl", "create_kotlinc_options")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.python.terminal.frontend` start
+content_module_jar(module = ":frontend")
+### auto-generated section `dev intellij.python.terminal.frontend` end
+
+### auto-generated section `build intellij.python.terminal.frontend` start
+create_kotlinc_options(
+    name = "custom_frontend",
+    warn = "error",
+    x_warning_level = ["DEPRECATION:warning"],
+)
+
+jvm_library(
+    name = "frontend",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = ":custom_frontend",
+    module_name = "intellij.python.terminal.frontend",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//platform/ide-core",
+        "//platform/core-api:core",
+        "//platform/platform-impl:ide-impl",
+        "//python/terminal/shared",
+        "//platform/projectModel-api:projectModel",
+        "//plugins/terminal/frontend",
+        "//plugins/terminal",
+    ],
+)
+### auto-generated section `build intellij.python.terminal.frontend` end
+
+### auto-generated section `iml intellij.python.terminal.frontend` start
+exports_files(
+    [
+        "intellij.python.terminal.frontend.iml",
+        "resources/intellij.python.terminal.frontend.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.python.terminal.frontend` end

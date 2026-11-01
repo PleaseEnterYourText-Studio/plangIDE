@@ -1,0 +1,215 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+jps_test(
+    name = "vcs-impl-tests_test",
+    timeout = "moderate",
+    tags = ["community-aggregator"],
+    runtime_deps = [
+        ":vcs-impl-tests_test_lib",
+        "//platform/vcs/plugin",
+    ],
+)
+### skip generation section `test intellij.platform.vcs.impl.tests`
+
+### auto-generated section `dev intellij.platform.vcs.impl` start
+content_module_jar(module = ":vcs-impl")
+### auto-generated section `dev intellij.platform.vcs.impl` end
+
+### auto-generated section `build intellij.platform.vcs.impl` start
+jvm_library(
+    name = "vcs-impl",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+            "gen/**/*.kt",
+            "gen/**/*.java",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.vcs.impl",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+        allow_empty = True,
+        exclude = ["resources/**/icon-robots.txt"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/analysis-api:analysis",
+        "//platform/code-style-api:codeStyle",
+        "//platform/util/concurrency",
+        "//platform/core-api:core",
+        "//platform/credential-store",
+        "//platform/diff-api:diff",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/indexing-api:indexing",
+        "//jps/model-api:model",
+        "//platform/lang-core",
+        "//platform/lvcs-api:lvcs",
+        "//platform/projectModel-api:projectModel",
+        "//platform/util/diff",
+        "//platform/vcs-api:vcs",
+        "//platform/platform-api:ide",
+        "//platform/platform-impl:ide-impl",
+        "//platform/platform-impl/error-tree-view",
+        "//platform/lang-api:lang",
+        "//jps/model-serialization",
+        "//libraries/guava",
+        "//platform/lang-impl",
+        "//libraries/gson",
+        "//platform/diff-impl",
+        "//platform/refactoring",
+        "//platform/vcs-log/api:vcs-log",
+        "//libraries/miglayout-swing",
+        "//platform/statistics",
+        "//platform/util",
+        "//libraries/fastutil",
+        "//platform/core-ui",
+        "//platform/built-in-server:builtInServer-impl",
+        "//platform/built-in-server-api:builtInServer",
+        "//platform/editor-ui-ex:editor-ex",
+        "//platform/core-impl",
+        "//platform/projectModel-impl",
+        "//libraries/kotlinx/coroutines/core",
+        "//platform/code-style-impl:codeStyle-impl",
+        "//platform/platform-util-io-impl:ide-util-io-impl",
+        "//platform/platform-util-io:ide-util-io",
+        "//platform/util/progress",
+        "//libraries/caffeine",
+        "//platform/workspace/storage",
+        "//platform/util/jdom",
+        "//platform/diagnostic/telemetry",
+        "//platform/analysis-impl",
+        "//platform/ide-core-impl",
+        "//libraries/opentelemetry",
+        "//libraries/opentelemetry-semconv",
+        "//platform/workspace/jps",
+        "//platform/backend/workspace",
+        "//platform/ide-core/plugins",
+        "//platform/ide-core",
+        "//platform/diagnostic",
+        "//platform/util:util-ui",
+        "//platform/util/coroutines",
+        "//platform/util-ex",
+        "//libraries/kotlinx/serialization/core",
+        "//libraries/kotlinx/serialization/json",
+        "//platform/forms_rt:java-guiForms-rt",
+        "//libraries/microba",
+        "//platform/vcs-impl/shared",
+        "//libraries/jgoodies/forms",
+        "//platform/project-frame",
+        "//platform/observable",
+        "//platform/platform-impl/concurrency",
+        "//platform/project/shared:project",
+        "//platform/platform-impl/rpc",
+        "//fleet/rpc",
+        "//platform/progress/shared:ide-progress",
+        "//platform/execution",
+        "//platform/execution-impl",
+        "//platform/consoleView",
+        "//platform/consoleView/impl",
+        "//platform/eel",
+        "//platform/util/annotations",
+        "//platform/remote-topics/shared:rpc-topics",
+    ],
+)
+### auto-generated section `build intellij.platform.vcs.impl` end
+
+### auto-generated section `iml intellij.platform.vcs.impl` start
+exports_files(
+    [
+        "intellij.platform.vcs.impl.iml",
+        "resources/META-INF/VcsActions.xml",
+        "resources/META-INF/VcsExtensionPoints.xml",
+        "resources/META-INF/VcsExtensions.xml",
+        "resources/intellij.platform.vcs.impl.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.vcs.impl` end
+
+### auto-generated section `build intellij.platform.vcs.impl.tests` start
+jvm_library(
+    name = "vcs-impl-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "testSrc/**/*.kt",
+            "testSrc/**/*.java",
+            "testSrc/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    associates = ["//platform/vcs-impl"],
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//platform/vcs/plugin",
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+        "//community-resources:customization",
+    ],
+    deps = [
+        # do not sort,
+        "//platform/analysis-api:analysis",
+        "//platform/code-style-api:codeStyle",
+        "//platform/util/concurrency",
+        "//platform/core-api:core",
+        "//platform/credential-store",
+        "//platform/diff-api:diff",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/editor-ui-ex:editor-ex",
+        "//platform/lang-core",
+        "//platform/project/shared:project",
+        "//platform/projectModel-api:projectModel",
+        "//platform/util/diff",
+        "//platform/vcs-api:vcs",
+        "//platform/platform-api:ide",
+        "//platform/platform-impl:ide-impl",
+        "//platform/platform-impl/rpc",
+        "//platform/kernel/rpc",
+        "//platform/lang-api:lang",
+        "//jps/model-serialization",
+        "//platform/lang-impl",
+        "//platform/testFramework",
+        "//platform/diff-impl",
+        "//platform/vcs-log/api:vcs-log",
+        "//platform/statistics",
+        "//platform/statistics/testFramework",
+        "//platform/util",
+        "//libraries/fastutil",
+        "//platform/core-ui",
+        "//platform/core-impl",
+        "//platform/projectModel-impl",
+        "//platform/analysis-impl",
+        "//platform/ide-core-impl",
+        "//platform/testFramework/junit5",
+        "//platform/ide-core",
+        "//platform/util:util-ui",
+        "//tools/intellij.tools.ide.metrics.benchmark:ide-metrics-benchmark",
+        "//platform/util/coroutines",
+        "//platform/vcs-impl/shared",
+        "//platform/kernel/rpc.backend",
+        "//platform/diff-impl/tests:tests_test_lib",
+        "//platform/execution",
+        "//platform/vcs-impl/shared:vcs-impl-shared-tests_test_lib",
+        "//libraries/junit4",
+        "//libraries/junit6",
+        "//libraries/kotlinx/serialization/core",
+        "//libraries/kotlinx/serialization/json",
+    ],
+)
+### auto-generated section `build intellij.platform.vcs.impl.tests` end
+
+### auto-generated section `iml intellij.platform.vcs.impl.tests` start
+exports_files(
+    [
+        "intellij.platform.vcs.impl.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.vcs.impl.tests` end

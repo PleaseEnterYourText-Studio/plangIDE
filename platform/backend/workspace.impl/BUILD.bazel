@@ -1,0 +1,56 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.platform.backend.workspace.impl` start
+content_module_jar(module = ":workspace.impl")
+### auto-generated section `dev intellij.platform.backend.workspace.impl` end
+
+### auto-generated section `build intellij.platform.backend.workspace.impl` start
+jvm_library(
+    name = "workspace.impl",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.backend.workspace.impl",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    runtime_deps = ["//platform/backend"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/opentelemetry",
+        "//libraries/jetbrains/annotations",
+        "//platform/eel-provider",
+        "//platform/platform-impl:ide-impl",
+        "//platform/ide-core",
+        "//platform/core-api:core",
+        "//platform/projectModel-api:projectModel",
+        "//platform/projectModel-impl",
+        "//platform/workspace/jps",
+        "//platform/workspace/storage",
+        "//platform/backend/workspace",
+        "//platform/backend/observation",
+        "//platform/util",
+        "//platform/diagnostic/telemetry",
+        "//platform/diagnostic/telemetry-impl",
+    ],
+)
+### auto-generated section `build intellij.platform.backend.workspace.impl` end
+
+### auto-generated section `iml intellij.platform.backend.workspace.impl` start
+exports_files(
+    [
+        "intellij.platform.backend.workspace.impl.iml",
+        "resources/intellij.platform.backend.workspace.impl.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.backend.workspace.impl` end

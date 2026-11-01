@@ -1,0 +1,54 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.toml.json` start
+content_module_jar(module = ":json")
+### auto-generated section `dev intellij.toml.json` end
+
+### auto-generated section `build intellij.toml.json` start
+jvm_library(
+    name = "json",
+    srcs = glob(
+        [
+            "src/main/kotlin/**/*.kt",
+            "src/main/kotlin/**/*.java",
+            "src/main/kotlin/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.toml.json",
+    resource_strip_prefix = "src/main/resources",
+    resources = glob(
+        ["src/main/resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    exports = ["//json/backend"],
+    runtime_deps = ["//platform/backend"],
+    deps = [
+        # do not sort,
+        "//platform/analysis-api:analysis",
+        "//platform/code-style-api:codeStyle",
+        "//platform/core-api:core",
+        "//platform/core-impl",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/lang-api:lang",
+        "//platform/platform-impl:ide-impl",
+        "//platform/lang-impl",
+        "//plugins/toml/core",
+        "@lib//:kotlin-stdlib",
+        "//json/backend",
+        "//platform/util:util-ui",
+        "//libraries/stream",
+    ],
+)
+### auto-generated section `build intellij.toml.json` end
+
+### auto-generated section `iml intellij.toml.json` start
+exports_files(
+    [
+        "intellij.toml.json.iml",
+        "src/main/resources/intellij.toml.json.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.toml.json` end

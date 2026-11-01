@@ -1,0 +1,89 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.internal.jcef` start
+content_module_jar(module = ":jcef")
+### auto-generated section `dev intellij.internal.jcef` end
+
+### auto-generated section `build intellij.internal.jcef` start
+jvm_library(
+    name = "jcef",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.internal.jcef",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//libraries/jcef",
+        "//platform/analysis-api:analysis",
+        "//platform/code-style-api:codeStyle",
+        "//platform/util/concurrency",
+        "//platform/core-api:core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/core-impl",
+        "//platform/indexing-api:indexing",
+        "//jps/model-api:model",
+        "//jps/model-serialization",
+        "//platform/lang-core",
+        "//platform/projectModel-api:projectModel",
+        "//platform/ui.jcef",
+        "//platform/platform-impl/bootstrap",
+        "//platform/platform-impl:ide-impl",
+        "//platform/platform-impl/internal",
+        "//platform/platform-impl/ui",
+        "//platform/core-ui",
+        "//platform/util:util-ui",
+        "//platform/statistics",
+        "//platform/editor-ui-ex:editor-ex",
+        "//platform/analysis-impl",
+        "//platform/util/progress",
+        "//platform/project-frame",
+        "//platform/lang-api:lang",
+        "//platform/backend/workspace",
+        "//platform/workspace/jps",
+        "//platform/jbr",
+        "//platform/ide-core-impl",
+        "//platform/ide-core",
+        "//platform/util/coroutines",
+        "//platform/forms_rt:java-guiForms-rt",
+        "//platform/util/jdom",
+        "//platform/service-container",
+        "//libraries/guava",
+        "//libraries/miglayout-swing",
+        "//libraries/kotlinx/serialization/json",
+        "//libraries/fastutil",
+        "//libraries/gson",
+        "//libraries/kotlinx/serialization/core",
+        "//libraries/kotlin/reflect",
+        "//platform/workspace/storage",
+        "//platform/platform-impl/concurrency",
+        "//platform/platform-impl/update-checker",
+        "//platform/progress/shared:ide-progress",
+        "//platform/projectModel-impl",
+        "//platform/execution",
+        "//platform/kernel/rpc",
+        "//libraries/kotlinx/collections-immutable:libraries-kotlinx-collections-immutable",
+        "//platform/locking-impl",
+    ],
+)
+### auto-generated section `build intellij.internal.jcef` end
+
+### auto-generated section `iml intellij.internal.jcef` start
+exports_files(
+    [
+        "intellij.internal.jcef.iml",
+        "resources/intellij.internal.jcef.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.internal.jcef` end

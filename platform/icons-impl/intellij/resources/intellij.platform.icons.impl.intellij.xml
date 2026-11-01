@@ -1,0 +1,26 @@
+<!-- Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license. -->
+<idea-plugin visibility="internal">
+  <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+  <dependencies>
+    <module name="intellij.libraries.jetbrains.annotations"/>
+    <module name="intellij.libraries.kotlinx.coroutines.core"/>
+    <module name="intellij.libraries.kotlinx.serialization.core"/>
+    <module name="intellij.platform.core"/>
+    <module name="intellij.platform.core.impl"/>
+    <module name="intellij.platform.core.ui"/>
+    <module name="intellij.platform.icons.api"/>
+    <module name="intellij.platform.icons.api.rendering"/>
+    <module name="intellij.platform.icons.impl"/>
+    <module name="intellij.platform.ide.core"/>
+    <module name="intellij.platform.ide.impl"/>
+    <module name="intellij.platform.util.ui"/>
+  </dependencies>
+  <!-- endregion -->
+  <extensionPoints>
+    <extensionPoint qualifiedName="com.intellij.icons.customLegacyIconSerializer"
+                    interface="com.intellij.platform.icons.impl.intellij.custom.CustomLegacyIconSerializer" dynamic="true"/>
+  </extensionPoints>
+  <extensions defaultExtensionNs="com.intellij">
+    <icons.customLegacyIconSerializer implementation="com.intellij.platform.icons.impl.intellij.serializers.CustomCachedImageIconSerializer"/>
+  </extensions>
+</idea-plugin>

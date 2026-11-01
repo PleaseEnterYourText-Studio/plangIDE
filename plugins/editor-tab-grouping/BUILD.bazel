@@ -1,0 +1,115 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+jps_test(
+    name = "editorTabGrouping-tests_test",
+    timeout = "moderate",
+    sandbox = "True",
+    tags = ["community-aggregator"],
+    runtime_deps = [":editorTabGrouping-tests_test_lib"],
+)
+### skip generation section `test intellij.platform.editorTabGrouping.tests`
+
+### auto-generated section `dev intellij.platform.editorTabGrouping.impl` start
+content_module_jar(module = ":editorTabGrouping-impl")
+### auto-generated section `dev intellij.platform.editorTabGrouping.impl` end
+
+### auto-generated section `build intellij.platform.editorTabGrouping.impl` start
+jvm_library(
+    name = "editorTabGrouping-impl",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.editorTabGrouping.impl",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/platform-impl:ide-impl",
+        "//platform/analysis-api:analysis",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/projectModel-api:projectModel",
+        "//platform/core-api:core",
+        "//platform/core-ui",
+        "//platform/platform-api:ide",
+        "//platform/ide-core",
+        "//platform/util",
+        "//platform/util/jdom",
+        "//platform/util:util-ui",
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinx/coroutines/core",
+    ],
+)
+### auto-generated section `build intellij.platform.editorTabGrouping.impl` end
+
+### auto-generated section `iml intellij.platform.editorTabGrouping.impl` start
+exports_files(
+    [
+        "intellij.platform.editorTabGrouping.impl.iml",
+        "resources/intellij.platform.editorTabGrouping.impl.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.editorTabGrouping.impl` end
+
+### auto-generated section `build intellij.platform.editorTabGrouping.tests` start
+jvm_library(
+    name = "editorTabGrouping-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "testSrc/**/*.kt",
+            "testSrc/**/*.java",
+            "testSrc/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    associates = ["//plugins/editor-tab-grouping:editorTabGrouping-impl"],
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+        "//community-resources:customization",
+    ],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinx/coroutines/core",
+        "//libraries/junit6",
+        "//platform/platform-impl:ide-impl",
+        "//platform/analysis-api:analysis",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/projectModel-api:projectModel",
+        "//platform/core-api:core",
+        "//platform/core-impl",
+        "//platform/core-ui",
+        "//platform/platform-api:ide",
+        "//platform/ide-core",
+        "//platform/util",
+        "//platform/util/jdom",
+        "//platform/util:util-ui",
+        "//platform/workspace/jps",
+        "//jps/model-api:model",
+        "//platform/testFramework",
+        "//platform/testFramework/junit5",
+    ],
+)
+### auto-generated section `build intellij.platform.editorTabGrouping.tests` end
+
+### auto-generated section `iml intellij.platform.editorTabGrouping.tests` start
+exports_files(
+    [
+        "intellij.platform.editorTabGrouping.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.editorTabGrouping.tests` end

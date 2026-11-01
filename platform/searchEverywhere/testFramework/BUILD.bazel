@@ -1,0 +1,54 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `build intellij.platform.searchEverywhere.testFramework` start
+jvm_library(
+    name = "testFramework",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.searchEverywhere.testFramework",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    exports = [
+        # do not sort,
+        "//platform/searchEverywhere/shared:searchEverywhere",
+        "//platform/searchEverywhere/backend",
+        "//platform/searchEverywhere/frontend",
+    ],
+    deps = [
+        # do not sort,
+        "//platform/searchEverywhere/shared:searchEverywhere",
+        "//platform/searchEverywhere/backend",
+        "//platform/searchEverywhere/frontend",
+        "//libraries/jetbrains/annotations",
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinx/coroutines/core",
+        "//platform/core-api:core",
+        "//platform/core-ui",
+        "//platform/util",
+        "//platform/util/coroutines",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/ide-core-impl",
+        "//platform/lang-api:lang",
+        "//platform/testFramework",
+    ],
+)
+### auto-generated section `build intellij.platform.searchEverywhere.testFramework` end
+
+### auto-generated section `iml intellij.platform.searchEverywhere.testFramework` start
+exports_files(
+    [
+        "intellij.platform.searchEverywhere.testFramework.iml",
+        "resources/intellij.platform.searchEverywhere.testFramework.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.searchEverywhere.testFramework` end

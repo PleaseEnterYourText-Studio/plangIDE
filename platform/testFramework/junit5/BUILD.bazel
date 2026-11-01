@@ -1,0 +1,143 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library", "jvm_provided_library")
+
+jps_test(
+    name = "junit5-tests_test",
+    timeout = "moderate",
+    tags = ["community-aggregator"],
+    runtime_deps = [":junit5-tests_test_lib"],
+)
+
+### skip generation section `test intellij.platform.testFramework.junit5.tests`
+
+### auto-generated section `build intellij.platform.testFramework.junit5` start
+jvm_provided_library(
+    name = "libraries_junit6-jupiter_provided",
+    lib = "//libraries/junit6-jupiter",
+)
+
+jvm_provided_library(
+    name = "libraries_junit6_provided",
+    lib = "//libraries/junit6",
+)
+
+jvm_provided_library(
+    name = "libraries_junit6-launcher_provided",
+    lib = "//libraries/junit6-launcher",
+)
+
+jvm_library(
+    name = "junit5",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.testFramework.junit5",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    exports = ["//platform/ide-core-impl"],
+    deps = [
+        # do not sort,
+        "//libraries/jetbrains/annotations",
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinx/coroutines/core",
+        "//java/java-runtime:rt",
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//libraries/assertj-core",
+        "//platform/core-impl",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/eel",
+        "//platform/eel-provider",
+        "//platform/ide-core-impl",
+        "//platform/ide-core",
+        "//platform/platform-impl:ide-impl",
+        "//jps/model-api:model",
+        "//platform/projectModel-api:projectModel",
+        "//platform/projectModel-impl",
+        "//platform/testFramework/common",
+        "//platform/testFramework/core",
+        "//platform/util",
+        "//platform/util/coroutines",
+        "//platform/util-ex",
+        "//platform/util/jdom",
+        ":libraries_junit6-jupiter_provided",
+        ":libraries_junit6_provided",
+        ":libraries_junit6-launcher_provided",
+    ],
+)
+### auto-generated section `build intellij.platform.testFramework.junit5` end
+
+### auto-generated section `iml intellij.platform.testFramework.junit5` start
+exports_files(
+    [
+        "intellij.platform.testFramework.junit5.iml",
+        "resources/intellij.platform.testFramework.junit5.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.testFramework.junit5` end
+
+### auto-generated section `build intellij.platform.testFramework.junit5.tests` start
+jvm_library(
+    name = "junit5-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "test/**/*.kt",
+            "test/**/*.java",
+            "test/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    associates = ["//platform/testFramework/junit5"],
+    resource_strip_prefix = "test-resources",
+    resources = glob(
+        ["test-resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//libraries/junit6-jupiter",
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinx/coroutines/core",
+        "//libraries/opentest4j",
+        "//libraries/junit6-params",
+        "//community-resources:customization",
+        "//libraries/junit6",
+        "//libraries/junit6-launcher",
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//libraries/assertj-core",
+        "//platform/core-impl",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/ide-core-impl",
+        "//platform/platform-impl:ide-impl",
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+        "//platform/projectModel-api:projectModel",
+        "//platform/projectModel-impl",
+        "//platform/testFramework",
+        "//platform/testFramework/common",
+        "//platform/testFramework/core",
+        "//platform/util",
+        "//platform/util-ex",
+        "//platform/platform-util-io:ide-util-io",
+    ],
+)
+### auto-generated section `build intellij.platform.testFramework.junit5.tests` end
+
+### auto-generated section `iml intellij.platform.testFramework.junit5.tests` start
+exports_files(
+    [
+        "intellij.platform.testFramework.junit5.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.testFramework.junit5.tests` end

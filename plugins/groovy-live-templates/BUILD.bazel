@@ -1,0 +1,64 @@
+load("@community//platform/build-scripts/bazel-rules:ij_plugin.bzl", "ij_plugin")
+load("@jps_dynamic_deps_community//:targets.bzl", "dev_dist_plugin")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `dev intellij.groovy.live.templates` start
+dev_dist_plugin(
+    descriptor = "resources/META-INF/plugin.xml",
+    jars = {
+        "lib/groovy-live-templates.jar": ["intellij.groovy.live.templates"],
+    },
+    main_module = "intellij.groovy.live.templates",
+)
+### auto-generated section `dev intellij.groovy.live.templates` end
+
+### auto-generated section `build intellij.groovy.live.templates` start
+jvm_library(
+    name = "groovy-live-templates",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.groovy.live.templates",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//libraries/jetbrains/annotations",
+        "@lib//:kotlin-stdlib",
+        "//libraries/groovy",
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/lang-impl",
+        "//platform/util",
+        "//platform/ide-core",
+        "//libraries/kotlinx/collections-immutable:libraries-kotlinx-collections-immutable",
+    ],
+)
+### auto-generated section `build intellij.groovy.live.templates` end
+
+### auto-generated section `plugin intellij.groovy.live.templates` start
+ij_plugin(
+    name = "groovy-live-templates_plugin",
+    descriptor_module = ":groovy-live-templates",
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `plugin intellij.groovy.live.templates` end
+
+### auto-generated section `iml intellij.groovy.live.templates` start
+exports_files(
+    [
+        "intellij.groovy.live.templates.iml",
+        "resources/META-INF/plugin.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.groovy.live.templates` end

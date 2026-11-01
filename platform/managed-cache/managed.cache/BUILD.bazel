@@ -1,0 +1,46 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.platform.managed.cache` start
+content_module_jar(module = ":managed.cache")
+### auto-generated section `dev intellij.platform.managed.cache` end
+
+### auto-generated section `build intellij.platform.managed.cache` start
+jvm_library(
+    name = "managed.cache",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.managed.cache",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/kernel/rpc",
+        "@lib//:kotlin-stdlib",
+        "//libraries/jetbrains/annotations",
+        "//libraries/kotlinx/serialization/core",
+        "//libraries/kotlinx/serialization/json",
+        "//libraries/kotlinx/coroutines/core",
+        "//platform/project/shared:project",
+    ],
+)
+### auto-generated section `build intellij.platform.managed.cache` end
+
+### auto-generated section `iml intellij.platform.managed.cache` start
+exports_files(
+    [
+        "intellij.platform.managed.cache.iml",
+        "resources/intellij.platform.managed.cache.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.managed.cache` end

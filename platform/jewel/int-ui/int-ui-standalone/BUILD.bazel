@@ -1,0 +1,64 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//build:compiler-options.bzl", "create_kotlinc_options")
+
+### auto-generated section `build intellij.platform.jewel.intUi.standalone` start
+create_kotlinc_options(
+    name = "custom_jewel-intUi-standalone",
+    opt_in = [
+        "androidx.compose.ui.ExperimentalComposeUiApi",
+        "androidx.compose.foundation.ExperimentalFoundationApi",
+        "org.jetbrains.jewel.foundation.ExperimentalJewelApi",
+        "org.jetbrains.jewel.foundation.InternalJewelApi",
+    ],
+    x_context_parameters = True,
+    x_explicit_api_mode = "strict",
+)
+
+jvm_library(
+    name = "jewel-intUi-standalone",
+    srcs = glob(
+        [
+            "src/main/kotlin/**/*.kt",
+            "src/main/kotlin/**/*.java",
+            "src/main/kotlin/**/*.form",
+            "generated/theme/**/*.kt",
+            "generated/theme/**/*.java",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = ":custom_jewel-intUi-standalone",
+    module_name = "intellij.platform.jewel.intUi.standalone",
+    resource_strip_prefix = "src/main/resources",
+    resources = glob(
+        ["src/main/resources/**/*"],
+        allow_empty = True,
+        exclude = ["src/main/resources/**/icon-robots.txt"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinx/coroutines/core",
+        "//libraries/skiko",
+        "//libraries/jetbrains/annotations",
+        "//platform/jewel/ui",
+        "//libraries/compose-foundation-desktop",
+        "//libraries/compose-runtime-desktop",
+        "//platform/jewel/foundation",
+        "//libraries/jbr",
+        "@lib//:platform-jewel-int_ui-standalone-jna",
+        "//platform/icons-api",
+        "//platform/icons-impl",
+    ],
+)
+### auto-generated section `build intellij.platform.jewel.intUi.standalone` end
+
+### auto-generated section `iml intellij.platform.jewel.intUi.standalone` start
+exports_files(
+    [
+        "intellij.platform.jewel.intUi.standalone.iml",
+        "src/main/resources/intellij.platform.jewel.intUi.standalone.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.jewel.intUi.standalone` end

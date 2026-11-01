@@ -1,0 +1,73 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.properties.backend` start
+content_module_jar(module = ":properties-backend")
+### auto-generated section `dev intellij.properties.backend` end
+
+### auto-generated section `build intellij.properties.backend` start
+jvm_library(
+    name = "properties-backend",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.properties.backend",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    runtime_deps = ["//platform/backend"],
+    deps = [
+        # do not sort,
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//platform/diff-api:diff",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/indexing-api:indexing",
+        "//platform/lang-api:lang",
+        "//platform/duplicates-analysis",
+        "//platform/platform-api:ide",
+        "//platform/lang-impl",
+        "//platform/platform-impl:ide-impl",
+        "//platform/core-impl",
+        "//platform/projectModel-api:projectModel",
+        "//platform/util/diff",
+        "//spellchecker",
+        "//xml/xml-psi-impl:psi-impl",
+        "//plugins/properties/properties-psi-api:psi",
+        "//plugins/properties/properties-psi-impl:backend-psi",
+        "//platform/usageView",
+        "//platform/core-ui",
+        "//platform/refactoring",
+        "//platform/code-style-impl:codeStyle-impl",
+        "//platform/util/jdom",
+        "//platform/util:util-ui",
+        "//platform/ide-core-impl",
+        "//platform/ide-core",
+        "//plugins/properties/properties-common:properties",
+        "//platform/diff-impl",
+        "//platform/forms_rt:java-guiForms-rt",
+        "//platform/structure-view-impl:structureView",
+        "//libraries/fastutil",
+        "//libraries/kotlinx/collections-immutable:libraries-kotlinx-collections-immutable",
+        "//platform/util/concurrency",
+        "//jps/model-api:model",
+    ],
+)
+### auto-generated section `build intellij.properties.backend` end
+
+### auto-generated section `iml intellij.properties.backend` start
+exports_files(
+    [
+        "intellij.properties.backend.iml",
+        "resources/intellij.properties.backend.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.properties.backend` end

@@ -1,0 +1,41 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `build intellij.maven.server` start
+jvm_library(
+    name = "maven-server",
+    srcs = glob(
+        [
+            "src/main/java/**/*.kt",
+            "src/main/java/**/*.java",
+            "src/main/java/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = "@community//:k8",
+    module_name = "intellij.maven.server",
+    visibility = ["//visibility:public"],
+    exports = [
+        # do not sort,
+        "//libraries/jetbrains/annotations",
+        "//platform/util-rt",
+        "//plugins/maven/model",
+    ],
+    deps = [
+        # do not sort,
+        "//libraries/jetbrains/annotations",
+        "//platform/util-rt",
+        "//platform/util/jdom",
+        "//plugins/maven/model",
+        "//platform/diagnostic/telemetry/rt",
+    ],
+)
+### auto-generated section `build intellij.maven.server` end
+
+### auto-generated section `iml intellij.maven.server` start
+exports_files(
+    [
+        "intellij.maven.server.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.maven.server` end

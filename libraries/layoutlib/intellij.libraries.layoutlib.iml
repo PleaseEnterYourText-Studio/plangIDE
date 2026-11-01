@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/resources" type="java-resource" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module-library" exported="">
+      <library name="layoutlib" type="repository">
+        <properties maven-id="com.android.tools.layoutlib:layoutlib:17.0.3">
+          <verification>
+            <artifact url="file://$MAVEN_REPOSITORY$/com/android/tools/layoutlib/layoutlib/17.0.3/layoutlib-17.0.3.jar">
+              <sha256sum>7f714be5627c1ae9ea1d71763acb01b062e9316c424efb0f1cdb21d9a2ccb2b8</sha256sum>
+            </artifact>
+          </verification>
+        </properties>
+        <CLASSES>
+          <root url="jar://$MAVEN_REPOSITORY$/com/android/tools/layoutlib/layoutlib/17.0.3/layoutlib-17.0.3.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+  </component>
+</module>

@@ -1,0 +1,127 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+jps_test(
+    name = "credentialStore-impl-tests_test",
+    timeout = "moderate",
+    tags = ["community-aggregator"],
+    runtime_deps = [":credentialStore-impl-tests_test_lib"],
+)
+### skip generation section `test intellij.platform.credentialStore.impl.tests`
+
+### auto-generated section `dev intellij.platform.credentialStore.impl` start
+content_module_jar(
+    libraries = ["@lib//:dbus-java"],
+    module = ":credentialStore-impl",
+)
+### auto-generated section `dev intellij.platform.credentialStore.impl` end
+
+### auto-generated section `build intellij.platform.credentialStore.impl` start
+jvm_library(
+    name = "credentialStore-impl",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.credentialStore.impl",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/util/concurrency",
+        "//platform/credential-store",
+        "//platform/ide-core",
+        "//platform/ide-core-impl",
+        "//jps/model-serialization",
+        "//platform/projectModel-api:projectModel",
+        "//platform/util/jdom",
+        "//platform/projectModel-impl",
+        "//platform/core-ui",
+        "//platform/platform-util-io:ide-util-io",
+        "//platform/util",
+        "//platform/remote-core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/util:util-ui",
+        "//platform/util-ex",
+        "//platform/core-api:core",
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinx/coroutines/core",
+        "//libraries/guava",
+        "//libraries/bouncy-castle-provider",
+        "//libraries/snakeyaml",
+        "//libraries/fastutil",
+        "@lib//:dbus-java",
+        "//libraries/caffeine",
+        "//platform/analysis-api:analysis",
+        "//platform/platform-api:ide",
+    ],
+)
+### auto-generated section `build intellij.platform.credentialStore.impl` end
+
+### auto-generated section `iml intellij.platform.credentialStore.impl` start
+exports_files(
+    [
+        "intellij.platform.credentialStore.impl.iml",
+        "resources/intellij.platform.credentialStore.impl.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.credentialStore.impl` end
+
+### auto-generated section `build intellij.platform.credentialStore.impl.tests` start
+jvm_library(
+    name = "credentialStore-impl-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "test/**/*.kt",
+            "test/**/*.java",
+            "test/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    associates = ["//platform/credential-store-impl:credentialStore-impl"],
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+        "//community-resources:customization",
+    ],
+    deps = [
+        # do not sort,
+        "//platform/credential-store",
+        "//platform/ide-core",
+        "//platform/projectModel-api:projectModel",
+        "//platform/platform-util-io:ide-util-io",
+        "//platform/util",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/util-ex",
+        "//platform/core-api:core",
+        "@lib//:kotlin-stdlib",
+        "//platform/testFramework",
+        "//platform/testFramework/extensions:testExtensions",
+        "//libraries/assertj-core",
+        "//libraries/junit4",
+        "//platform/analysis-api:analysis",
+        "//platform/platform-api:ide",
+        "//libraries/junit6",
+    ],
+)
+### auto-generated section `build intellij.platform.credentialStore.impl.tests` end
+
+### auto-generated section `iml intellij.platform.credentialStore.impl.tests` start
+exports_files(
+    [
+        "intellij.platform.credentialStore.impl.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.credentialStore.impl.tests` end

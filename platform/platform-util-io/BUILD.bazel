@@ -1,0 +1,46 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `build intellij.platform.ide.util.io` start
+jvm_library(
+    name = "ide-util-io",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.ide.util.io",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//platform/core-api:core",
+        "//libraries/guava",
+        "//libraries/fastutil",
+        "//platform/util/base",
+        "//platform/util",
+        "//platform/util/multiplatform",
+        "//platform/util-ex",
+        "//platform/diagnostic",
+        "//platform/eel-nioFs",
+        "//platform/util/coroutines",
+        "//libraries/kotlinx/coroutines/core",
+        "//platform/util/annotations",
+    ],
+)
+### auto-generated section `build intellij.platform.ide.util.io` end
+
+### auto-generated section `iml intellij.platform.ide.util.io` start
+exports_files(
+    [
+        "intellij.platform.ide.util.io.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.ide.util.io` end

@@ -1,0 +1,109 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+jps_test(
+    name = "tests_test",
+    timeout = "long",
+    tags = ["community-aggregator"],
+    runtime_deps = [":tests_test_lib"],
+)
+### skip generation section `test intellij.terminal.tests`
+
+### auto-generated section `build intellij.terminal.tests` start
+jvm_library(
+    name = "tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    associates = ["//plugins/terminal/frontend"],
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+        "//community-resources:customization",
+        "//libraries/zstd-jni",
+    ],
+    deps = [
+        # do not sort,
+        "//platform/platform-impl:ide-impl",
+        "//platform/platform-impl/tab-in-editor",
+        "//platform/platform-api:ide",
+        "//platform/ide-core",
+        "//platform/testFramework",
+        "//platform/statistics",
+        "//platform/statistics/testFramework",
+        "//java/java-runtime:rt",
+        "//platform/configuration-store-impl:configurationStore-tests_test_lib",
+        "//plugins/terminal",
+        "//plugins/terminal/backend",
+        "//platform/platform-impl/codeinsight-inline:ide-codeinsight-inline",
+        "//plugins/terminal/completion",
+        "//plugins/terminal/sh",
+        "//plugins/terminal/completion-ml",
+        "//plugins/terminal/emulator",
+        "//platform/core-api:core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/core-impl",
+        "//platform/execution-impl",
+        "//platform/core-ui",
+        "//platform/platform-util-io:ide-util-io",
+        "//platform/analysis-api:analysis",
+        "//platform/lang-api:lang",
+        "//platform/util-ex",
+        "//platform/projectModel-api:projectModel",
+        "//platform/util/coroutines",
+        "//platform/util:util-ui",
+        "//platform/platform-impl/internal",
+        "//plugins/sh/plugin",
+        "//platform/code-style-api:codeStyle",
+        "//libraries/assertj-core",
+        "//libraries/jsoup",
+        "//libraries/jediterm-core",
+        "//libraries/jediterm-ui",
+        "//libraries/pty4j",
+        "//libraries/guava",
+        "//libraries/junit4",
+        "//platform/eel-provider",
+        "//platform/lang-impl",
+        "//platform/testFramework/junit5/eel",
+        "//platform/testFramework/junit5",
+        "//platform/platform-impl/eel:ide-impl-wsl",
+        "//platform/execution",
+        "//platform/consoleView",
+        "//platform/consoleView/impl",
+        "//libraries/kotlinx/serialization/core",
+        "//libraries/kotlinx/serialization/json",
+        "//libraries/mockito",
+        "//libraries/mockito-kotlin",
+        "//libraries/commons/lang3",
+        "//plugins/terminal/completion:completion-tests_test_lib",
+        "//plugins/terminal/emulator:emulator-tests_test_lib",
+        "//platform/terminal/tests:tests_test_lib",
+        "//platform/testFramework/junit5/eel:testFramework-junit5-eel-tests_test_lib",
+        "//platform/editor-ui-ex:editor-ex",
+        "//libraries/junit6",
+        "//libraries/junit6-params",
+        "//platform/util/jdom",
+        "//platform/runtime/product",
+    ],
+)
+### auto-generated section `build intellij.terminal.tests` end
+
+### auto-generated section `iml intellij.terminal.tests` start
+exports_files(
+    [
+        "intellij.terminal.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.terminal.tests` end

@@ -1,0 +1,122 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@jps_dynamic_deps_community//:targets.bzl", "dev_dist_plugin")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+jps_test(
+    name = "community-tests_test",
+    timeout = "moderate",
+    tags = ["community-aggregator"],
+    runtime_deps = [":community-tests_test_lib"],
+)
+
+### skip generation section `test intellij.javaFX.community.tests`
+
+### auto-generated section `dev intellij.javaFX.community` start
+dev_dist_plugin(
+    content_modules = [
+        # do not sort,
+        "intellij.javaFX",
+        "intellij.javaFX.properties",
+        "intellij.javaFX.common",
+        "intellij.javaFX.jps",
+        "intellij.javaFX.sceneBuilder",
+    ],
+    main_module = "intellij.javaFX.community",
+)
+### auto-generated section `dev intellij.javaFX.community` end
+
+### auto-generated section `build intellij.javaFX.community` start
+jvm_library(
+    name = "community",
+    srcs = glob(
+        [],
+        allow_empty = True,
+    ),
+    module_name = "intellij.javaFX.community",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    exports = ["//plugins/javaFX"],
+    runtime_deps = [
+        # do not sort,
+        "//plugins/javaFX",
+        "//platform/core-ui",
+    ],
+)
+### auto-generated section `build intellij.javaFX.community` end
+
+### auto-generated section `iml intellij.javaFX.community` start
+exports_files(
+    [
+        "intellij.javaFX.community.iml",
+        "resources/META-INF/plugin.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.javaFX.community` end
+
+### auto-generated section `build intellij.javaFX.community.tests` start
+jvm_library(
+    name = "community-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "testSrc/**/*.kt",
+            "testSrc/**/*.java",
+            "testSrc/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.javaFX.community.tests",
+    visibility = ["//visibility:public"],
+    runtime_deps = ["//platform/main/intellij.platform.monolith.main:monolith-main"],
+    deps = [
+        # do not sort,
+        "//platform/analysis-api:analysis",
+        "//platform/code-style-api:codeStyle",
+        "//platform/core-api:core",
+        "//platform/lang-core",
+        "//platform/lang-api:lang",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/platform-impl:ide-impl",
+        "//java/testFramework",
+        "//jps/model-api:model",
+        "//platform/projectModel-api:projectModel",
+        "//xml/xml-analysis-api:analysis",
+        "//platform/refactoring",
+        "//platform/testFramework",
+        "//xml/impl",
+        "//plugins/groovy",
+        "//plugins/groovy-scripting",
+        "//plugins/javaFX/common",
+        "//java/java-tests:tests_test_lib",
+        "//plugins/groovy/structuralsearch-groovy:structuralSearch",
+        "//java/structuralsearch-java:structuralSearch",
+        "//java/compiler/openapi:java-compiler",
+        "//platform/core-ui",
+        "//platform/core-impl",
+        "//plugins/javaFX:javaFX-properties",
+        "//xml/xml-psi-api:psi",
+        "//java/xml.dom.impl",
+        "//java/java-impl-refactorings:impl-refactorings",
+        "//libraries/fastutil",
+        "//plugins/javaFX/community",
+        "//plugins/javaFX:javaFX-tests_test_lib",
+        "//java/java-syntax:syntax",
+        "//java/java-psi-api:psi",
+        "//java/java-frontback-psi-api:frontback-psi",
+        "//libraries/junit4",
+    ],
+)
+### auto-generated section `build intellij.javaFX.community.tests` end
+
+### auto-generated section `iml intellij.javaFX.community.tests` start
+exports_files(
+    [
+        "intellij.javaFX.community.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.javaFX.community.tests` end

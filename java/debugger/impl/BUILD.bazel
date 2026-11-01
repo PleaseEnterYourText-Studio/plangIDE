@@ -1,0 +1,177 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//build:compiler-options.bzl", "create_kotlinc_options")
+
+jps_test(
+    name = "java-debugger-impl-tests_test",
+    tags = ["community-aggregator"],
+    runtime_deps = [":java-debugger-impl-tests_test_lib"],
+)
+
+### skip generation section `test intellij.java.debugger.impl.tests`
+
+### auto-generated section `build intellij.java.debugger.impl` start
+create_kotlinc_options(
+    name = "custom_impl",
+    x_context_parameters = True,
+)
+
+jvm_library(
+    name = "impl",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = ":custom_impl",
+    module_name = "intellij.java.debugger.impl",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//java/debugger/openapi:java-debugger",
+        "//java/openapi:java",
+        "//java/execution/openapi:java-execution",
+        "//java/java-syntax:syntax",
+        "//java/java-psi-api:psi",
+        "//java/java-indexing-api:indexing",
+        "//platform/analysis-api:analysis",
+        "//platform/util/concurrency",
+        "//platform/core-api:core",
+        "//platform/xdebugger-impl:debugger-impl",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/execution-impl",
+        "//platform/indexing-api:indexing",
+        "//jps/model-api:model",
+        "//platform/lang-api:lang",
+        "//java/compiler/openapi:java-compiler",
+        "//java/compiler/external-javac",
+        "//platform/forms_rt:java-guiForms-rt",
+        "//java/java-runtime:rt",
+        "//platform/ide-core-impl",
+        "//platform/ide-core",
+        "//java/java-impl:impl",
+        "//java/java-analysis-impl:analysis-impl",
+        "//java/java-impl-refactorings:impl-refactorings",
+        "//platform/platform-impl:ide-impl",
+        "//platform/lang-core",
+        "//platform/projectModel-api:projectModel",
+        "//platform/util",
+        "//java/debugger/memory-agent:java-debugger-memory-agent",
+        "@lib//:java-debugger-impl-sa-jdwp",
+        "//java/debugger/jb-jdi:java-debugger-libraries-jb-jdi",
+        "//libraries/stream",
+        "//platform/statistics",
+        "//platform/core-ui",
+        "//platform/core-impl",
+        "//libraries/fastutil",
+        "//platform/platform-util-io-impl:ide-util-io-impl",
+        "//platform/platform-util-io:ide-util-io",
+        "//platform/progress/shared:ide-progress",
+        "//libraries/gson",
+        "//libraries/asm",
+        "//platform/util/jdom",
+        "//platform/build-scripts/downloader",
+        "//platform/feedback",
+        "//platform/util/progress",
+        "//libraries/kotlinx/datetime",
+        "//libraries/kotlinx/serialization/core",
+        "//libraries/kotlinx/serialization/json",
+        "//platform/util/coroutines",
+        "//platform/util:util-ui",
+        "//platform/util-ex",
+        "//platform/threadDumpParser",
+        "//java/debugger/shared",
+        "//platform/eel-provider",
+        "//java/codeserver/highlighting",
+        "//java/java-frontback-psi-api:frontback-psi",
+        "//xml/xml-psi-api:psi",
+        "//platform/xdebugger-impl/shared",
+        "//platform/xdebugger-impl/rpc",
+        "//platform/xdebugger-impl/ui",
+        "//fleet/rpc",
+        "//platform/kernel/rpc",
+        "//platform/remote-topics/shared:rpc-topics",
+        "//platform/execution",
+        "//platform/consoleView",
+        "//platform/consoleView/impl",
+        "//libraries/kotlinx/collections-immutable:libraries-kotlinx-collections-immutable",
+    ],
+)
+### auto-generated section `build intellij.java.debugger.impl` end
+
+### auto-generated section `iml intellij.java.debugger.impl` start
+exports_files(
+    [
+        "intellij.java.debugger.impl.iml",
+        "resources/META-INF/java-debugger.xml",
+        "resources/intellij.java.debugger.impl.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.java.debugger.impl` end
+
+### auto-generated section `build intellij.java.debugger.impl.tests` start
+create_kotlinc_options(
+    name = "custom_java-debugger-impl-tests",
+    x_context_parameters = True,
+)
+
+jvm_library(
+    name = "java-debugger-impl-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "test/**/*.kt",
+            "test/**/*.java",
+            "test/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = ":custom_java-debugger-impl-tests",
+    module_name = "intellij.java.debugger.impl.tests",
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//community-resources:customization",
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+    ],
+    deps = [
+        # do not sort,
+        "//java/execution/openapi:java-execution",
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//platform/ide-core",
+        "//platform/platform-impl:ide-impl",
+        "//platform/projectModel-api:projectModel",
+        "//platform/util",
+        "@lib//:java-debugger-impl-tests-sa-jdwp",
+        "//platform/core-impl",
+        "//platform/platform-util-io:ide-util-io",
+        "//platform/util-ex",
+        "//java/debugger/shared",
+        "//platform/testFramework",
+        "//platform/testFramework/common",
+        "//platform/testFramework/junit5",
+        "//libraries/junit6",
+        "//platform/bazel-runfiles",
+        "//platform/execution",
+        "//java/debugger/impl",
+    ],
+)
+### auto-generated section `build intellij.java.debugger.impl.tests` end
+
+### auto-generated section `iml intellij.java.debugger.impl.tests` start
+exports_files(
+    [
+        "intellij.java.debugger.impl.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.java.debugger.impl.tests` end

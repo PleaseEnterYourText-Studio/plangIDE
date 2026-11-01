@@ -1,0 +1,158 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//build:compiler-options.bzl", "create_kotlinc_options")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+jps_test(
+    name = "community-execService-tests_test",
+    timeout = "moderate",
+    jvm_flags = ["-Djava.nio.file.spi.DefaultFileSystemProvider=com.intellij.platform.core.nio.fs.MultiRoutingFileSystemProvider"],
+    tags = ["community-aggregator"],
+    runtime_deps = [":community-execService-tests_test_lib"],
+)
+### skip generation section `test intellij.python.community.execService.tests`
+
+### auto-generated section `dev intellij.python.community.execService` start
+content_module_jar(module = ":community-execService")
+### auto-generated section `dev intellij.python.community.execService` end
+
+### auto-generated section `build intellij.python.community.execService` start
+create_kotlinc_options(
+    name = "custom_community-execService",
+    opt_in = [
+        "kotlin.time.ExperimentalTime",
+        "com.jetbrains.python.PyInternalExecApi",
+    ],
+    warn = "error",
+    x_warning_level = ["DEPRECATION:warning"],
+)
+
+jvm_library(
+    name = "community-execService",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = ":custom_community-execService",
+    module_name = "intellij.python.community.execService",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    exports = ["//platform/eel"],
+    deps = [
+        # do not sort,
+        "//libraries/caffeine",
+        "@lib//:kotlin-stdlib",
+        "//libraries/jetbrains/annotations",
+        "//python/openapi:community",
+        "//platform/eel-provider",
+        "//platform/util",
+        "//libraries/kotlinx/coroutines/core",
+        "//platform/core-api:core",
+        "//platform/eel",
+        "//platform/util/progress",
+        "//platform/execution",
+        "//platform/projectModel-api:projectModel",
+        "//libraries/kotlinx/serialization/json",
+        "//libraries/kotlinx/serialization/core",
+        "//libraries/guava",
+        "//python/python-process-output/common",
+        "//python/impl.helperLocator:community-helpersLocator",
+        "//platform/execution-impl",
+        "//platform/eel-impl",
+        "//platform/eel-impl-base",
+        "//platform/platform-impl:ide-impl",
+        "//platform/projectModel-impl",
+        "//platform/util/annotations",
+    ],
+)
+### auto-generated section `build intellij.python.community.execService` end
+
+### auto-generated section `iml intellij.python.community.execService` start
+exports_files(
+    [
+        "intellij.python.community.execService.iml",
+        "resources/intellij.python.community.execService.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.python.community.execService` end
+
+### auto-generated section `build intellij.python.community.execService.tests` start
+create_kotlinc_options(
+    name = "custom_community-execService-tests",
+    opt_in = [
+        "kotlin.time.ExperimentalTime",
+        "com.jetbrains.python.PyInternalExecApi",
+    ],
+    warn = "error",
+    x_warning_level = ["DEPRECATION:warning"],
+)
+
+jvm_library(
+    name = "community-execService-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "tests/**/*.kt",
+            "tests/**/*.java",
+            "tests/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    associates = ["//python/python-exec-service:community-execService"],
+    kotlinc_opts = ":custom_community-execService-tests",
+    resource_strip_prefix = "testResources",
+    resources = glob(
+        ["testResources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+        "//community-resources:customization",
+    ],
+    deps = [
+        # do not sort,
+        "//libraries/assertj-core",
+        "@lib//:kotlin-stdlib",
+        "//python/openapi:community",
+        "//platform/eel-provider",
+        "//platform/util",
+        "//libraries/kotlinx/coroutines/core",
+        "//platform/testFramework/junit5",
+        "//libraries/junit6",
+        "//libraries/hamcrest",
+        "//libraries/junit6-params",
+        "//platform/core-api:core",
+        "//platform/eel",
+        "//platform/testFramework/junit5/eel",
+        "//libraries/junit5-pioneer",
+        "//platform/testFramework/common",
+        "//platform/execution",
+        "//libraries/kotlinx/serialization/json",
+        "//libraries/kotlinx/serialization/core",
+        "//platform/remote-servers/impl",
+        "//python/python-process-output/common",
+        "//python/pluginCore:community-plugin",
+        "//platform/testFramework/junit5/eel:testFramework-junit5-eel-tests_test_lib",
+        "//python/junit5Tests-framework:community-junit5Tests-framework_test_lib",
+        "//python/services/system-python",
+    ],
+)
+### auto-generated section `build intellij.python.community.execService.tests` end
+
+### auto-generated section `iml intellij.python.community.execService.tests` start
+exports_files(
+    [
+        "intellij.python.community.execService.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.python.community.execService.tests` end

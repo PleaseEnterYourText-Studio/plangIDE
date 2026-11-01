@@ -1,0 +1,68 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.mermaid.markdown` start
+content_module_jar(module = ":markdown")
+### auto-generated section `dev intellij.mermaid.markdown` end
+
+### auto-generated section `build intellij.mermaid.markdown` start
+jvm_library(
+    name = "markdown",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.mermaid.markdown",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/core-api:core",
+        "//platform/core-impl",
+        "//platform/lang-api:lang",
+        "//platform/lang-impl",
+        "//platform/ide-core",
+        "//platform/platform-impl:ide-impl",
+        "//platform/analysis-api:analysis",
+        "//platform/analysis-impl",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/projectModel-api:projectModel",
+        "//platform/util/concurrency",
+        "//libraries/kotlinx/coroutines/core",
+        "//plugins/mermaid",
+        "//plugins/markdown/core:markdown",
+        "//libraries/markdown",
+        "//platform/markdown-utils",
+        "//platform/built-in-server-api:builtInServer",
+        "//platform/built-in-server:builtInServer-impl",
+        "//libraries/netty/codec-http:libraries-netty-codec-http",
+        "//libraries/netty/buffer",
+        "//platform/platform-util-netty:ide-util-netty",
+        "//platform/platform-util-io:ide-util-io",
+        "//platform/ui.jcef",
+        "//libraries/jcef",
+        "//platform/core-ui",
+        "//platform/util:util-ui",
+        "//platform/util-ex",
+        "//platform/editor-ui-ex:editor-ex",
+        "//platform/util/coroutines",
+    ],
+)
+### auto-generated section `build intellij.mermaid.markdown` end
+
+### auto-generated section `iml intellij.mermaid.markdown` start
+exports_files(
+    [
+        "intellij.mermaid.markdown.iml",
+        "resources/intellij.mermaid.markdown.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.mermaid.markdown` end

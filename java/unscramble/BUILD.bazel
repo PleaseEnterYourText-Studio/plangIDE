@@ -1,0 +1,58 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.java.unscramble` start
+content_module_jar(module = ":unscramble")
+### auto-generated section `dev intellij.java.unscramble` end
+
+### auto-generated section `build intellij.java.unscramble` start
+jvm_library(
+    name = "unscramble",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.java.unscramble",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/core-api:core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/execution",
+        "//platform/util:util-ui",
+        "//platform/platform-api:ide",
+        "//java/openapi:java",
+        "//platform/vcs-impl",
+        "//platform/platform-impl:ide-impl",
+        "//platform/ide-core",
+        "//platform/lang-impl",
+        "//platform/execution-impl",
+        "//java/execution/impl",
+        "//platform/vcs-api:vcs",
+        "//platform/core-ui",
+        "//platform/core-impl",
+        "//java/java-impl:impl",
+        "//platform/threadDumpParser",
+        "//platform/forms_rt:java-guiForms-rt",
+        "//platform/util/concurrency",
+    ],
+)
+### auto-generated section `build intellij.java.unscramble` end
+
+### auto-generated section `iml intellij.java.unscramble` start
+exports_files(
+    [
+        "intellij.java.unscramble.iml",
+        "resources/intellij.java.unscramble.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.java.unscramble` end

@@ -1,0 +1,52 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `build intellij.gradle.java.toml.tests` start
+jvm_library(
+    name = "tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "test/**/*.kt",
+            "test/**/*.java",
+            "test/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.gradle.java.toml.tests",
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+        "//community-resources:customization",
+    ],
+    deps = [
+        # do not sort,
+        "//plugins/gradle/java",
+        "//plugins/gradle/java/toml",
+        "//plugins/toml",
+        "//plugins/toml/core",
+        "//platform/core-api:core",
+        "//platform/core-impl",
+        "//platform/testFramework",
+        "//platform/testFramework/junit5",
+        "//libraries/junit6",
+    ],
+)
+### auto-generated section `build intellij.gradle.java.toml.tests` end
+
+### auto-generated section `iml intellij.gradle.java.toml.tests` start
+exports_files(
+    [
+        "intellij.gradle.java.toml.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.gradle.java.toml.tests` end
+
+### auto-generated section `test intellij.gradle.java.toml.tests` start
+jps_test(
+    name = "tests_test",
+    runtime_deps = [":tests_test_lib"],
+)
+### auto-generated section `test intellij.gradle.java.toml.tests` end

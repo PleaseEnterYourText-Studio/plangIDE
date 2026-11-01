@@ -1,0 +1,55 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library", "jvm_provided_library")
+
+### auto-generated section `build intellij.platform.execution.testFramework` start
+jvm_provided_library(
+    name = "libraries_junit4_provided",
+    lib = "//libraries/junit4",
+)
+
+jvm_library(
+    name = "testFramework",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.execution.testFramework",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/jetbrains/annotations",
+        "//platform/core-api:core",
+        "//platform/core-ui",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/execution",
+        "//platform/execution-impl",
+        "//platform/ide-core",
+        "//platform/ide-core-impl",
+        "//platform/platform-impl:ide-impl",
+        "//platform/projectModel-api:projectModel",
+        "//platform/testFramework",
+        "//platform/util",
+        "//platform/util-rt",
+        "//platform/util:util-ui",
+        ":libraries_junit4_provided",
+    ],
+)
+### auto-generated section `build intellij.platform.execution.testFramework` end
+
+### auto-generated section `iml intellij.platform.execution.testFramework` start
+exports_files(
+    [
+        "intellij.platform.execution.testFramework.iml",
+        "resources/intellij.platform.execution.testFramework.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.execution.testFramework` end

@@ -1,0 +1,76 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//build:compiler-options.bzl", "create_kotlinc_options")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.python.sourceRoots` start
+content_module_jar(module = ":sourceRoots")
+### auto-generated section `dev intellij.python.sourceRoots` end
+
+### auto-generated section `build intellij.python.sourceRoots` start
+create_kotlinc_options(
+    name = "custom_sourceRoots",
+    warn = "error",
+    x_warning_level = ["DEPRECATION:warning"],
+)
+
+jvm_library(
+    name = "sourceRoots",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = ":custom_sourceRoots",
+    module_name = "intellij.python.sourceRoots",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/jetbrains/annotations",
+        "//libraries/kotlinx/coroutines/core",
+        "//platform/analysis-api:analysis",
+        "//platform/backend/workspace",
+        "//platform/util/concurrency",
+        "//platform/core-api:core",
+        "//platform/core-ui",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/extensions",
+        "//platform/platform-api:ide",
+        "//platform/ide-core",
+        "//platform/ide-core-impl",
+        "//jps/model-api:model",
+        "//platform/lang-api:lang",
+        "//platform/lang-core",
+        "//platform/lang-impl",
+        "//platform/projectModel-api:projectModel",
+        "//platform/statistics",
+        "//platform/util",
+        "//platform/util:util-ui",
+        "//platform/workspace/jps",
+        "//platform/workspace/storage",
+        "//python/python-ast:ast",
+        "//python/python-parser:parser",
+        "//python/python-psi-api:psi",
+        "//python/python-psi-impl:psi-impl",
+        "//python/python-pyproject:pyproject",
+        "//python/python-refactoring:refactoring",
+    ],
+)
+### auto-generated section `build intellij.python.sourceRoots` end
+
+### auto-generated section `iml intellij.python.sourceRoots` start
+exports_files(
+    [
+        "intellij.python.sourceRoots.iml",
+        "resources/intellij.python.sourceRoots.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.python.sourceRoots` end

@@ -1,0 +1,9 @@
+<idea-plugin visibility="internal">
+  <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+  <dependencies>
+    <module name="intellij.libraries.jetbrains.annotations"/>
+    <module name="intellij.platform.completion.common"/>
+    <module name="intellij.platform.rpc.backend"/>
+  </dependencies>
+  <!-- endregion -->
+</idea-plugin>

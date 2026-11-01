@@ -1,0 +1,51 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.sh.terminal` start
+content_module_jar(module = ":terminal")
+### auto-generated section `dev intellij.sh.terminal` end
+
+### auto-generated section `build intellij.sh.terminal` start
+jvm_library(
+    name = "terminal",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.sh.terminal",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//platform/remote-topics/shared:rpc-topics",
+        "//libraries/kotlinx/serialization/core",
+        "//platform/projectModel-api:projectModel",
+        "//plugins/terminal",
+        "//platform/platform-api:ide",
+        "//platform/ide-core",
+        "//platform/core-ui",
+        "//libraries/jediterm-ui",
+        "//plugins/sh/core",
+        "//libraries/jediterm-core",
+        "//platform/core-api:core",
+    ],
+)
+### auto-generated section `build intellij.sh.terminal` end
+
+### auto-generated section `iml intellij.sh.terminal` start
+exports_files(
+    [
+        "intellij.sh.terminal.iml",
+        "resources/intellij.sh.terminal.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.sh.terminal` end

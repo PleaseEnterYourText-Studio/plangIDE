@@ -1,0 +1,101 @@
+load("@community//build:bazel_targets_json.bzl", "current_bazel_targets_json")
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+BAZEL_TARGETS_JSON = current_bazel_targets_json()
+
+filegroup(
+    name = "testData",
+    srcs = glob(["testData/**"]),
+)
+
+jps_test(
+    name = "junit-v5-rt-tests_test",
+    timeout = "long",
+    data = [
+        "@community//plugins/junit5_rt_tests:testData",
+        BAZEL_TARGETS_JSON,
+    ],
+    jvm_flags = [
+        "-Dintellij.build.bazel.targets.json.file=$(rlocationpath %s)" % BAZEL_TARGETS_JSON,
+    ],
+    tags = ["junit-5-tests"],
+    runtime_deps = [":junit-v5-rt-tests_test_lib"],
+)
+### skip generation section `test intellij.junit.v5.rt.tests`
+
+### auto-generated section `build intellij.junit.v5.rt.tests` start
+jvm_library(
+    name = "junit-v5-rt-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "test/**/*.kt",
+            "test/**/*.java",
+            "test/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.junit.v5.rt.tests",
+    resource_strip_prefix = "testResources",
+    resources = glob(
+        ["testResources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//platform/testRunner/plugin",
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+        "//plugins/junit6_rt:junit-v6-rt",
+        "//plugins/ui-designer/jps-plugin:java-guiForms-jps",
+    ],
+    deps = [
+        # do not sort,
+        "//libraries/junit6-launcher",
+        "//plugins/junit5_rt:junit-v5-rt",
+        "//java/testFramework",
+        "//java/execution/impl",
+        "//plugins/junit",
+        "//java/java-tests:tests_test_lib",
+        "//java/java-syntax:syntax",
+        "//java/java-psi-api:psi",
+        "//aether-dependency-resolver",
+        "//java/compiler/openapi:java-compiler",
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//platform/core-ui",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/execution-impl",
+        "//jps/model-api:model",
+        "//platform/lang-core",
+        "//platform/lang-api:lang",
+        "//platform/projectModel-api:projectModel",
+        "//platform/smRunner",
+        "//platform/testFramework",
+        "//java/java-runtime:rt",
+        "//java/java-frontback-psi-api:frontback-psi",
+        "//libraries/junit6",
+        "//libraries/stream",
+        "//platform/platform-util-io:ide-util-io",
+        "//platform/ide-core",
+        "//libraries/junit6-jupiter",
+        "//libraries/junit6-vintage",
+        "//platform/testFramework/junit5",
+        "//platform/execution",
+        "//platform/code-style-api:codeStyle",
+        "//platform/testRunner",
+        "//platform/statistics",
+        "//libraries/junit4",
+        "//platform/bazel-runfiles",
+    ],
+)
+### auto-generated section `build intellij.junit.v5.rt.tests` end
+
+### auto-generated section `iml intellij.junit.v5.rt.tests` start
+exports_files(
+    [
+        "intellij.junit.v5.rt.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.junit.v5.rt.tests` end

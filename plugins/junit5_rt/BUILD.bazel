@@ -1,0 +1,43 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `build intellij.junit.v5.rt` start
+jvm_library(
+    name = "junit-v5-rt",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = "@community//:k8",
+    module_name = "intellij.junit.v5.rt",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    exports = [
+        # do not sort,
+        "//plugins/junit_rt:junit-rt",
+        "//java/java-runtime:rt",
+    ],
+    deps = [
+        # do not sort,
+        "//plugins/junit_rt:junit-rt",
+        "//java/java-runtime:rt",
+        "@lib//:junit-v5-rt-_j_unit5_launcher-rt-provided",
+        "@lib//:junit-v5-rt-_j_unit5-rt-provided",
+    ],
+)
+### auto-generated section `build intellij.junit.v5.rt` end
+
+### auto-generated section `iml intellij.junit.v5.rt` start
+exports_files(
+    [
+        "intellij.junit.v5.rt.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.junit.v5.rt` end

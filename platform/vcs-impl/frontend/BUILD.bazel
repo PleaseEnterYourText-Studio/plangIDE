@@ -1,0 +1,136 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+jps_test(
+    name = "vcs-impl-frontend-tests_test",
+    timeout = "moderate",
+    tags = ["community-aggregator"],
+    runtime_deps = [":vcs-impl-frontend-tests_test_lib"],
+)
+### skip generation section `test intellij.platform.vcs.impl.frontend.tests`
+
+### auto-generated section `dev intellij.platform.vcs.impl.frontend` start
+content_module_jar(module = ":frontend")
+### auto-generated section `dev intellij.platform.vcs.impl.frontend` end
+
+### auto-generated section `build intellij.platform.vcs.impl.frontend` start
+jvm_library(
+    name = "frontend",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.vcs.impl.frontend",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//libraries/kotlinx/coroutines/core",
+        "@lib//:kotlin-stdlib",
+        "//platform/core-api:core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/projectModel-api:projectModel",
+        "//platform/util:util-ui",
+        "//platform/diagnostic",
+        "//platform/core-ui",
+        "//platform/platform-impl:ide-impl",
+        "//platform/platform-impl/error-tree-view",
+        "//platform/ide-core",
+        "//platform/diff-impl",
+        "//platform/util/jdom",
+        "//fleet/rpc",
+        "//platform/lang-core",
+        "//platform/vcs-impl/shared",
+        "//platform/project/shared:project",
+        "//platform/util/coroutines",
+        "//libraries/kotlinx/serialization/core",
+        "//libraries/kotlinx/serialization/json",
+        "//platform/recentFiles/shared:recentFiles",
+        "//platform/recentFiles/frontend",
+        "//platform/analysis-api:analysis",
+        "//platform/vcs-api/shared",
+        "//platform/vcs-api/vcs-api-core:vcs-core",
+        "//platform/util/concurrency",
+        "//platform/platform-frontend:frontend",
+        "//platform/lang-impl",
+        "//platform/remote-topics/shared:rpc-topics",
+        "//platform/platform-impl/rpc",
+        "//platform/diff-api:diff",
+        "//platform/util/diff",
+    ],
+)
+### auto-generated section `build intellij.platform.vcs.impl.frontend` end
+
+### auto-generated section `iml intellij.platform.vcs.impl.frontend` start
+exports_files(
+    [
+        "intellij.platform.vcs.impl.frontend.iml",
+        "resources/intellij.platform.vcs.impl.frontend.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.vcs.impl.frontend` end
+
+### auto-generated section `build intellij.platform.vcs.impl.frontend.tests` start
+jvm_library(
+    name = "vcs-impl-frontend-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "testSrc/**/*.kt",
+            "testSrc/**/*.java",
+            "testSrc/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    associates = ["//platform/vcs-impl/frontend"],
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//community-resources:customization",
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+    ],
+    deps = [
+        # do not sort,
+        "//libraries/kotlinx/coroutines/core",
+        "@lib//:kotlin-stdlib",
+        "//platform/core-api:core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/projectModel-api:projectModel",
+        "//platform/util:util-ui",
+        "//platform/core-ui",
+        "//platform/platform-impl:ide-impl",
+        "//platform/ide-core",
+        "//platform/diff-impl",
+        "//platform/diff-api:diff",
+        "//platform/util/diff",
+        "//platform/vcs-impl/shared",
+        "//platform/vcs-api/shared",
+        "//platform/vcs-api/vcs-api-core:vcs-core",
+        "//platform/vcs/plugin",
+        "//platform/analysis-api:analysis",
+        "//platform/testFramework",
+        "//platform/testFramework/junit5",
+        "//platform/vcs-impl/shared:vcs-impl-shared-tests_test_lib",
+        "//libraries/junit4",
+        "//libraries/junit6",
+    ],
+)
+### auto-generated section `build intellij.platform.vcs.impl.frontend.tests` end
+
+### auto-generated section `iml intellij.platform.vcs.impl.frontend.tests` start
+exports_files(
+    [
+        "intellij.platform.vcs.impl.frontend.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.vcs.impl.frontend.tests` end

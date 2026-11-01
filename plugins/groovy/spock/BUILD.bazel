@@ -1,0 +1,56 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.groovy.spock` start
+content_module_jar(module = ":spock")
+### auto-generated section `dev intellij.groovy.spock` end
+
+### auto-generated section `build intellij.groovy.spock` start
+jvm_library(
+    name = "spock",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.groovy.spock",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/core-api:core",
+        "//java/java-impl:impl",
+        "//java/execution/impl",
+        "//platform/execution-impl",
+        "//platform/execution",
+        "//java/java-psi-api:psi",
+        "//platform/util/jdom",
+        "//platform/platform-util-io:ide-util-io",
+        "//plugins/groovy/spock-rt",
+        "//plugins/junit",
+        "//plugins/groovy",
+        "//platform/testRunner",
+        "//platform/ide-core",
+        "//platform/lang-core",
+        "//platform/smRunner",
+        "@lib//:kotlin-stdlib",
+        "//plugins/junit_rt:junit-rt",
+    ],
+)
+### auto-generated section `build intellij.groovy.spock` end
+
+### auto-generated section `iml intellij.groovy.spock` start
+exports_files(
+    [
+        "intellij.groovy.spock.iml",
+        "resources/intellij.groovy.spock.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.groovy.spock` end

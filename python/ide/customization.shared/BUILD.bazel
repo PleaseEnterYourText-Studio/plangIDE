@@ -1,0 +1,36 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `build intellij.pycharm.community.customization.shared` start
+jvm_library(
+    name = "customization.shared",
+    srcs = glob(
+        [],
+        allow_empty = True,
+    ),
+    module_name = "intellij.pycharm.community.customization.shared",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//python/ide/impl",
+        "//python/ide/implTraining/intellij.pycharm.community.ide.implTraining:pycharm-community-ide-implTraining",
+        "//platform/whatsNew",
+        "//platform/platform-impl:ide-impl",
+        "//python/ide/customization.backend",
+        "//python/ide/customization.scratch",
+    ],
+)
+### auto-generated section `build intellij.pycharm.community.customization.shared` end
+
+### auto-generated section `iml intellij.pycharm.community.customization.shared` start
+exports_files(
+    [
+        "intellij.pycharm.community.customization.shared.iml",
+        "resources/META-INF/plugin.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.pycharm.community.customization.shared` end

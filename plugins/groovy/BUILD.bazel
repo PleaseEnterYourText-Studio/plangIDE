@@ -1,0 +1,304 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@jps_dynamic_deps_community//:targets.bzl", "dev_dist_plugin")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+filegroup(
+    name = "testdata",
+    srcs = glob(["testdata/**"]),
+    visibility = ["//visibility:public"],
+)
+
+jps_test(
+    name = "groovy-tests_test",
+    data = [
+        ":testdata",
+        "@community//plugins/groovy/groovy-psi:dev_dist_resources",
+    ],
+    env = {
+        "JB_TEST_JUNIT5_FILTERS": ";".join([
+            "exclude-classname=org\\.jetbrains\\.plugins\\.groovy\\.AllGroovyTestSuite",
+            "exclude-classname=org\\.jetbrains\\.plugins\\.groovy\\.FastGroovyTestSuite",
+            "exclude-classname=org\\.jetbrains\\.plugins\\.groovy\\.GroovyGinqTestSuite",
+            "exclude-classname=org\\.jetbrains\\.plugins\\.groovy\\.GroovyParserTestSuite",
+            "exclude-classname=org\\.jetbrains\\.plugins\\.groovy\\.SlowGroovyTestSuite",
+        ]),
+    },
+    tags = ["groovy-tests"],
+    runtime_deps = [":groovy-tests_test_lib"],
+)
+### skip generation section `test intellij.groovy.tests`
+
+### auto-generated section `dev intellij.groovy` start
+exports_files(
+    ["hotswap/gragent.jar"],
+    visibility = ["//visibility:public"],
+)
+
+dev_dist_plugin(
+    content_modules = [
+        # do not sort,
+        "intellij.groovy.git",
+        "intellij.groovy.ant",
+        "intellij.groovy.copyright",
+        "intellij.groovy.byteCodeViewer",
+        "intellij.groovy.langInjection",
+        "intellij.groovy.structuralSearch",
+        "intellij.groovy.spock",
+        "intellij.libraries.hamcrest",
+        "intellij.libraries.junit4",
+        "intellij.libraries.opentest4j",
+        "intellij.groovy.constants.rt",
+        "intellij.groovy.jps",
+        "intellij.groovy.psi",
+        "intellij.groovy.rt",
+        "intellij.groovy.rt.classLoader",
+        "intellij.groovy.spock.rt",
+    ],
+    main_module = "intellij.groovy",
+)
+### auto-generated section `dev intellij.groovy` end
+
+### auto-generated section `build intellij.groovy` start
+jvm_library(
+    name = "groovy",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.groovy",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    exports = ["//plugins/groovy/groovy-psi:psi"],
+    deps = [
+        # do not sort,
+        "//platform/analysis-api:analysis",
+        "//platform/code-style-api:codeStyle",
+        "//platform/util/concurrency",
+        "//platform/core-api:core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/execution-impl",
+        "//platform/indexing-api:indexing",
+        "//platform/core-impl",
+        "//jps/model-api:model",
+        "//platform/lang-core",
+        "//platform/macro",
+        "//platform/projectModel-api:projectModel",
+        "//platform/refactoring",
+        "//platform/structure-view-impl:structureView",
+        "//platform/workspace/storage",
+        "//java/openapi:java",
+        "//java/java-syntax:syntax",
+        "//java/java-psi-api:psi",
+        "//java/debugger/openapi:java-debugger",
+        "//plugins/groovy/rt",
+        "//platform/observable",
+        "//platform/platform-impl:ide-impl",
+        "//java/compiler/impl",
+        "//platform/ide-core-impl",
+        "//platform/ide-core",
+        "//java/debugger/impl",
+        "//platform/lang-api:lang",
+        "@community//build:build-javac-rt",
+        "//platform/editor-ui-ex:editor-ex",
+        "//plugins/properties:properties-backend",
+        "//java/execution/impl",
+        "//platform/usageView",
+        "//java/compiler/openapi:java-compiler",
+        "//java/execution/openapi:java-execution",
+        "//java/idea-ui:ui",
+        "//java/java-impl:impl",
+        "//libraries/guava",
+        "//jps/jps-builders:build",
+        "//spellchecker",
+        "//java/java-indexing-api:indexing",
+        "//plugins/groovy/jps-plugin:jps",
+        "//plugins/properties/properties-psi-api:psi",
+        "//plugins/groovy/groovy-psi:psi",
+        "//platform/external-system-api:externalSystem",
+        "//RegExpSupport:regexp",
+        "//libraries/protobuf",
+        "//platform/core-ui",
+        "//libraries/fastutil",
+        "//platform/code-style-impl:codeStyle-impl",
+        "//platform/platform-util-io:ide-util-io",
+        "//java/java-impl-refactorings:impl-refactorings",
+        "//platform/util/jdom",
+        "//platform/util:util-ui",
+        "//platform/util-ex",
+        "//platform/testIntegration-ui",
+        "//platform/workspace/jps",
+        "//platform/backend/workspace",
+        "//java/unscramble",
+        "//platform/execution",
+        "//platform/consoleView",
+        "//platform/consoleView/impl",
+        "//platform/statistics",
+        "//platform/forms_rt:java-guiForms-rt",
+        "//java/java-frontback-psi-api:frontback-psi",
+        "//libraries/kotlinx/collections-immutable:libraries-kotlinx-collections-immutable",
+    ],
+)
+### auto-generated section `build intellij.groovy` end
+
+### auto-generated section `iml intellij.groovy` start
+exports_files(
+    [
+        "intellij.groovy.iml",
+        "resources/META-INF/gant-support.xml",
+        "resources/META-INF/geb-support.xml",
+        "resources/META-INF/groovy-console.xml",
+        "resources/META-INF/groovy-dynamic-members.xml",
+        "resources/META-INF/groovy-indexed-property-support.xml",
+        "resources/META-INF/groovy-intentions.xml",
+        "resources/META-INF/groovy-logback-support.xml",
+        "resources/META-INF/groovy-templates.xml",
+        "resources/META-INF/plugin.xml",
+        "resources/org/jetbrains/plugins/groovy/config/groovy.sdk.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.groovy` end
+
+### auto-generated section `build intellij.groovy.tests` start
+jvm_library(
+    name = "groovy-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "test/**/*.kt",
+            "test/**/*.java",
+            "test/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    associates = ["//plugins/groovy"],
+    visibility = ["//visibility:public"],
+    exports = ["//plugins/groovy/groovy-psi:psi"],
+    runtime_deps = [
+        # do not sort,
+        "//plugins/grazie",
+        "//plugins/groovy/ant",
+        "//plugins/groovy/langInjection",
+        "//plugins/groovy/spock",
+        "//platform/vcs/plugin",
+        "//plugins/ant",
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+        "//community-resources:customization",
+    ],
+    deps = [
+        # do not sort,
+        "//platform/analysis-api:analysis",
+        "//platform/code-style-api:codeStyle",
+        "//platform/util/concurrency",
+        "//platform/core-api:core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/execution-impl",
+        "//platform/indexing-api:indexing",
+        "//platform/core-impl",
+        "//platform/lang-core",
+        "//platform/projectModel-api:projectModel",
+        "//platform/refactoring",
+        "//platform/structure-view-impl:structureView",
+        "//xml/dom-openapi:dom",
+        "//java/openapi:java",
+        "//java/java-syntax:syntax",
+        "//java/java-psi-api:psi",
+        "//platform/platform-impl:ide-impl",
+        "//plugins/groovy/spock-rt",
+        "//platform/smRunner",
+        "//platform/ide-core",
+        "//platform/lang-api:lang",
+        "//java/execution/impl",
+        "//java/idea-ui:ui",
+        "//java/java-impl:impl",
+        "//plugins/copyright",
+        "//plugins/IntelliLang:langInjection",
+        "//java/testFramework",
+        "//java/langInjection",
+        "//xml/langInjection",
+        "//spellchecker",
+        "//plugins/grazie/src:core",
+        "//plugins/junit",
+        "//plugins/junit_rt:junit-rt",
+        "//java/java-indexing-api:indexing",
+        "//plugins/groovy/groovy-psi:psi",
+        "//platform/external-system-impl:externalSystem-impl",
+        "//platform/lang-impl:lang-tests_test_lib",
+        "//platform/core-ui",
+        "//libraries/fastutil",
+        "//platform/code-style-impl:codeStyle-impl",
+        "//platform/platform-util-io:ide-util-io",
+        "//libraries/asm",
+        "//java/java-impl-refactorings:impl-refactorings",
+        "//platform/util/jdom",
+        "//platform/util:util-ui",
+        "//platform/util-ex",
+        "//platform/build-scripts/downloader",
+        "//libraries/assertj-core",
+        "//libraries/junit6-jupiter",
+        "//platform/testFramework",
+        "//platform/testFramework/structureView",
+        "//platform/bazel-runfiles",
+        "//tools/intellij.tools.ide.metrics.benchmark:ide-metrics-benchmark",
+        "//xml/xml-psi-api:psi",
+        "//platform/execution",
+        "//java/java-frontback-psi-api:frontback-psi",
+        "//plugins/groovy/testFramework",
+        "//plugins/groovy-scripting",
+        "//plugins/groovy-live-templates",
+        "//libraries/junit4",
+        "//libraries/junit6",
+        "//platform/testFramework/junit5",
+        "//platform/testFramework/junit5/codeInsight",
+    ],
+)
+### auto-generated section `build intellij.groovy.tests` end
+
+### auto-generated section `iml intellij.groovy.tests` start
+exports_files(
+    [
+        "intellij.groovy.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.groovy.tests` end
+
+### auto-generated section `build intellij.groovy.tests.main` start
+jvm_library(
+    name = "groovy-tests-main_test_lib",
+    testonly = True,
+    srcs = glob(
+        [],
+        allow_empty = True,
+    ),
+    module_name = "intellij.groovy.tests.main",
+    resource_strip_prefix = "testResources",
+    resources = glob(
+        ["testResources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//platform/bootstrap/coroutine",
+        "//plugins/groovy:groovy-tests_test_lib",
+        "//plugins/groovy/groovy-uast-tests:uast-tests_test_lib",
+        "//plugins/groovy/compiler-tests:compiler-tests_test_lib",
+    ],
+)
+### auto-generated section `build intellij.groovy.tests.main` end
+
+### auto-generated section `iml intellij.groovy.tests.main` start
+exports_files(
+    [
+        "intellij.groovy.tests.main.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.groovy.tests.main` end

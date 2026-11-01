@@ -1,0 +1,489 @@
+// Copyright 2000-2023 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+package com.intellij.openapi.wm.impl.welcomeScreen
+
+import com.intellij.diagnostic.ExceptionAutoReportUtil
+import com.intellij.icons.AllIcons
+import com.intellij.ide.IdeBundle
+import com.intellij.ide.RecentProjectListActionProvider
+import com.intellij.ide.RecentProjectsManager
+import com.intellij.ide.RecentProjectsManager.RecentProjectsChange
+import com.intellij.ide.dnd.DnDEvent
+import com.intellij.ide.dnd.DnDNativeTarget
+import com.intellij.ide.dnd.DnDSupport
+import com.intellij.ide.dnd.FileCopyPasteUtil
+import com.intellij.ide.gdpr.showDataSharingOptionsDialog
+import com.intellij.ide.impl.ProjectUtil.openOrImportFilesAsync
+import com.intellij.openapi.Disposable
+import com.intellij.openapi.actionSystem.ActionGroup
+import com.intellij.openapi.actionSystem.ActionGroupWrapper
+import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.ActionPlaces
+import com.intellij.openapi.actionSystem.ActionToolbar
+import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.IdeActions
+import com.intellij.openapi.actionSystem.Presentation
+import com.intellij.openapi.actionSystem.ex.ActionButtonLook
+import com.intellij.openapi.actionSystem.ex.ActionManagerEx
+import com.intellij.openapi.actionSystem.ex.ActionUtil
+import com.intellij.openapi.actionSystem.impl.ActionButton
+import com.intellij.openapi.actionSystem.impl.ActionToolbarImpl
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.UI
+import com.intellij.openapi.application.invokeLater
+import com.intellij.openapi.components.service
+import com.intellij.openapi.diagnostic.fileLogger
+import com.intellij.openapi.observable.properties.AtomicBooleanProperty
+import com.intellij.openapi.progress.TaskInfo
+import com.intellij.openapi.util.registry.Registry
+import com.intellij.openapi.wm.WelcomeScreenCustomization
+import com.intellij.openapi.wm.WelcomeScreenTab
+import com.intellij.openapi.wm.WelcomeTabFactory
+import com.intellij.openapi.wm.ex.ProgressIndicatorEx
+import com.intellij.openapi.wm.impl.welcomeScreen.TabbedWelcomeScreen.DefaultWelcomeScreenTab
+import com.intellij.openapi.wm.impl.welcomeScreen.cloneableProjects.CloneableProjectsService
+import com.intellij.openapi.wm.impl.welcomeScreen.cloneableProjects.CloneableProjectsService.CloneProjectListener
+import com.intellij.openapi.wm.impl.welcomeScreen.recentProjects.ProjectCollectors
+import com.intellij.openapi.wm.impl.welcomeScreen.recentProjects.RecentProjectPanelComponentFactory.createComponent
+import com.intellij.openapi.wm.impl.welcomeScreen.statistics.WelcomeScreenCounterUsageCollector
+import com.intellij.platform.ide.CoreUiCoroutineScopeHolder
+import com.intellij.ui.ExperimentalUI
+import com.intellij.ui.ScrollPaneFactory
+import com.intellij.ui.border.CustomLineBorder
+import com.intellij.ui.components.ActionLink
+import com.intellij.ui.components.panels.HorizontalLayout
+import com.intellij.ui.components.panels.Wrapper
+import com.intellij.ui.dsl.builder.Align
+import com.intellij.ui.dsl.builder.AlignX
+import com.intellij.ui.dsl.builder.DslComponentProperty
+import com.intellij.ui.dsl.builder.EmptySpacingConfiguration
+import com.intellij.ui.dsl.builder.Placeholder
+import com.intellij.ui.dsl.builder.panel
+import com.intellij.ui.dsl.gridLayout.UnscaledGaps
+import com.intellij.ui.layout.ValueComponentPredicate
+import com.intellij.util.ui.JBUI
+import com.intellij.util.ui.UIUtil
+import com.intellij.util.ui.initOnShow
+import com.intellij.util.ui.update.UiNotifyConnector
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import java.awt.BorderLayout
+import java.awt.Component
+import java.awt.Dimension
+import java.awt.Insets
+import java.io.File
+import java.util.concurrent.ConcurrentHashMap
+import java.util.function.Supplier
+import javax.swing.JComponent
+import javax.swing.JLabel
+import javax.swing.JPanel
+import javax.swing.ScrollPaneConstants
+
+@Suppress("OVERRIDE_DEPRECATION")
+internal class ProjectsTabFactory : WelcomeTabFactory {
+  override fun createWelcomeTab(parentDisposable: Disposable): WelcomeScreenTab = ProjectsTab(parentDisposable)
+}
+
+internal class ProjectsTab(private val parentDisposable: Disposable) : DefaultWelcomeScreenTab(
+  IdeBundle.message("welcome.screen.projects.title"),
+  WelcomeScreenEventCollector.TabType.TabNavProject
+) {
+
+  private var isPanelEmptyPredicate: ValueComponentPredicate = ValueComponentPredicate(true)
+  private var notificationPanel: JComponent? = null
+
+  init {
+    val connect = ApplicationManager.getApplication().messageBus.connect(parentDisposable)
+    connect.subscribe(CloneableProjectsService.TOPIC, object : CloneProjectListener {
+      override fun onCloneCanceled() {}
+      override fun onCloneFailed() {}
+      override fun onCloneSuccess() {}
+      override fun onCloneAdded(progressIndicator: ProgressIndicatorEx, taskInfo: TaskInfo) {
+        checkState()
+      }
+
+      override fun onCloneRemoved() {
+        checkState()
+      }
+    })
+    connect.subscribe(RecentProjectsManager.RECENT_PROJECTS_CHANGE_TOPIC, object : RecentProjectsChange {
+      override fun change() {
+        checkState()
+      }
+    })
+    // the providers of recent projects, for example Toolbox, are queried once the tab is shown: a provider may start its service
+    isPanelEmptyPredicate.set(getCurrentState(includesProviders = false) == PanelState.EMPTY)
+  }
+
+  override fun buildComponent(): JComponent {
+    val recentProjectsCount = RecentProjectListActionProvider.getInstance().countLocalProjects()
+
+    // the promotion is built after the tab is first shown: its promoters initialize their plugins, and the banner renders HTML
+    val isPromoForEmptyState = recentProjectsCount == 0
+    val isPromoVisible = AtomicBooleanProperty(false)
+    lateinit var promoPlaceholder: Placeholder
+
+    val result = panel {
+      customizeSpacingConfiguration(EmptySpacingConfiguration()) {
+        row {
+          val placeholder = placeholder()
+            .align(Align.FILL)
+
+          // only the panel that is shown is built, the other one is built on the first switch to it
+          val recentProjectsPanel = lazy(LazyThreadSafetyMode.NONE) {
+            when {
+              isStationWelcomeScreenPromoEnabled() -> createTwoRowRecentProjectsPanel(false)
+              Registry.`is`("jetbrainsd.new.connection.flow.enabled", false) -> createTwoRowRecentProjectsPanel(true)
+              else -> createRecentProjectsPanel()
+            }
+          }
+          val emptyStatePanel = lazy(LazyThreadSafetyMode.NONE) { createEmptyStatePanel() }
+          isPanelEmptyPredicate.addListener { isEmpty ->
+            placeholder.component = if (isEmpty) emptyStatePanel.value else recentProjectsPanel.value
+          }
+          placeholder.component = if (isPanelEmptyPredicate.invoke()) emptyStatePanel.value else recentProjectsPanel.value
+        }.resizableRow()
+        row {
+          notificationPanel = cell(WelcomeScreenComponentFactory.createNotificationToolbar(parentDisposable))
+            .align(AlignX.RIGHT)
+            .applyToComponent {
+              putClientProperty(DslComponentProperty.VISUAL_PADDINGS, UnscaledGaps.EMPTY)
+            }.component
+        }
+        // hidden without a promotion, so the other rows keep their layout until it comes
+        row {
+          promoPlaceholder = placeholder()
+            .customize(UnscaledGaps(0, PROMO_BORDER_OFFSET, PROMO_BORDER_OFFSET, PROMO_BORDER_OFFSET))
+            .align(AlignX.FILL)
+        }.visibleIf(isPromoVisible)
+
+        val errorReportAlert = createErrorReportAlert()
+        if (errorReportAlert != null) {
+          row {
+            cell(errorReportAlert)
+              .align(AlignX.CENTER)
+              .applyToComponent {
+                putClientProperty(DslComponentProperty.VISUAL_PADDINGS, UnscaledGaps.EMPTY)
+              }
+          }
+        }
+      }
+    }.apply {
+      background = WelcomeScreenUIManager.getProjectsBackground()
+    }
+    UiNotifyConnector.doWhenFirstShown(result) {
+      checkState()
+      val providerRecentProjectsCount = RecentProjectListActionProvider.getInstance().countProjectsFromProviders()
+      WelcomeScreenCounterUsageCollector.reportWelcomeScreenShowed(recentProjectsCount, providerRecentProjectsCount)
+
+      val promo = WelcomeScreenComponentFactory.getSinglePromotion(isPromoForEmptyState) ?: return@doWhenFirstShown
+      promo.putClientProperty(DslComponentProperty.VISUAL_PADDINGS, UnscaledGaps.EMPTY)
+      promoPlaceholder.component = promo
+      isPromoVisible.set(true)
+    }
+    return result
+  }
+
+  private fun checkState() {
+    isPanelEmptyPredicate.set(getCurrentState() == PanelState.EMPTY)
+  }
+
+  private fun createErrorReportAlert(): JComponent? {
+    if (!ExceptionAutoReportUtil.isConsentAllowedToBeVisible) return null
+
+    val alertWrapper = JPanel(BorderLayout())
+    alertWrapper.isOpaque = false
+
+    alertWrapper.initOnShow("ErrorReportAlert") {
+      if (!ExceptionAutoReportUtil.isAutoReportAllowedByUser()) return@initOnShow
+
+      if (!ExceptionAutoReportUtil.needNotificationOfDataCollection()) {
+        LOG.debug("User is already notified enough of error reports collection")
+        return@initOnShow
+      }
+
+      LOG.info("Notify user that error reports are sent automatically")
+
+      val label = JLabel(IdeBundle.message("welcome.screen.ea.auto.report.alert"))
+      label.foreground = UIUtil.getInactiveTextColor()
+
+      val alert = JPanel(HorizontalLayout(UIUtil.DEFAULT_HGAP))
+      alert.isOpaque = false
+      alert.border = JBUI.Borders.empty(PROMO_BORDER_OFFSET)
+      alert.add(label)
+      alert.add(ActionLink(IdeBundle.message("welcome.screen.ea.auto.report.configure.link")) {
+        ExceptionAutoReportUtil.recordUserVisitedConfigure()
+
+        if (showDataSharingOptionsDialog()) {
+          @OptIn(DelicateCoroutinesApi::class)
+          GlobalScope.launch(Dispatchers.UI) {
+            removeErrorReportAlertIfDisabled(alert)
+          }
+        }
+      })
+
+      alertWrapper.add(alert, BorderLayout.CENTER)
+      alertWrapper.revalidate()
+      alertWrapper.repaint()
+
+      ExceptionAutoReportUtil.recordUserNotifiedOfDataCollection()
+    }
+
+    return alertWrapper
+  }
+
+  private suspend fun removeErrorReportAlertIfDisabled(alert: JComponent) {
+    LOG.debug("Recheck if error reporting is enabled, hide alert otherwise")
+
+    if (!ExceptionAutoReportUtil.isAutoReportAllowedByUser()) {
+      val parent = alert.parent ?: return
+      parent.remove(alert)
+      parent.revalidate()
+      parent.repaint()
+
+      LOG.debug("Error reporting is disabled, hide alert")
+    }
+  }
+
+  override fun updateComponent() {
+    // balloonLayout is not initialized at this point
+    invokeLater {
+      val balloonLayout = WelcomeFrame.getInstance()?.balloonLayout
+      if (balloonLayout is WelcomeBalloonLayoutImpl) {
+        balloonLayout.locationComponent = notificationPanel
+      }
+    }
+  }
+
+  private fun createRecentProjectsPanel(): JComponent {
+    val recentProjectsPanel: JPanel = JBUI.Panels.simplePanel()
+      .withBorder(JBUI.Borders.empty(13, 12))
+      .withBackground(WelcomeScreenUIManager.getProjectsBackground())
+    val recentProjectTree = createComponent(
+      parentDisposable, ProjectCollectors.all
+    )
+    recentProjectTree.selectLastOpenedProject()
+
+    val treeComponent = recentProjectTree.component
+    val scrollPane = ScrollPaneFactory.createScrollPane(treeComponent, true)
+    scrollPane.horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
+    scrollPane.isOpaque = false
+    val projectsPanel = JBUI.Panels.simplePanel(scrollPane)
+      .andTransparent()
+      .withBorder(JBUI.Borders.emptyTop(10))
+
+    val projectSearch = recentProjectTree.installSearchField()
+    if (ExperimentalUI.isNewUI()) {
+      projectSearch.textEditor.putClientProperty("JTextField.Search.Icon", AllIcons.Actions.Search)
+    }
+    val northPanel: JPanel = JBUI.Panels.simplePanel()
+      .andTransparent()
+      .withBorder(object : CustomLineBorder(WelcomeScreenUIManager.getSeparatorColor(), JBUI.insetsBottom(1)) {
+        override fun getBorderInsets(c: Component): Insets {
+          return JBUI.insetsBottom(12)
+        }
+      })
+    northPanel.add(projectSearch, BorderLayout.CENTER)
+    northPanel.add(createActionsToolbarHolder(scrollPane), BorderLayout.EAST)
+    recentProjectsPanel.add(northPanel, BorderLayout.NORTH)
+    recentProjectsPanel.add(projectsPanel, BorderLayout.CENTER)
+
+    initDnD(treeComponent)
+
+    recentProjectsPanel.putClientProperty(DslComponentProperty.VISUAL_PADDINGS, UnscaledGaps.EMPTY)
+
+    return recentProjectsPanel
+  }
+
+  private fun createTwoRowRecentProjectsPanel(disableSearchFieldBorder: Boolean): JComponent {
+    val recentProjectTree = createComponent(
+      parentDisposable, ProjectCollectors.all, disableSearchFieldBorder = disableSearchFieldBorder
+    )
+    recentProjectTree.selectLastOpenedProject()
+    val treeComponent = recentProjectTree.component
+
+    val projectSearch = recentProjectTree.installSearchField()
+    if (ExperimentalUI.isNewUI()) {
+      projectSearch.textEditor.putClientProperty("JTextField.Search.Icon", AllIcons.Actions.Search)
+    }
+
+    val actionsToolbarHolder = createActionsToolbarHolder(treeComponent)
+
+    return panel {
+      row {
+        cell(actionsToolbarHolder)
+      }
+      row {
+        cell(projectSearch)
+          .customize(UnscaledGaps(left = 4, right = 4, top = 18, bottom = 4))
+          .align(Align.FILL)
+      }
+
+      if (disableSearchFieldBorder) {
+        separator(null)
+      }
+
+      row {
+        val scrollPane = ScrollPaneFactory.createScrollPane(treeComponent, true)
+          .apply {
+            horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
+            isOpaque = false
+          }
+        cell(scrollPane)
+          .align(Align.FILL)
+      }.resizableRow()
+
+    }.andTransparent()
+      .apply {
+        border = JBUI.Borders.empty(13, 12)
+        initDnD(treeComponent)
+      }
+  }
+
+  private fun createEmptyStatePanel(): JComponent {
+    val emptyStateProjectsPanel = WelcomeScreenCustomization.WELCOME_SCREEN_CUSTOMIZATION.extensionList.firstNotNullOfOrNull { it.createMainEmptyState(parentDisposable) }
+                                  ?: emptyStateProjectPanel(parentDisposable)
+    initDnD(emptyStateProjectsPanel)
+    return emptyStateProjectsPanel
+  }
+
+  private fun initDnD(component: JComponent) {
+    val target = createDropFileTarget()
+    DnDSupport.createBuilder(component)
+      .enableAsNativeTarget()
+      .setTargetChecker(target)
+      .setDropHandler(target)
+      .setDisposableParent(parentDisposable)
+      .install()
+  }
+
+  /**
+   * Returns a panel that gets the toolbar of the project state actions once [ActionManager] is ready.
+   * The welcome frame is built while [ActionManager] may still be loading, and the toolbar needs its action group.
+   */
+  private fun createActionsToolbarHolder(targetComponent: JComponent): JComponent {
+    val holder = Wrapper()
+    ActionManagerEx.withLazyActionManager(scope = null) { actionManager ->
+      val toolbar = createActionsToolbar(actionManager)
+      toolbar.targetComponent = targetComponent
+      holder.setContent(toolbar.component)
+    }
+    return holder
+  }
+
+  private fun createActionsToolbar(actionManager: ActionManager): ActionToolbar {
+    val baseGroup = actionManager.getAction(IdeActions.GROUP_WELCOME_SCREEN_QUICKSTART_PROJECTS_STATE) as ActionGroup
+    val toolbarGroup = object : ActionGroupWrapper(baseGroup) {
+      val wrappers = ConcurrentHashMap<AnAction, AnAction>()
+      override fun postProcessVisibleChildren(e: AnActionEvent, visibleChildren: List<AnAction>): List<AnAction> {
+        val mapped = visibleChildren.mapIndexed { index, action ->
+          when {
+            index >= getWelcomeScreenPrimaryButtonsNum() -> action
+            action is ActionGroup && action is ActionsWithPanelProvider -> {
+              val wrapper = wrappers.getOrPut(action) {
+                ActionGroupPanelWrapper.wrapGroups(action, parentDisposable)
+              }
+              e.updateSession.presentation(wrapper)
+              wrapper
+            }
+            action is ActionGroup -> {
+              val children = e.updateSession.children(action).toList()
+              when {
+                children.isEmpty() -> action
+                else -> {
+                  val first = children.first()
+                  val wrapper = when {
+                    first is ActionGroup && first is ActionsWithPanelProvider -> wrappers.getOrPut(first) {
+                      ActionGroupPanelWrapper.wrapGroups(first, parentDisposable)
+                    }
+                    else -> first
+                  }
+                  e.updateSession.presentation(wrapper).putClientProperty(
+                    ActionUtil.INLINE_ACTIONS, children.subList(1, children.size))
+                  wrapper
+                }
+              }
+            }
+            else -> action
+          }
+        }
+        mapped.forEach { action ->
+          e.updateSession.presentation(action).putClientProperty(
+            ActionUtil.COMPONENT_PROVIDER, WelcomeScreenActionsUtil.createToolbarTextButtonAction(action))
+        }
+        return mapped
+      }
+    }
+    val toolbar: ActionToolbarImpl = object : ActionToolbarImpl(ActionPlaces.WELCOME_SCREEN, toolbarGroup, true) {
+      override fun isSecondaryAction(action: AnAction, actionIndex: Int): Boolean {
+        return actionIndex >= getWelcomeScreenPrimaryButtonsNum()
+      }
+
+      override fun createToolbarButton(
+        action: AnAction,
+        look: ActionButtonLook?,
+        place: String,
+        presentation: Presentation,
+        minimumSize: Supplier<out Dimension>,
+      ): ActionButton {
+        return super.createToolbarButton(action, look, place, presentation, minimumSize).apply {
+          isFocusable = true
+        }
+      }
+    }
+    toolbar.isOpaque = false
+    toolbar.isReservePlaceAutoPopupIcon = false
+    toolbar.setSecondaryActionsIcon(AllIcons.Actions.More, true)
+    @Suppress("DialogTitleCapitalization")
+    toolbar.setSecondaryActionsTooltip(IdeBundle.message("welcome.screen.more.actions.link.text"))
+    return toolbar
+  }
+}
+
+private val LOG = fileLogger()
+
+private const val PROMO_BORDER_OFFSET = 16
+
+private enum class PanelState {
+  EMPTY, NOT_EMPTY
+}
+
+private fun getCurrentState(includesProviders: Boolean = true): PanelState {
+  val recentProjectListActionProvider = RecentProjectListActionProvider.getInstance()
+  val recentProjects = if (includesProviders) {
+    recentProjectListActionProvider.collectProjects()
+  }
+  else {
+    recentProjectListActionProvider.collectLocalProjects()
+  }
+  val collectCloneableProjects = CloneableProjectsService.getInstance().collectCloneableProjects().toList()
+  return if (recentProjects.isEmpty() && collectCloneableProjects.isEmpty()) {
+    PanelState.EMPTY
+  }
+  else {
+    PanelState.NOT_EMPTY
+  }
+}
+
+private fun createDropFileTarget(): DnDNativeTarget {
+  return object : DnDNativeTarget {
+    override fun update(event: DnDEvent): Boolean {
+      if (!FileCopyPasteUtil.isFileListFlavorAvailable(event)) {
+        return false
+      }
+      event.isDropPossible = true
+      return false
+    }
+
+    override fun drop(event: DnDEvent) {
+      val files = FileCopyPasteUtil.getFileListFromAttachedObject(event.attachedObject)
+      if (!files.isEmpty()) {
+        service<CoreUiCoroutineScopeHolder>().coroutineScope.launch {
+          openOrImportFilesAsync(list = files.map(File::toPath), location = "WelcomeFrame")
+        }
+      }
+    }
+  }
+}

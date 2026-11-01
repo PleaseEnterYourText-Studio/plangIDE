@@ -1,0 +1,68 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//build:compiler-options.bzl", "create_kotlinc_options")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.platform.eel.tcp` start
+content_module_jar(module = ":eel-tcp")
+### auto-generated section `dev intellij.platform.eel.tcp` end
+
+### auto-generated section `build intellij.platform.eel.tcp` start
+create_kotlinc_options(
+    name = "custom_eel-tcp",
+    warn = "error",
+    x_warning_level = ["DEPRECATION:warning"],
+)
+
+jvm_library(
+    name = "eel-tcp",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = ":custom_eel-tcp",
+    module_name = "intellij.platform.eel.tcp",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//libraries/jetbrains/annotations",
+        "//libraries/kotlinx/coroutines/core",
+        "@lib//:kotlin-stdlib",
+        "//platform/eel-provider",
+        "//platform/eel",
+        "//platform/eel-impl",
+        "//platform/ijent",
+        "//platform/ijent/impl",
+        "//platform/util-ex",
+        "//platform/util",
+        "//platform/util/annotations",
+        "//platform/util/coroutines",
+        "//platform/core-api:core",
+        "//platform/core-nio-fs",
+        "//platform/platform-impl:ide-impl",
+        "//platform/ide-core-impl",
+        "//platform/platform-api:ide",
+        "//platform/core-ui",
+        "//platform/projectModel-api:projectModel",
+        "//platform/eel-nioFs-impl",
+        "//platform/statistics",
+    ],
+)
+### auto-generated section `build intellij.platform.eel.tcp` end
+
+### auto-generated section `iml intellij.platform.eel.tcp` start
+exports_files(
+    [
+        "intellij.platform.eel.tcp.iml",
+        "resources/intellij.platform.eel.tcp.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.eel.tcp` end

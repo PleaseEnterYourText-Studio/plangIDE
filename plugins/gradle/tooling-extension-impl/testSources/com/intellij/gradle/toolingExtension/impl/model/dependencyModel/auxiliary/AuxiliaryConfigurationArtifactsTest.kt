@@ -1,0 +1,200 @@
+// Copyright 2000-2024 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+package com.intellij.gradle.toolingExtension.impl.model.dependencyModel.auxiliary;
+
+import org.assertj.core.api.Assertions.assertThat
+import org.gradle.api.artifacts.component.ComponentIdentifier
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.MethodSource
+import java.io.File
+import java.util.UUID
+import java.util.stream.Stream
+
+/**
+ * @see AuxiliaryConfigurationArtifacts
+ * @author Denes Daniel
+ */
+class AuxiliaryConfigurationArtifactsTest {
+
+  @field:TempDir
+  lateinit var tempDir: File
+
+  private fun testFile(name: String) = File(tempDir, name)
+
+  @Test
+  fun `choose javadoc artifact`() {
+    val identifier = TestComponentIdentifier()
+    val main = testFile("foo-bar.jar")
+    val javadoc = testFile("foo-bar-javadoc.jar")
+    val sources = testFile("foo-bar-sources.jar")
+
+    val stub = AuxiliaryConfigurationArtifacts(
+      mapOf(identifier to setOf(sources)),
+      mapOf(identifier to setOf(javadoc))
+    )
+
+    val file = stub.getJavadoc(identifier, main)
+    assertEquals(javadoc, file)
+  }
+
+  @Test
+  fun `choose sources artifact`() {
+    val identifier = TestComponentIdentifier()
+    val main = testFile("foo-bar.jar")
+    val javadoc = testFile("foo-bar-javadoc.jar")
+    val sources = testFile("foo-bar-sources.jar")
+
+    val stub = AuxiliaryConfigurationArtifacts(
+      mapOf(identifier to setOf(sources)),
+      mapOf(identifier to setOf(javadoc))
+    )
+
+    val file = stub.getSources(identifier, main)
+    assertEquals(sources, file)
+  }
+
+  @Test
+  fun `mergeWith prefers primary non-empty artifacts and fills empty or missing from other`() {
+    val id1 = TestComponentIdentifier()
+    val id2 = TestComponentIdentifier()
+    val id3 = TestComponentIdentifier()
+
+    val src1Primary = testFile("foo-sources.jar")
+    val src2Secondary = testFile("bar-sources.jar")
+    val src3Secondary = testFile("baz-sources.jar")
+
+    val primary = AuxiliaryConfigurationArtifacts(
+      mapOf(
+        id1 to setOf(src1Primary),
+        id2 to emptySet()
+      ),
+      emptyMap()
+    )
+    val secondary = AuxiliaryConfigurationArtifacts(
+      mapOf(
+        id1 to setOf(testFile("foo-secondary-sources.jar")),
+        id2 to setOf(src2Secondary),
+        id3 to setOf(src3Secondary)
+      ),
+      emptyMap()
+    )
+
+    val merged = primary.mergeWith(secondary)
+    val mainFile = testFile("main.jar")
+    assertEquals(src1Primary, merged.getSources(id1, mainFile))
+    assertEquals(src2Secondary, merged.getSources(id2, mainFile))
+    assertEquals(src3Secondary, merged.getSources(id3, mainFile))
+  }
+
+  @Test
+  fun `artifact sources take precedence over component sources`() {
+    val identifier = TestComponentIdentifier()
+    val platformJar = testFile("app.jar")
+    val libraryJar = testFile("intellij.libraries.commons.cli.jar")
+    val platformSources = testFile("ideaIC-2024.1-sources.jar")
+    val librarySources = testFile("commons-cli-1.11.0-sources.jar")
+
+    val stub = AuxiliaryConfigurationArtifacts(
+      mapOf(identifier to setOf(platformSources)),
+      emptyMap(),
+      mapOf(libraryJar to librarySources)
+    )
+
+    assertEquals(librarySources, stub.getSources(identifier, libraryJar))
+    assertEquals(platformSources, stub.getSources(identifier, platformJar))
+  }
+
+  @Test
+  fun `mergeWith keeps artifact sources of both sides and prefers primary`() {
+    val identifier = TestComponentIdentifier()
+    val jar1 = testFile("jar1.jar")
+    val jar2 = testFile("jar2.jar")
+    val primarySources = testFile("primary-sources.jar")
+    val secondarySources1 = testFile("secondary1-sources.jar")
+    val secondarySources2 = testFile("secondary2-sources.jar")
+
+    val primary = AuxiliaryConfigurationArtifacts(emptyMap(), emptyMap(), mapOf(jar1 to primarySources))
+    val secondary = AuxiliaryConfigurationArtifacts(emptyMap(), emptyMap(), mapOf(jar1 to secondarySources1, jar2 to secondarySources2))
+
+    val merged = primary.mergeWith(secondary)
+    assertEquals(primarySources, merged.getSources(identifier, jar1))
+    assertEquals(secondarySources2, merged.getSources(identifier, jar2))
+    assertEquals(secondarySources2, AuxiliaryConfigurationArtifacts.EMPTY.mergeWith(secondary).getSources(identifier, jar2))
+  }
+
+  @Test
+  fun `choose auxiliary artifact file when there is none to choose from`() {
+    val main = testFile("foo-bar.jar")
+    assertThat(AuxiliaryConfigurationArtifacts.chooseAuxiliaryArtifactFile(main, setOf())).isNull()
+  }
+
+  @Test
+  fun `choose auxiliary artifact file when there is only one to choose from`() {
+    val main = testFile("foo-bar.jar")
+    val valid1 = testFile("foo-bar.src.jar")
+    val valid2 = testFile("foo-bar-sources.jar")
+    val valid3 = testFile("foo-bar-sources.src.jar")
+    val nonsense = testFile("nonsense")
+    assertThat(AuxiliaryConfigurationArtifacts.chooseAuxiliaryArtifactFile(main, setOf(valid1))).isSameAs(valid1)
+    assertThat(AuxiliaryConfigurationArtifacts.chooseAuxiliaryArtifactFile(main, setOf(valid2))).isSameAs(valid2)
+    assertThat(AuxiliaryConfigurationArtifacts.chooseAuxiliaryArtifactFile(main, setOf(valid3))).isSameAs(valid3)
+    assertThat(AuxiliaryConfigurationArtifacts.chooseAuxiliaryArtifactFile(main, setOf(nonsense))).isSameAs(nonsense)
+  }
+
+  data class ChooseAuxiliaryTestCase(val main: String, val auxiliaries: Set<String>, val correctAuxiliary: String = main) {
+    fun mapAuxiliaries(transform: (IndexedValue<String>) -> String): ChooseAuxiliaryTestCase {
+      val auxiliariesMap = auxiliaries.withIndex().associate { it.value to transform(it) }
+      return ChooseAuxiliaryTestCase(main, auxiliariesMap.values.toSet(), auxiliariesMap.getValue(correctAuxiliary))
+    }
+
+    fun mapMainAndAuxiliaries(transform: (String) -> String) = ChooseAuxiliaryTestCase(
+      transform(main), auxiliaries.map(transform).toSet(), transform(correctAuxiliary))
+
+    fun appendSuffixes(mainSuffix: String, auxiliarySuffix: String) = ChooseAuxiliaryTestCase(
+      main + mainSuffix, auxiliaries.map { it + auxiliarySuffix }.toSet(), correctAuxiliary + auxiliarySuffix)
+  }
+
+  @ParameterizedTest
+  @MethodSource("chooseAuxiliaryTestCases")
+  fun `choose auxiliary artifact file when there are multiple to choose from`(testCase: ChooseAuxiliaryTestCase) {
+    val main = testFile(testCase.main)
+    val auxiliaries = testCase.auxiliaries.map(::testFile).toSet()
+    val correctAuxiliary = testFile(testCase.correctAuxiliary)
+    assertThat(AuxiliaryConfigurationArtifacts.chooseAuxiliaryArtifactFile(main, auxiliaries)).isEqualTo(correctAuxiliary)
+  }
+
+  companion object {
+    @JvmStatic
+    fun chooseAuxiliaryTestCases(): Stream<ChooseAuxiliaryTestCase> {
+      return listOf(
+        ChooseAuxiliaryTestCase("net-soap", setOf("net", "net-soap", "net-soap-jaxb")),
+        ChooseAuxiliaryTestCase("net-soap", setOf("net-soap", "net-soap-jaxb", "net")),
+        ChooseAuxiliaryTestCase("net-soap", setOf("net-soap-jaxb", "net", "net-soap"))
+      ).flatMap { input ->
+        listOf(
+          input,
+          input.mapAuxiliaries { "${it.value}-x${"%02d".format(it.index + 1)}" })
+      }.flatMap { input ->
+        listOf(
+          input,
+          input.mapMainAndAuxiliaries { "${it}-1.2" },
+          input.mapMainAndAuxiliaries { "${it}-3.x-3.4.5" })
+      }.flatMap { input ->
+        listOf(
+          input,
+          input.mapMainAndAuxiliaries { it.replace('-', '.') })
+      }.flatMap { input ->
+        listOf(
+          input.appendSuffixes(".jar", ".src.jar"),
+          input.appendSuffixes(".jar", "-sources.jar"),
+          input.appendSuffixes(".jar", "-sources.src.jar"))
+      }.stream()
+    }
+  }
+
+  private class TestComponentIdentifier : ComponentIdentifier {
+    override fun getDisplayName(): String = UUID.randomUUID().toString()
+  }
+}

@@ -1,0 +1,64 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.vcs.git.hosting` start
+content_module_jar(module = ":hosting")
+### auto-generated section `dev intellij.vcs.git.hosting` end
+
+### auto-generated section `build intellij.vcs.git.hosting` start
+jvm_library(
+    name = "hosting",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.vcs.git.hosting",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//plugins/git4idea/backend",
+        "//plugins/git4idea/shared",
+        "//platform/collaboration-tools",
+        "//platform/core-api:core",
+        "//platform/core-ui",
+        "//platform/projectModel-api:projectModel",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/util",
+        "//platform/util:util-ui",
+        "//platform/platform-api:ide",
+        "//platform/ide-core",
+        "//platform/platform-impl:ide-impl",
+        "//platform/progress/shared:ide-progress",
+        "//platform/util/progress",
+        "//platform/util/coroutines",
+        "//platform/vcs-api:vcs",
+        "//platform/vcs-impl",
+        "//platform/vcs-impl/shared",
+        "//platform/dvcs-impl:vcs-dvcs-impl",
+        "//platform/vcs-log/api:vcs-log",
+        "//platform/vcs-log/impl",
+        "//platform/eel-provider",
+        "//libraries/miglayout-swing",
+        "//libraries/kotlinx/coroutines/core",
+    ],
+)
+### auto-generated section `build intellij.vcs.git.hosting` end
+
+### auto-generated section `iml intellij.vcs.git.hosting` start
+exports_files(
+    [
+        "intellij.vcs.git.hosting.iml",
+        "resources/intellij.vcs.git.hosting.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.vcs.git.hosting` end

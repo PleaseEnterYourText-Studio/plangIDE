@@ -1,0 +1,59 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+jps_test(
+    name = "terminal-tests_test",
+    timeout = "moderate",
+    tags = ["community-java-tests"],
+    runtime_deps = [":terminal-tests_test_lib"],
+)
+### skip generation section `test intellij.java.terminal.tests`
+
+### auto-generated section `build intellij.java.terminal.tests` start
+jvm_library(
+    name = "terminal-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "tests/**/*.kt",
+            "tests/**/*.java",
+            "tests/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.java.terminal.tests",
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+        "//community-resources:customization",
+    ],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//java/testFramework",
+        "//java/terminal/backend",
+        "//platform/core-api:core",
+        "//platform/platform-tests:tests_test_lib",
+        "//platform/testFramework",
+        "//java/execution/impl",
+        "//plugins/terminal/completion",
+        "//plugins/terminal",
+        "//platform/execution",
+        "//platform/consoleView",
+        "//platform/lang-api:lang",
+        "//platform/testFramework/junit5",
+        "//libraries/junit4",
+        "//libraries/junit6",
+    ],
+)
+### auto-generated section `build intellij.java.terminal.tests` end
+
+### auto-generated section `iml intellij.java.terminal.tests` start
+exports_files(
+    [
+        "intellij.java.terminal.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.java.terminal.tests` end

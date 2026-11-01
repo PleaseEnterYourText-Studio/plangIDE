@@ -1,0 +1,61 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.platform.scopes` start
+content_module_jar(module = ":scopes")
+### auto-generated section `dev intellij.platform.scopes` end
+
+### auto-generated section `build intellij.platform.scopes` start
+jvm_library(
+    name = "scopes",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.scopes",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/kernel/rpc.lite",
+        "//platform/runtime/product",
+        "@lib//:kotlin-stdlib",
+        "//platform/util",
+        "//platform/core-api:core",
+        "//platform/core-ui",
+        "//platform/ide-core",
+        "//platform/platform-impl/rpc",
+        "//libraries/kotlinx/serialization/core",
+        "//libraries/kotlinx/serialization/json",
+        "//platform/lang-api:lang",
+        "//platform/lang-impl",
+        "//platform/analysis-api:analysis",
+        "//platform/analysis-impl",
+        "//platform/platform-impl:ide-impl",
+        "//platform/projectModel-api:projectModel",
+        "//platform/util:util-ui",
+        "//platform/project/shared:project",
+        "//platform/util/coroutines",
+        "//platform/util/concurrency",
+        "//platform/platform-api:ide",
+        "//platform/editor-ui-api:editor-ui",
+    ],
+)
+### auto-generated section `build intellij.platform.scopes` end
+
+### auto-generated section `iml intellij.platform.scopes` start
+exports_files(
+    [
+        "intellij.platform.scopes.iml",
+        "resources/intellij.platform.scopes.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.scopes` end

@@ -1,0 +1,21 @@
+<component name="libraryTable">
+  <library name="kotlin-stdlib" type="repository">
+    <properties maven-id="org.jetbrains.kotlin:kotlin-stdlib:2.5.0-Beta2">
+      <verification>
+        <artifact url="file://$MAVEN_REPOSITORY$/org/jetbrains/kotlin/kotlin-stdlib/2.5.0-Beta2/kotlin-stdlib-2.5.0-Beta2.jar">
+          <sha256sum>bcc8380470f1b4ff3795d9083ce6b9aa299e74e32f655fc9248f1801b63d36ef</sha256sum>
+        </artifact>
+      </verification>
+      <exclude>
+        <dependency maven-id="org.jetbrains:annotations" />
+      </exclude>
+    </properties>
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/jetbrains/kotlin/kotlin-stdlib/2.5.0-Beta2/kotlin-stdlib-2.5.0-Beta2.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/jetbrains/kotlin/kotlin-stdlib/2.5.0-Beta2/kotlin-stdlib-2.5.0-Beta2-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

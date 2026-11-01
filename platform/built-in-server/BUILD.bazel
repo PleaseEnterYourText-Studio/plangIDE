@@ -1,0 +1,150 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+jps_test(
+    name = "builtInServer-tests_test",
+    timeout = "long",
+    tags = ["community-aggregator"],
+    runtime_deps = [":builtInServer-tests_test_lib"],
+)
+### skip generation section `test intellij.platform.builtInServer.tests`
+
+### auto-generated section `dev intellij.platform.builtInServer.impl` start
+content_module_jar(module = ":builtInServer-impl")
+### auto-generated section `dev intellij.platform.builtInServer.impl` end
+
+### auto-generated section `build intellij.platform.builtInServer.impl` start
+jvm_library(
+    name = "builtInServer-impl",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.builtInServer.impl",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/analysis-api:analysis",
+        "//platform/code-style-api:codeStyle",
+        "//platform/core-api:core",
+        "//platform/editor-ui-api:editor-ui",
+        "//jps/model-api:model",
+        "//platform/projectModel-api:projectModel",
+        "//platform/platform-util-io:ide-util-io",
+        "//platform/core-impl",
+        "//platform/projectModel-impl",
+        "//platform/platform-impl:ide-impl",
+        "//platform/ide-core/plugins",
+        "//platform/ide-core",
+        "//platform/ide-core-impl",
+        "//libraries/guava",
+        "//libraries/gson",
+        "//libraries/commons/imaging",
+        "//platform/built-in-server-api:builtInServer",
+        "//platform/diff-api:diff",
+        "@lib//:kotlin-stdlib",
+        "//libraries/netty/codec-http:libraries-netty-codec-http",
+        "//libraries/fastutil",
+        "//libraries/jackson3/jackson:libraries-jackson3",
+        "//libraries/jackson3/jr-objects:libraries-jackson3-jr-objects",
+        "//libraries/netty/buffer",
+        "//libraries/caffeine",
+        "//platform/util/concurrency",
+        "//platform/core-ui",
+        "//platform/util:util-ui",
+        "//platform/platform-util-io-impl:ide-util-io-impl",
+        "//platform/platform-util-netty:ide-util-netty",
+        "//platform/progress/shared:ide-progress",
+        "//platform/util/progress",
+        "//platform/util-ex",
+        "//libraries/kotlinx/coroutines/core",
+        "//libraries/netty/codec-compression:libraries-netty-codec-compression",
+        "//platform/consoleView",
+        "//platform/eel-nioFs",
+    ],
+)
+### auto-generated section `build intellij.platform.builtInServer.impl` end
+
+### auto-generated section `iml intellij.platform.builtInServer.impl` start
+exports_files(
+    [
+        "intellij.platform.builtInServer.impl.iml",
+        "resources/intellij.platform.builtInServer.impl.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.builtInServer.impl` end
+
+### auto-generated section `build intellij.platform.builtInServer.tests` start
+jvm_library(
+    name = "builtInServer-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "testSrc/**/*.kt",
+            "testSrc/**/*.java",
+            "testSrc/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.builtInServer.tests",
+    resource_strip_prefix = "testResources",
+    resources = glob(
+        ["testResources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    runtime_deps = ["//xml/plugin"],
+    deps = [
+        # do not sort,
+        "//platform/analysis-api:analysis",
+        "//platform/util/concurrency",
+        "//platform/core-api:core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/ide-core-impl",
+        "//platform/ide-core",
+        "//jps/model-api:model",
+        "//platform/lang-core",
+        "//platform/projectModel-api:projectModel",
+        "//platform/projectModel-impl",
+        "//platform/platform-impl:ide-impl",
+        "//platform/lang-impl",
+        "//platform/xdebugger-api:debugger",
+        "//libraries/guava",
+        "//libraries/gson",
+        "//libraries/commons/imaging",
+        "//platform/testFramework",
+        "//platform/built-in-server-api:builtInServer",
+        "//platform/vcs-api:vcs",
+        "@lib//:kotlin-stdlib",
+        "//libraries/assertj-core",
+        "//platform/built-in-server:builtInServer-impl",
+        "//libraries/netty/codec-http:libraries-netty-codec-http",
+        "//libraries/kotlinx/coroutines/core",
+        "//libraries/netty/buffer",
+        "//platform/core-ui",
+        "//platform/platform-util-io:ide-util-io",
+        "//platform/platform-util-netty:ide-util-netty",
+        "//platform/util:util-ui",
+        "//platform/util-ex",
+        "//libraries/junit4",
+    ],
+)
+### auto-generated section `build intellij.platform.builtInServer.tests` end
+
+### auto-generated section `iml intellij.platform.builtInServer.tests` start
+exports_files(
+    [
+        "intellij.platform.builtInServer.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.builtInServer.tests` end

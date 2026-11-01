@@ -1,0 +1,183 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//build:compiler-options.bzl", "create_kotlinc_options")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+load("//platform/jewel:bridge-e2e.bzl", "bridge_e2e_test")
+
+jps_test(
+    name = "ideLafBridge-tests_test",
+    timeout = "moderate",
+    tags = ["community-aggregator"],
+    runtime_deps = [":ideLafBridge-tests_test_lib"],
+)
+
+### skip generation section `test intellij.platform.jewel.ideLafBridge.tests`
+
+### auto-generated section `dev intellij.platform.jewel.ideLafBridge` start
+content_module_jar(module = ":ide-laf-bridge")
+### auto-generated section `dev intellij.platform.jewel.ideLafBridge` end
+
+# Headful in-IDE tests for JBPopupRenderer (JEWEL-1397). Hand-written and outside the JPS model, like the
+# Spectre lane: the target needs the whole community build graph as runfiles, which the generated sections
+# cannot express. See platform/jewel/docs/e2e-tests.md.
+create_kotlinc_options(
+    name = "custom_jewel-bridge-e2e-tests",
+    opt_in = [
+        "org.jetbrains.jewel.foundation.ExperimentalJewelApi",
+        "org.jetbrains.jewel.foundation.InternalJewelApi",
+    ],
+    x_context_parameters = True,
+)
+
+bridge_e2e_test(
+    name = "jewel-bridge-e2e-tests",
+    srcs = glob(
+        ["src/e2eTest/kotlin/**/*.kt"],
+        allow_empty = True,
+    ),
+    kotlinc_opts = ":custom_jewel-bridge-e2e-tests",
+    module_name = "intellij.platform.jewel.ideLafBridge.e2eTests",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//libraries/kotlinx/coroutines/core",
+        "//platform/jewel/showcase-e2e:showcase-e2e-scenarios",
+        "@lib//:libraries-kotlin_test-kotlin-test",
+    ],
+)
+
+### auto-generated section `build intellij.platform.jewel.ideLafBridge` start
+create_kotlinc_options(
+    name = "custom_ide-laf-bridge",
+    opt_in = [
+        "androidx.compose.ui.ExperimentalComposeUiApi",
+        "androidx.compose.foundation.ExperimentalFoundationApi",
+        "org.jetbrains.jewel.foundation.ExperimentalJewelApi",
+        "org.jetbrains.jewel.foundation.InternalJewelApi",
+        "androidx.compose.runtime.tooling.ComposeToolingApi",
+    ],
+    x_context_parameters = True,
+    x_explicit_api_mode = "strict",
+)
+
+jvm_library(
+    name = "ide-laf-bridge",
+    srcs = glob(
+        [
+            "src/main/kotlin/**/*.kt",
+            "src/main/kotlin/**/*.java",
+            "src/main/kotlin/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = ":custom_ide-laf-bridge",
+    module_name = "intellij.platform.jewel.ideLafBridge",
+    resource_strip_prefix = "src/main/resources",
+    resources = glob(
+        ["src/main/resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    exports = [
+        # do not sort,
+        "//platform/jewel/foundation",
+        "//platform/jewel/ui",
+        "//libraries/compose-foundation-desktop",
+    ],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinx/coroutines/core",
+        "//libraries/jetbrains/annotations",
+        "//platform/core-api:core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/jewel/foundation",
+        "//platform/jewel/ui",
+        "//platform/projectModel-api:projectModel",
+        "//platform/projectModel-impl",
+        "//libraries/compose-runtime-desktop",
+        "//platform/platform-api:ide",
+        "//platform/platform-impl:ide-impl",
+        "//platform/ide-core",
+        "//libraries/skiko",
+        "//platform/core-ui",
+        "//platform/util:util-ui",
+        "//libraries/compose-foundation-desktop",
+        "//platform/editor-ui-ex:editor-ex",
+    ],
+)
+### auto-generated section `build intellij.platform.jewel.ideLafBridge` end
+
+### auto-generated section `iml intellij.platform.jewel.ideLafBridge` start
+exports_files(
+    [
+        "intellij.platform.jewel.ideLafBridge.iml",
+        "src/main/resources/intellij.platform.jewel.ideLafBridge.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.jewel.ideLafBridge` end
+
+### auto-generated section `build intellij.platform.jewel.ideLafBridge.tests` start
+create_kotlinc_options(
+    name = "custom_ideLafBridge-tests",
+    opt_in = [
+        "androidx.compose.ui.ExperimentalComposeUiApi",
+        "androidx.compose.foundation.ExperimentalFoundationApi",
+        "org.jetbrains.jewel.foundation.ExperimentalJewelApi",
+        "org.jetbrains.jewel.foundation.InternalJewelApi",
+    ],
+    x_context_parameters = True,
+    x_explicit_api_mode = "strict",
+)
+
+jvm_library(
+    name = "ideLafBridge-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "ide-laf-bridge-tests/src/test/kotlin/**/*.kt",
+            "ide-laf-bridge-tests/src/test/kotlin/**/*.java",
+            "ide-laf-bridge-tests/src/test/kotlin/**/*.form",
+            "src/test/kotlin/**/*.kt",
+            "src/test/kotlin/**/*.java",
+            "src/test/kotlin/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    associates = ["//platform/jewel/ide-laf-bridge"],
+    kotlinc_opts = ":custom_ideLafBridge-tests",
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+        "//community-resources:customization",
+        "//xml/plugin",
+    ],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinx/coroutines/core",
+        "//platform/core-api:core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/platform-api:ide",
+        "//platform/platform-impl:ide-impl",
+        "//libraries/jna",
+        "//platform/core-ui",
+        "//libraries/compose-foundation-desktop-junit:compose-foundation-desktop-junit_test_lib",
+        "//platform/testFramework",
+        "//java/testFramework",
+        "//plugins/textmate",
+        "//plugins/textmate/plugin",
+        "//libraries/mockk/jvm",
+        "//platform/util:util-ui",
+    ],
+)
+### auto-generated section `build intellij.platform.jewel.ideLafBridge.tests` end
+
+### auto-generated section `iml intellij.platform.jewel.ideLafBridge.tests` start
+exports_files(
+    [
+        "intellij.platform.jewel.ideLafBridge.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.jewel.ideLafBridge.tests` end

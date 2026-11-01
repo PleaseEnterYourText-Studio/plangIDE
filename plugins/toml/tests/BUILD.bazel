@@ -1,0 +1,76 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+filegroup(
+    name = "testData",
+    srcs = glob(["testData/**"]),
+)
+
+jps_test(
+    name = "tests_test",
+    timeout = "moderate",
+    data = ["@community//plugins/toml/tests:testData"],
+    tags = ["community-aggregator"],
+    runtime_deps = [":tests_test_lib"],
+)
+### skip generation section `test intellij.toml.tests`
+
+### auto-generated section `build intellij.toml.tests` start
+jvm_library(
+    name = "tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "src/test/kotlin/**/*.kt",
+            "src/test/kotlin/**/*.java",
+            "src/test/kotlin/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.toml.tests",
+    resource_strip_prefix = "src/test/resources",
+    resources = glob(
+        ["src/test/resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+        "//community-resources:customization",
+    ],
+    deps = [
+        # do not sort,
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//platform/core-ui",
+        "//platform/core-impl",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/lang-api:lang",
+        "//platform/projectModel-api:projectModel",
+        "//plugins/toml",
+        "//plugins/toml/core",
+        "//plugins/toml/backend",
+        "//plugins/toml/frontend",
+        "//plugins/toml/json",
+        "//plugins/toml/grazie",
+        "//platform/testFramework",
+        "//platform/util:util-ui",
+        "//java/testFramework",
+        "//plugins/grazie/src/test:grazie-tests_test_lib",
+        "//platform/testFramework/junit5",
+        "//platform/testFramework/junit5/codeInsight",
+        "//libraries/junit6",
+        "//libraries/junit4",
+        "//platform/bazel-runfiles",
+    ],
+)
+### auto-generated section `build intellij.toml.tests` end
+
+### auto-generated section `iml intellij.toml.tests` start
+exports_files(
+    [
+        "intellij.toml.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.toml.tests` end

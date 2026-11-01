@@ -1,0 +1,90 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.mcpserver` start
+content_module_jar(module = ":mcpserver")
+### auto-generated section `dev intellij.mcpserver` end
+
+### auto-generated section `build intellij.mcpserver` start
+jvm_library(
+    name = "mcpserver",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.mcpserver",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//libraries/night-config-toml",
+        "//libraries/jetbrains/annotations",
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinx/coroutines/core",
+        "//libraries/kotlinx/serialization/core",
+        "//libraries/kotlinx/serialization/json",
+        "//libraries/mcp-kotlin-sdk",
+        "//platform/core-api:core",
+        "//platform/project/shared:project",
+        "//libraries/kotlin/reflect",
+        "//platform/util",
+        "//libraries/kotlin/logging",
+        "//libraries/ktor/server-sse:libraries-ktor-server-sse",
+        "//libraries/ktor/server-content-negotiation:libraries-ktor-server-content-negotiation",
+        "//libraries/schema-kenerator",
+        "//platform/ide-core",
+        "//platform/projectModel-api:projectModel",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/analysis-api:analysis",
+        "//platform/platform-util-io:ide-util-io",
+        "//platform/platform-util-io-impl:ide-util-io-impl",
+        "//platform/platform-api:ide",
+        "//platform/built-in-server:builtInServer-impl",
+        "//platform/core-ui",
+        "//platform/platform-impl:ide-impl",
+        "//libraries/gson",
+        "//platform/core-impl",
+        "//platform/ide-core-impl",
+        "//platform/progress/shared:ide-progress",
+        "//platform/util/progress",
+        "//plugins/mcp-server/mcpserver.stdio",
+        "//platform/statistics",
+        "//platform/util/concurrency",
+        "//platform/analysis-impl",
+        "//platform/util/jdom",
+        "//libraries/io",
+        "//libraries/ktor/client",
+        "//libraries/ktor/client-cio:libraries-ktor-client-cio",
+        "//libraries/ktor/network-tls:libraries-ktor-network-tls",
+        "//libraries/ktor/server-cio:libraries-ktor-server-cio",
+        "//platform/eel",
+        "//libraries/ktor/io",
+        "//libraries/opentelemetry",
+        "//platform/diagnostic/telemetry",
+        "//platform/util/coroutines",
+        "//platform/util-class-loader:util-classLoader",
+        "//platform/util:util-ui",
+        "//platform/util-ex",
+        "//platform/eel-provider",
+        "//platform/built-in-server-api:builtInServer",
+        "//platform/backend/observation",
+    ],
+)
+### auto-generated section `build intellij.mcpserver` end
+
+### auto-generated section `iml intellij.mcpserver` start
+exports_files(
+    [
+        "intellij.mcpserver.iml",
+        "resources/intellij.mcpserver.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.mcpserver` end

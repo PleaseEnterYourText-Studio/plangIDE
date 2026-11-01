@@ -1,0 +1,46 @@
+import java.util.List<String>
+import java.util.Map<Integer, String>.Entry
+-----
+Groovy script
+  Import statement
+    Modifiers
+      <empty list>
+    PsiElement(import)('import')
+    PsiWhiteSpace(' ')
+    Reference element
+      Reference element
+        Reference element
+          PsiElement(identifier)('java')
+        PsiElement(.)('.')
+        PsiElement(identifier)('util')
+      PsiElement(.)('.')
+      PsiElement(identifier)('List')
+    PsiErrorElement:Newline, '.' or ';' expected
+      <empty list>
+    PsiElement(<)('<')
+    PsiElement(identifier)('String')
+    PsiElement(>)('>')
+  PsiElement(new line)('\n')
+  Import statement
+    Modifiers
+      <empty list>
+    PsiElement(import)('import')
+    PsiWhiteSpace(' ')
+    Reference element
+      Reference element
+        Reference element
+          PsiElement(identifier)('java')
+        PsiElement(.)('.')
+        PsiElement(identifier)('util')
+      PsiElement(.)('.')
+      PsiElement(identifier)('Map')
+    PsiErrorElement:Newline, '.' or ';' expected
+      <empty list>
+    PsiElement(<)('<')
+    PsiElement(identifier)('Integer')
+    PsiElement(,)(',')
+    PsiWhiteSpace(' ')
+    PsiElement(identifier)('String')
+    PsiElement(>)('>')
+    PsiElement(.)('.')
+    PsiElement(identifier)('Entry')

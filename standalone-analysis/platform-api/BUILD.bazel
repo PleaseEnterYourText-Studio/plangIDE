@@ -1,0 +1,52 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `build intellij.standaloneAnalysis.platform` start
+jvm_library(
+    name = "standaloneAnalysis-platform",
+    srcs = glob(
+        [],
+        allow_empty = True,
+    ),
+    module_name = "intellij.standaloneAnalysis.platform",
+    visibility = ["//visibility:public"],
+    exports = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/jetbrains/annotations",
+        "//platform/util-rt",
+        "//platform/util/base",
+        "//platform/util",
+        "//platform/core-api:core",
+        "//platform/extensions",
+        "//platform/syntax/syntax-api:syntax",
+        "//platform/syntax/syntax-util:util",
+        "//platform/syntax/syntax-extensions:extensions",
+        "//platform/syntax/syntax-i18n:i18n",
+        "//platform/testIntegration",
+    ],
+    runtime_deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/jetbrains/annotations",
+        "//platform/util-rt",
+        "//platform/util/base",
+        "//platform/util",
+        "//platform/core-api:core",
+        "//platform/extensions",
+        "//platform/syntax/syntax-api:syntax",
+        "//platform/syntax/syntax-util:util",
+        "//platform/syntax/syntax-extensions:extensions",
+        "//platform/syntax/syntax-i18n:i18n",
+        "//platform/testIntegration",
+    ],
+)
+### auto-generated section `build intellij.standaloneAnalysis.platform` end
+
+### auto-generated section `iml intellij.standaloneAnalysis.platform` start
+exports_files(
+    [
+        "intellij.standaloneAnalysis.platform.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.standaloneAnalysis.platform` end

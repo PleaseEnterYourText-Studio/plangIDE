@@ -1,0 +1,44 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.jsp.base` start
+content_module_jar(module = ":jsp-base")
+### auto-generated section `dev intellij.jsp.base` end
+
+### auto-generated section `build intellij.jsp.base` start
+jvm_library(
+    name = "jsp-base",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.jsp.base",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/core-api:core",
+        "//platform/platform-api:ide",
+        "//xml/xml-psi-api:psi",
+        "//platform/lang-api:lang",
+        "//libraries/kotlinx/collections-immutable:libraries-kotlinx-collections-immutable",
+    ],
+)
+### auto-generated section `build intellij.jsp.base` end
+
+### auto-generated section `iml intellij.jsp.base` start
+exports_files(
+    [
+        "intellij.jsp.base.iml",
+        "resources/intellij.jsp.base.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.jsp.base` end

@@ -1,0 +1,66 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library", "jvm_provided_library")
+
+### auto-generated section `build intellij.kotlin.base.testFramework` start
+jvm_provided_library(
+    name = "libraries_junit4_provided",
+    lib = "//libraries/junit4",
+)
+
+jvm_provided_library(
+    name = "libraries_junit6_provided",
+    lib = "//libraries/junit6",
+)
+
+jvm_library(
+    name = "testFramework",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.kotlin.base.testFramework",
+    visibility = ["//visibility:public"],
+    exports = ["//plugins/junit_rt:junit-rt"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinc/kotlin-compiler-common:libraries-kotlinc-kotlin-compiler-common",
+        "//libraries/kotlinc/analysis-api:libraries-kotlinc-analysis-api",
+        "//libraries/kotlinc/analysis-api-impl-base:libraries-kotlinc-analysis-api-impl-base",
+        "@lib//:kotlinc-kotlin-compiler-tests",
+        "//libraries/guava",
+        "//platform/analysis-api:analysis",
+        "//java/java-syntax:syntax",
+        "//java/java-psi-api:psi",
+        "//platform/core-api:core",
+        "//platform/core-impl",
+        "//jps/model-api:model",
+        "//platform/lang-api:lang",
+        "//platform/projectModel-api:projectModel",
+        "//platform/testFramework",
+        "//platform/util:util-ui",
+        "//plugins/kotlin/base/plugin",
+        "//java/testFramework",
+        "//plugins/junit_rt:junit-rt",
+        "@lib//:slf4j-api",
+        "//java/java-runtime:rt",
+        "//platform/code-style-api:codeStyle",
+        "//plugins/kotlin/formatter/minimal",
+        "//platform/progress/shared:ide-progress",
+        ":libraries_junit4_provided",
+        ":libraries_junit6_provided",
+    ],
+)
+### auto-generated section `build intellij.kotlin.base.testFramework` end
+
+### auto-generated section `iml intellij.kotlin.base.testFramework` start
+exports_files(
+    [
+        "intellij.kotlin.base.testFramework.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.kotlin.base.testFramework` end

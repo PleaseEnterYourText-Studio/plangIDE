@@ -1,0 +1,59 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.platform.settings.v2.shared` start
+content_module_jar(module = ":shared")
+### auto-generated section `dev intellij.platform.settings.v2.shared` end
+
+### auto-generated section `build intellij.platform.settings.v2.shared` start
+jvm_library(
+    name = "shared",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.settings.v2.shared",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//platform/settings.v2",
+        "//libraries/jetbrains/annotations",
+        "//platform/core-api:core",
+        "//platform/core-impl",
+        "//platform/util",
+        "//platform/projectModel-api:projectModel",
+        "//libraries/kotlinx/coroutines/core",
+        "//libraries/kotlinx/serialization/core",
+        "//libraries/kotlinx/serialization/json",
+        "//libraries/kotlinx/serialization/protobuf",
+        "//platform/lang-impl",
+        "//platform/progress/shared:ide-progress",
+        "//platform/ide-core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/core-ui",
+        "//platform/platform-api:ide",
+        "//platform/kernel/rpc",
+        "//platform/project/shared:project",
+        "//fleet/util/core",
+    ],
+)
+### auto-generated section `build intellij.platform.settings.v2.shared` end
+
+### auto-generated section `iml intellij.platform.settings.v2.shared` start
+exports_files(
+    [
+        "intellij.platform.settings.v2.shared.iml",
+        "resources/intellij.platform.settings.v2.shared.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.settings.v2.shared` end

@@ -1,0 +1,142 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@community//platform/build-scripts/bazel-rules:ij_plugin.bzl", "ij_plugin")
+load("@jps_dynamic_deps_community//:targets.bzl", "dev_dist_plugin")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+jps_test(
+    name = "jsonpath-tests_test",
+    timeout = "moderate",
+    tags = ["community-aggregator"],
+    runtime_deps = [":jsonpath-tests_test_lib"],
+)
+### skip generation section `test intellij.jsonpath.tests`
+
+### auto-generated section `dev intellij.jsonpath` start
+dev_dist_plugin(
+    content_modules = ["intellij.jsonpath.scratch"],
+    descriptor = "resources/META-INF/plugin.xml",
+    jars = {
+        "lib/jsonpath.jar": ["intellij.jsonpath"],
+    },
+    main_module = "intellij.jsonpath",
+    mode_refused_content_modules = {
+        "frontend": ["intellij.jsonpath.scratch"],
+    },
+)
+### auto-generated section `dev intellij.jsonpath` end
+
+### auto-generated section `build intellij.jsonpath` start
+jvm_library(
+    name = "jsonpath",
+    srcs = glob(
+        [
+            "gen/**/*.kt",
+            "gen/**/*.java",
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.jsonpath",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/jsonpath",
+        "//platform/core-api:core",
+        "//platform/lang-api:lang",
+        "//platform/analysis-api:analysis",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/platform-impl:ide-impl",
+        "//json/backend",
+        "//platform/core-impl",
+        "//platform/platform-api:ide",
+        "//platform/ide-core",
+        "//platform/util:util-ui",
+        "//platform/lang-impl",
+        "//spellchecker",
+        "//platform/core-ui",
+        "//libraries/fastutil",
+        "//libraries/guava",
+        "//libraries/kotlinx/collections-immutable:libraries-kotlinx-collections-immutable",
+    ],
+)
+### auto-generated section `build intellij.jsonpath` end
+
+### auto-generated section `plugin intellij.jsonpath` start
+ij_plugin(
+    name = "jsonpath_plugin",
+    descriptor_module = ":jsonpath",
+    content_modules = ["//plugins/jsonpath/scratch"],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `plugin intellij.jsonpath` end
+
+### auto-generated section `iml intellij.jsonpath` start
+exports_files(
+    [
+        "intellij.jsonpath.iml",
+        "resources/META-INF/plugin.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.jsonpath` end
+
+### auto-generated section `build intellij.jsonpath.tests` start
+jvm_library(
+    name = "jsonpath-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "test/**/*.kt",
+            "test/**/*.java",
+            "test/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    associates = ["//plugins/jsonpath"],
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//libraries/byte-buddy",
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+        "//community-resources:customization",
+        "//xml/plugin",
+    ],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/jsonpath",
+        "//platform/core-api:core",
+        "//platform/lang-api:lang",
+        "//platform/analysis-api:analysis",
+        "//json/backend",
+        "//platform/core-impl",
+        "//platform/platform-api:ide",
+        "//libraries/assertj-core",
+        "//platform/lang-impl",
+        "//platform/testFramework",
+        "//plugins/IntelliLang:langInjection",
+        "//platform/testFramework/extensions:testExtensions",
+        "//platform/testFramework/junit5",
+        "//platform/testFramework/junit5/codeInsight",
+        "//libraries/junit6",
+        "//libraries/junit4",
+        "//platform/scratch/plugin",
+    ],
+)
+### auto-generated section `build intellij.jsonpath.tests` end
+
+### auto-generated section `iml intellij.jsonpath.tests` start
+exports_files(
+    [
+        "intellij.jsonpath.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.jsonpath.tests` end

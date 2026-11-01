@@ -1,0 +1,47 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.platform.project` start
+content_module_jar(module = ":project")
+### auto-generated section `dev intellij.platform.project` end
+
+### auto-generated section `build intellij.platform.project` start
+jvm_library(
+    name = "project",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.project",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/kernel/rpc.lite",
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinx/serialization/core",
+        "//libraries/kotlinx/serialization/json",
+        "//platform/util",
+        "//platform/projectModel-api:projectModel",
+        "//platform/util/coroutines",
+        "//platform/core-api:core",
+    ],
+)
+### auto-generated section `build intellij.platform.project` end
+
+### auto-generated section `iml intellij.platform.project` start
+exports_files(
+    [
+        "intellij.platform.project.iml",
+        "resources/intellij.platform.project.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.project` end

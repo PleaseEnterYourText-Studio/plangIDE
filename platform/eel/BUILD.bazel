@@ -1,0 +1,198 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//build:compiler-options.bzl", "create_kotlinc_options")
+
+jps_test(
+    name = "eel-tests_test",
+    timeout = "moderate",
+    tags = ["community-aggregator"],
+    runtime_deps = [":eel-tests_test_lib"],
+)
+
+### skip generation section `test intellij.platform.eel.tests`
+
+### auto-generated section `build intellij.platform.eel` start
+create_kotlinc_options(
+    name = "custom_eel",
+    jvm_target = "8",
+    opt_in = ["com.intellij.platform.eel.channels.EelDelicateApi"],
+)
+
+jvm_library(
+    name = "eel",
+    srcs = glob(
+        [
+            "gen-builders/**/*.kt",
+            "gen-builders/**/*.java",
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = ":custom_eel",
+    module_name = "intellij.platform.eel",
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/jetbrains/annotations",
+        "//libraries/kotlinx/coroutines/core",
+        "//platform/util/annotations",
+    ],
+)
+### auto-generated section `build intellij.platform.eel` end
+
+### auto-generated section `iml intellij.platform.eel` start
+exports_files(
+    [
+        "intellij.platform.eel.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.eel` end
+
+### auto-generated section `build intellij.platform.eel.codegen` start
+create_kotlinc_options(
+    name = "custom_eel-codegen",
+    warn = "error",
+    x_warning_level = ["DEPRECATION:warning"],
+)
+
+jvm_library(
+    name = "eel-codegen_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "codegen/**/*.kt",
+            "codegen/**/*.java",
+            "codegen/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = ":custom_eel-codegen",
+    module_name = "intellij.platform.eel.codegen",
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//plugins/kotlin:kotlin-plugin-community-main",
+        "//xml/plugin",
+        "//platform/structure-view-impl/plugin",
+        "//aether-dependency-resolver/plugin",
+        "//platform/testRunner/plugin",
+        "//platform/structuralsearch/plugin",
+        "//platform/vcs/plugin",
+        "//plugins/kotlin/base/pluginTestFramework:kotlin-base-plugin-testFramework",
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+        "//community-resources:customization",
+    ],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinc/analysis-api:libraries-kotlinc-analysis-api",
+        "//libraries/kotlinc/kotlin-compiler-common:libraries-kotlinc-kotlin-compiler-common",
+        "//libraries/kotlinc/symbol-light-classes:libraries-kotlinc-symbol-light-classes",
+        "//libraries/kotlinx/coroutines/core",
+        "//plugins/copyright",
+        "//java/openapi:java",
+        "//java/java-impl:impl",
+        "//java/java-psi-api:psi",
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//platform/core-impl",
+        "//platform/indexing-api:indexing",
+        "//jps/model-api:model",
+        "//platform/lang-core",
+        "//platform/projectModel-api:projectModel",
+        "//platform/testFramework",
+        "//platform/testFramework/junit5",
+        "//platform/util/jdom",
+        "//platform/util-ex",
+        "//plugins/kotlin/base/testFramework",
+        "//plugins/kotlin/base/indices",
+        "//platform/execution",
+        "//platform/ide-core",
+        "//jps/model-impl",
+        "//libraries/junit6",
+        "//platform/scratch/plugin",
+    ],
+)
+### auto-generated section `build intellij.platform.eel.codegen` end
+
+### auto-generated section `iml intellij.platform.eel.codegen` start
+exports_files(
+    [
+        "intellij.platform.eel.codegen.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.eel.codegen` end
+
+### auto-generated section `test intellij.platform.eel.codegen` start
+jps_test(
+    name = "eel-codegen_test",
+    runtime_deps = [":eel-codegen_test_lib"],
+)
+### auto-generated section `test intellij.platform.eel.codegen` end
+
+### auto-generated section `build intellij.platform.eel.tests` start
+create_kotlinc_options(
+    name = "custom_eel-tests",
+    warn = "error",
+    x_warning_level = ["DEPRECATION:warning"],
+)
+
+jvm_library(
+    name = "eel-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "tests/**/*.kt",
+            "tests/**/*.java",
+            "tests/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = ":custom_eel-tests",
+    module_name = "intellij.platform.eel.tests",
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//libraries/byte-buddy",
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+        "//community-resources:customization",
+    ],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//platform/eel",
+        "//platform/eel/testFramework",
+        "//platform/eel-impl",
+        "//libraries/kotlinx/coroutines/debug",
+        "//libraries/junit6",
+        "//libraries/junit6-params",
+        "//libraries/junit5-pioneer",
+        "//libraries/kotlinx/coroutines/core",
+        "//libraries/kotlin/test:libraries-kotlinTest",
+        "//libraries/kotlin/test-assertions-core-jvm:libraries-kotlinTestAssertionsCoreJvm",
+        "//platform/testFramework",
+        "//platform/testFramework/common",
+        "//platform/testFramework/junit5",
+        "//libraries/kotlinx/coroutines/test",
+        "//platform/util/base",
+        "//platform/util-class-loader:util-classLoader",
+        "//libraries/byte-buddy/agent",
+        "//platform/util/coroutines",
+        "//platform/eel-nioFs",
+    ],
+)
+### auto-generated section `build intellij.platform.eel.tests` end
+
+### auto-generated section `iml intellij.platform.eel.tests` start
+exports_files(
+    [
+        "intellij.platform.eel.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.eel.tests` end

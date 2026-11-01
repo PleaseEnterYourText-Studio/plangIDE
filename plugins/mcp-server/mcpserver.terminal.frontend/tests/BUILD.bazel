@@ -1,0 +1,57 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+jps_test(
+    name = "tests_test",
+    timeout = "moderate",
+    tags = ["community-aggregator"],
+    runtime_deps = [":tests_test_lib"],
+)
+### skip generation section `test intellij.mcpserver.terminal.frontend.tests`
+
+### auto-generated section `build intellij.mcpserver.terminal.frontend.tests` start
+jvm_library(
+    name = "tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "testSrc/**/*.kt",
+            "testSrc/**/*.java",
+            "testSrc/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    associates = ["//plugins/mcp-server/mcpserver.terminal.frontend"],
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+        "//community-resources:customization",
+    ],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/jetbrains/annotations",
+        "//plugins/mcp-server/mcpserver.plugin",
+        "//plugins/mcp-server:mcpserver",
+        "//platform/core-api:core",
+        "//platform/testFramework",
+        "//platform/testFramework/junit5",
+        "//libraries/junit6",
+        "//libraries/assertj-core",
+        "//platform/platform-api:ide",
+        "//platform/ide-core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/util:util-ui",
+    ],
+)
+### auto-generated section `build intellij.mcpserver.terminal.frontend.tests` end
+
+### auto-generated section `iml intellij.mcpserver.terminal.frontend.tests` start
+exports_files(
+    [
+        "intellij.mcpserver.terminal.frontend.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.mcpserver.terminal.frontend.tests` end

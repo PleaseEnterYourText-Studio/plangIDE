@@ -1,0 +1,65 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.platform.ide.core.impl` start
+content_module_jar(module = ":ide-core-impl")
+### auto-generated section `dev intellij.platform.ide.core.impl` end
+
+### auto-generated section `build intellij.platform.ide.core.impl` start
+jvm_library(
+    name = "ide-core-impl",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.ide.core.impl",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//platform/ide-core",
+        "//platform/platform-util-io:ide-util-io",
+        "//platform/projectModel-api:projectModel",
+        "//platform/util:util-ui",
+        "//platform/util",
+        "//platform/util/jdom",
+        "//platform/util/concurrency",
+        "//platform/core-impl",
+        "//platform/analysis-impl",
+        "//libraries/fastutil",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/core-ui",
+        "//jps/model-impl",
+        "//libraries/kotlinx/coroutines/core",
+        "//platform/workspace/jps",
+        "//platform/backend/workspace",
+        "//platform/diagnostic",
+        "//platform/util/coroutines",
+        "//libraries/hash4j",
+        "//platform/workspace/storage",
+        "//platform/backend/observation",
+        "//platform/projectModel-impl",
+        "//libraries/kotlinx/collections-immutable:libraries-kotlinx-collections-immutable",
+        "//jps/model-api:model",
+    ],
+)
+### auto-generated section `build intellij.platform.ide.core.impl` end
+
+### auto-generated section `iml intellij.platform.ide.core.impl` start
+exports_files(
+    [
+        "intellij.platform.ide.core.impl.iml",
+        "resources/intellij.platform.ide.core.impl.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.ide.core.impl` end

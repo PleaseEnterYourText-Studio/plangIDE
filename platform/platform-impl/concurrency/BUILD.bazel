@@ -1,0 +1,96 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+jps_test(
+    name = "ide-concurrency-tests_test",
+    timeout = "moderate",
+    tags = ["community-aggregator"],
+    runtime_deps = [":ide-concurrency-tests_test_lib"],
+)
+
+### skip generation section `test intellij.platform.ide.concurrency.tests`
+
+### auto-generated section `dev intellij.platform.ide.concurrency` start
+content_module_jar(module = ":concurrency")
+### auto-generated section `dev intellij.platform.ide.concurrency` end
+
+### auto-generated section `build intellij.platform.ide.concurrency` start
+jvm_library(
+    name = "concurrency",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.ide.concurrency",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//libraries/jetbrains/annotations",
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinx/coroutines/core",
+        "//platform/util",
+        "//platform/core-api:core",
+        "//platform/util/concurrency",
+        "//platform/ide-core-impl",
+        "//platform/analysis-impl",
+        "//platform/util/coroutines",
+        "//platform/indexing-api:indexing",
+        "//libraries/guava",
+        "//libraries/caffeine",
+        "//platform/core-impl",
+    ],
+)
+### auto-generated section `build intellij.platform.ide.concurrency` end
+
+### auto-generated section `iml intellij.platform.ide.concurrency` start
+exports_files(
+    [
+        "intellij.platform.ide.concurrency.iml",
+        "resources/intellij.platform.ide.concurrency.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.ide.concurrency` end
+
+### auto-generated section `build intellij.platform.ide.concurrency.tests` start
+jvm_library(
+    name = "ide-concurrency-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "test/**/*.kt",
+            "test/**/*.java",
+            "test/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    associates = ["//platform/platform-impl/concurrency"],
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//platform/core-api:core",
+        "//libraries/junit6",
+        "//libraries/assertj-core",
+        "//platform/core-impl",
+    ],
+)
+### auto-generated section `build intellij.platform.ide.concurrency.tests` end
+
+### auto-generated section `iml intellij.platform.ide.concurrency.tests` start
+exports_files(
+    [
+        "intellij.platform.ide.concurrency.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.ide.concurrency.tests` end

@@ -1,0 +1,57 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.platform.ide.dnd` start
+content_module_jar(module = ":dnd")
+### auto-generated section `dev intellij.platform.ide.dnd` end
+
+### auto-generated section `build intellij.platform.ide.dnd` start
+jvm_library(
+    name = "dnd",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.ide.dnd",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    runtime_deps = ["//platform/platform-resources-en:resources-en"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/jetbrains/annotations",
+        "//libraries/kotlinx/coroutines/core",
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//platform/core-ui",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/eel-nioFs",
+        "//platform/eel-provider",
+        "//platform/platform-api:ide",
+        "//platform/ide-core",
+        "//platform/progress/shared:ide-progress",
+        "//platform/projectModel-api:projectModel",
+        "//platform/ui.tree",
+        "//platform/util",
+        "//platform/util/progress",
+        "//platform/util:util-ui",
+    ],
+)
+### auto-generated section `build intellij.platform.ide.dnd` end
+
+### auto-generated section `iml intellij.platform.ide.dnd` start
+exports_files(
+    [
+        "intellij.platform.ide.dnd.iml",
+        "resources/intellij.platform.ide.dnd.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.ide.dnd` end

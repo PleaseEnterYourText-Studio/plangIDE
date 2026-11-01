@@ -1,0 +1,69 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.platform.todo` start
+content_module_jar(module = ":todo")
+### auto-generated section `dev intellij.platform.todo` end
+
+### auto-generated section `build intellij.platform.todo` start
+jvm_library(
+    name = "todo",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.todo",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/kernel/rpc",
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinx/serialization/core",
+        "//platform/analysis-api:analysis",
+        "//platform/util/concurrency",
+        "//platform/core-api:core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/indexing-api:indexing",
+        "//jps/model-api:model",
+        "//platform/lang-core",
+        "//platform/lang-impl",
+        "//platform/core-ui",
+        "//platform/platform-impl/concurrency",
+        "//platform/platform-impl:ide-impl",
+        "//platform/platform-impl/rpc",
+        "//platform/ide-core",
+        "//platform/project/shared:project",
+        "//platform/projectModel-api:projectModel",
+        "//platform/structure-view-impl:structureView",
+        "//platform/usageView",
+        "//platform/indexing-impl",
+        "//platform/usageView-impl",
+        "//platform/editor-ui-ex:editor-ex",
+        "//platform/projectModel-impl",
+        "//platform/core-impl",
+        "//platform/lang-api:lang",
+        "//platform/util/jdom",
+        "//libraries/fastutil",
+        "//platform/util:util-ui",
+        "//platform/util/coroutines",
+    ],
+)
+### auto-generated section `build intellij.platform.todo` end
+
+### auto-generated section `iml intellij.platform.todo` start
+exports_files(
+    [
+        "intellij.platform.todo.iml",
+        "resources/intellij.platform.todo.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.todo` end

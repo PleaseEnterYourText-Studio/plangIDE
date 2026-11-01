@@ -1,0 +1,52 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.xml.emmet.frontend` start
+content_module_jar(module = ":frontend")
+### auto-generated section `dev intellij.xml.emmet.frontend` end
+
+### auto-generated section `build intellij.xml.emmet.frontend` start
+jvm_library(
+    name = "frontend",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.xml.emmet.frontend",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//xml/emmet/shared",
+        "//fleet/rpc",
+        "//platform/platform-impl:ide-impl",
+        "//platform/core-ui",
+        "@lib//:kotlin-stdlib",
+        "//platform/core-api:core",
+        "//xml/emmet",
+        "//platform/platform-frontend:frontend",
+        "//platform/remote-topics/shared:rpc-topics",
+        "//platform/ide-core",
+        "//platform/util:util-ui",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/util/coroutines",
+    ],
+)
+### auto-generated section `build intellij.xml.emmet.frontend` end
+
+### auto-generated section `iml intellij.xml.emmet.frontend` start
+exports_files(
+    [
+        "intellij.xml.emmet.frontend.iml",
+        "resources/intellij.xml.emmet.frontend.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.xml.emmet.frontend` end

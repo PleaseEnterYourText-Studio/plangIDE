@@ -1,0 +1,57 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.vcs.git.frontend` start
+content_module_jar(module = ":frontend")
+### auto-generated section `dev intellij.vcs.git.frontend` end
+
+### auto-generated section `build intellij.vcs.git.frontend` start
+jvm_library(
+    name = "frontend",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.vcs.git.frontend",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/core-api:core",
+        "//platform/editor-ui-api:editor-ui",
+        "//plugins/git4idea/shared",
+        "@lib//:kotlin-stdlib",
+        "//platform/platform-impl:ide-impl",
+        "//fleet/rpc",
+        "//platform/project/shared:project",
+        "//platform/core-ui",
+        "//platform/platform-impl/rpc",
+        "//platform/ide-core",
+        "//platform/progress/shared:ide-progress",
+        "//platform/util/coroutines",
+        "//platform/analysis-api:analysis",
+        "//platform/dvcs-impl/shared",
+        "//platform/vcs-impl/shared",
+        "//platform/searchEverywhere/frontend",
+        "//platform/scopes",
+        "//platform/util:util-ui",
+    ],
+)
+### auto-generated section `build intellij.vcs.git.frontend` end
+
+### auto-generated section `iml intellij.vcs.git.frontend` start
+exports_files(
+    [
+        "intellij.vcs.git.frontend.iml",
+        "resources/intellij.vcs.git.frontend.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.vcs.git.frontend` end

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://$MODULE_DIR$/testResources">
+      <sourceFolder url="file://$MODULE_DIR$/testResources" type="java-test-resource" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module" module-name="intellij.platform.bootstrap.coroutine" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.gradle.backend.tests" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.gradle.java.tests" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.gradle.java.toml.tests" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.gradle.java.coverage.tests" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.gradle.jps.tests" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.gradle.properties.tests" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.gradle.tests" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.gradle.toolingExtension.tests" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.gradle.native.tooling.tests" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.gradle.completion.tests" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.gradle.completion.toml.tests" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.gradle.toolingProxy.tests" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.gradle.codeInsight.groovy.backend.tests.integration" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.gradle.codeInsight.properties.backend.tests.integration" scope="RUNTIME" />
+    <orderEntry type="module" module-name="intellij.gradle.codeInsight.toml.backend.tests.integration" scope="RUNTIME" />
+  </component>
+</module>

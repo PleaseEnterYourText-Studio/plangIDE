@@ -1,0 +1,66 @@
+load("@community//build:bazel_targets_json.bzl", "current_bazel_targets_json")
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+BAZEL_TARGETS_JSON = current_bazel_targets_json()
+
+jps_test(
+    name = "tests_test",
+    timeout = "short",
+    data = [
+        ":testData",
+        "@community//java/java-tests:testData",
+        BAZEL_TARGETS_JSON,
+    ],
+    jvm_flags = [
+        "-Dintellij.build.bazel.targets.json.file=$(rlocationpath %s)" % BAZEL_TARGETS_JSON,
+    ],
+    tags = ["community-compiler-test"],
+    runtime_deps = [":tests_test_lib"],
+)
+### skip generation section `test intellij.java.guiForms.jps.tests`
+
+filegroup(
+    name = "testData",
+    srcs = glob(["testData/**"]),
+)
+
+### auto-generated section `build intellij.java.guiForms.jps.tests` start
+jvm_library(
+    name = "tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "testSrc/**/*.kt",
+            "testSrc/**/*.java",
+            "testSrc/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.java.guiForms.jps.tests",
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//jps/jps-builders:build-tests_test_lib",
+        "//jps/model-api:model",
+        "//plugins/ui-designer/jps-plugin:java-guiForms-jps",
+        "//libraries/asm",
+        "//platform/forms_rt:java-guiForms-rt",
+        "//jps/jps-builders:build",
+        "//platform/testFramework",
+        "//platform/bazel-runfiles",
+        "//jps/model-serialization:model-serialization-tests_test_lib",
+        "//platform/util/base",
+        "//libraries/junit6",
+    ],
+)
+### auto-generated section `build intellij.java.guiForms.jps.tests` end
+
+### auto-generated section `iml intellij.java.guiForms.jps.tests` start
+exports_files(
+    [
+        "intellij.java.guiForms.jps.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.java.guiForms.jps.tests` end

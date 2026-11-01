@@ -1,0 +1,80 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+jps_test(
+    name = "tests_test",
+    timeout = "short",
+    tags = ["community-aggregator"],
+    runtime_deps = [":tests_test_lib"],
+)
+### skip generation section `test intellij.platform.projectView.tests` end
+
+### auto-generated section `build intellij.platform.projectView.tests` start
+jvm_library(
+    name = "tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "testSrc/**/*.kt",
+            "testSrc/**/*.java",
+            "testSrc/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    associates = ["//platform/projectView/frontend"],
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+        "//community-resources:customization",
+    ],
+    deps = [
+        # do not sort,
+        "//platform/util:util-ui",
+        "//platform/projectView/shared:projectView",
+        "//platform/projectView/backend",
+        "//platform/kernel/rpc",
+        "//platform/kernel/rpc.backend",
+        "//fleet/rpc",
+        "//platform/core-api:core",
+        "//platform/core-impl",
+        "//platform/core-ui",
+        "//platform/project/shared:project",
+        "//platform/projectModel-api:projectModel",
+        "//platform/platform-api:ide",
+        "//platform/ide-core",
+        "//platform/platform-impl:ide-impl",
+        "//platform/platform-impl/concurrency",
+        "//platform/lang-api:lang",
+        "//platform/lang-impl",
+        "//platform/vcs-api:vcs",
+        "//platform/vcs-impl",
+        "//platform/analysis-api:analysis",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/util/coroutines",
+        "@lib//:kotlin-stdlib",
+        "//libraries/junit6",
+        "//libraries/kotlinx/coroutines/core",
+        "//platform/testFramework",
+        "//platform/testFramework/junit5",
+        "//libraries/assertj-core",
+        "//java/java-impl:impl",
+        "//java/java-backend:backend",
+        "//java/plugin",
+        "//xml/plugin",
+        "//platform/structure-view-impl/plugin",
+        "//platform/todo/plugin",
+        "//aether-dependency-resolver/plugin",
+        "//platform/vcs/plugin",
+    ],
+)
+### auto-generated section `build intellij.platform.projectView.tests` end
+
+### auto-generated section `iml intellij.platform.projectView.tests` start
+exports_files(
+    [
+        "intellij.platform.projectView.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.projectView.tests` end

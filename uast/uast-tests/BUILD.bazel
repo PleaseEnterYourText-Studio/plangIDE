@@ -1,0 +1,78 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+filegroup(
+    name = "testData",
+    srcs = glob(["java/**"]),
+    visibility = ["//visibility:public"],
+)
+
+jps_test(
+    name = "tests_test",
+    timeout = "moderate",
+    data = [":testData"],
+    tags = ["community-java-tests"],
+    runtime_deps = [":tests_test_lib"],
+)
+
+### skip generation section `test intellij.platform.uast.tests`
+
+### auto-generated section `build intellij.platform.uast.tests` start
+jvm_library(
+    name = "tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "test/**/*.kt",
+            "test/**/*.java",
+            "test/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.uast.tests",
+    visibility = ["//visibility:public"],
+    exports = [
+        # do not sort,
+        "//uast/uast-common:uast",
+        "//uast/uast-java-ide:java-uast-ide",
+        "//uast/testFramework",
+    ],
+    runtime_deps = [
+        # do not sort,
+        "//java/java-tests:tests_test_lib",
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+    ],
+    deps = [
+        # do not sort,
+        "//platform/core-api:core",
+        "//platform/editor-ui-api:editor-ui",
+        "//jps/model-api:model",
+        "//platform/lang-api:lang",
+        "//uast/uast-common:uast",
+        "@lib//:kotlin-stdlib",
+        "//libraries/junit4",
+        "//platform/core-impl",
+        "//uast/uast-java-ide:java-uast-ide",
+        "//java/java-runtime:rt",
+        "//java/java-psi-api:psi",
+        "//java/java-psi-impl:psi-impl",
+        "//platform/testFramework",
+        "//uast/testFramework",
+        "//java/testFramework",
+        "//java/java-frontback-psi-api:frontback-psi",
+        "//platform/vcs-impl",
+        "//tools/intellij.tools.ide.metrics.benchmark:ide-metrics-benchmark",
+        "//uast/uast-common-ide:ide",
+        "//platform/bazel-runfiles",
+    ],
+)
+### auto-generated section `build intellij.platform.uast.tests` end
+
+### auto-generated section `iml intellij.platform.uast.tests` start
+exports_files(
+    [
+        "intellij.platform.uast.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.uast.tests` end

@@ -1,0 +1,160 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//build:compiler-options.bzl", "create_kotlinc_options")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.kotlin.base.projectStructure` start
+content_module_jar(module = ":project-structure")
+### auto-generated section `dev intellij.kotlin.base.projectStructure` end
+
+### auto-generated section `build intellij.kotlin.base.projectStructure` start
+create_kotlinc_options(
+    name = "custom_project-structure",
+    opt_in = [
+        "org.jetbrains.kotlin.psi.KtExperimentalApi",
+        "org.jetbrains.kotlin.psi.KtNonPublicApi",
+        "org.jetbrains.kotlin.psi.KtIdeApi",
+        "org.jetbrains.kotlin.analysis.api.KaExperimentalApi",
+        "org.jetbrains.kotlin.analysis.api.KaIdeApi",
+        "org.jetbrains.kotlin.analysis.api.KaPlatformInterface",
+        "org.jetbrains.kotlin.analysis.api.fir.diagnostics.KaUnstableDiagnosticApi",
+        "org.jetbrains.kotlin.analysis.api.KaNonPublicApi",
+        "org.jetbrains.kotlin.analysis.api.KaContextParameterApi",
+        "org.jetbrains.kotlin.analysis.api.permissions.KaAllowProhibitedAnalyzeFromWriteAction",
+    ],
+    x_context_parameters = True,
+)
+
+jvm_library(
+    name = "project-structure",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+            "gen/**/*.kt",
+            "gen/**/*.java",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = ":custom_project-structure",
+    module_name = "intellij.kotlin.base.projectStructure",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinc/kotlin-compiler-common:libraries-kotlinc-kotlin-compiler-common",
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//platform/core-impl",
+        "//platform/lang-api:lang",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/platform-impl:ide-impl",
+        "//platform/ide-core",
+        "//libraries/kotlinc/kotlin-jps-common:libraries-kotlinc-kotlin-jps-common",
+        "//libraries/kotlinc/analysis-api:libraries-kotlinc-analysis-api",
+        "//libraries/kotlinc/analysis-api-platform-interface:libraries-kotlinc-analysis-api-platform-interface",
+        "//platform/indexing-api:indexing",
+        "//jps/model-api:model",
+        "//jps/model-serialization",
+        "//platform/lang-core",
+        "//platform/projectModel-api:projectModel",
+        "//platform/workspace/storage",
+        "//plugins/kotlin/base/util",
+        "//plugins/kotlin/base/plugin",
+        "//plugins/kotlin/base/project-model",
+        "//plugins/kotlin/base/psi",
+        "//plugins/kotlin/base/indices",
+        "//plugins/kotlin/base/compiler-configuration",
+        "//plugins/kotlin/base/platforms",
+        "//plugins/kotlin/base/resources:kotlin-base-resources",
+        "//plugins/kotlin/base/facet",
+        "//platform/lang-impl",
+        "//platform/external-system-api:externalSystem",
+        "//java/openapi:java",
+        "//java/java-psi-impl:psi-impl",
+        "//java/idea-ui:ui",
+        "//java/java-psi-api:psi",
+        "//platform/workspace/jps",
+        "//platform/backend/workspace",
+        "//libraries/caffeine",
+        "//platform/util/jdom",
+        "//platform/util:util-ui",
+        "//java/java-impl:impl",
+        "//libraries/kotlinc/analysis-api-impl-base:libraries-kotlinc-analysis-api-impl-base",
+        "//libraries/kotlinc/symbol-light-classes:libraries-kotlinc-symbol-light-classes",
+        "//libraries/fastutil",
+    ],
+)
+### auto-generated section `build intellij.kotlin.base.projectStructure` end
+
+### auto-generated section `iml intellij.kotlin.base.projectStructure` start
+exports_files(
+    [
+        "intellij.kotlin.base.projectStructure.iml",
+        "resources/intellij.kotlin.base.projectStructure.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.kotlin.base.projectStructure` end
+
+### auto-generated section `build intellij.kotlin.base.projectStructure.tests` start
+create_kotlinc_options(
+    name = "custom_kotlin-base-projectStructure-tests",
+    opt_in = [
+        "org.jetbrains.kotlin.psi.KtExperimentalApi",
+        "org.jetbrains.kotlin.psi.KtNonPublicApi",
+        "org.jetbrains.kotlin.psi.KtIdeApi",
+        "org.jetbrains.kotlin.analysis.api.KaExperimentalApi",
+        "org.jetbrains.kotlin.analysis.api.KaIdeApi",
+        "org.jetbrains.kotlin.analysis.api.KaPlatformInterface",
+        "org.jetbrains.kotlin.analysis.api.fir.diagnostics.KaUnstableDiagnosticApi",
+        "org.jetbrains.kotlin.analysis.api.KaNonPublicApi",
+        "org.jetbrains.kotlin.analysis.api.KaContextParameterApi",
+        "org.jetbrains.kotlin.analysis.api.permissions.KaAllowProhibitedAnalyzeFromWriteAction",
+    ],
+    x_context_parameters = True,
+)
+
+jvm_library(
+    name = "kotlin-base-projectStructure-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "test/**/*.kt",
+            "test/**/*.java",
+            "test/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    associates = ["//plugins/kotlin/base/project-structure"],
+    kotlinc_opts = ":custom_kotlin-base-projectStructure-tests",
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinc/kotlin-compiler-common:libraries-kotlinc-kotlin-compiler-common",
+        "//libraries/junit6",
+    ],
+)
+### auto-generated section `build intellij.kotlin.base.projectStructure.tests` end
+
+### auto-generated section `iml intellij.kotlin.base.projectStructure.tests` start
+exports_files(
+    [
+        "intellij.kotlin.base.projectStructure.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.kotlin.base.projectStructure.tests` end
+
+### auto-generated section `test intellij.kotlin.base.projectStructure.tests` start
+jps_test(
+    name = "kotlin-base-projectStructure-tests_test",
+    runtime_deps = [":kotlin-base-projectStructure-tests_test_lib"],
+)
+### auto-generated section `test intellij.kotlin.base.projectStructure.tests` end

@@ -1,0 +1,97 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+jps_test(
+    name = "concurrency-tests_test",
+    timeout = "moderate",
+    tags = ["concurrency-tests"],
+    runtime_deps = [":concurrency-tests_test_lib"],
+)
+### skip generation section `test intellij.platform.concurrency.tests`
+
+### auto-generated section `dev intellij.platform.concurrency` start
+content_module_jar(module = ":concurrency")
+### auto-generated section `dev intellij.platform.concurrency` end
+
+### auto-generated section `build intellij.platform.concurrency` start
+jvm_library(
+    name = "concurrency",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.concurrency",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinx/coroutines/core",
+        "//platform/util",
+        "//platform/core-api:core",
+        "//libraries/fastutil",
+        "//platform/diagnostic",
+        "//platform/util/coroutines",
+        "//platform/util/multiplatform",
+        "//platform/util/base",
+    ],
+)
+### auto-generated section `build intellij.platform.concurrency` end
+
+### auto-generated section `iml intellij.platform.concurrency` start
+exports_files(
+    [
+        "intellij.platform.concurrency.iml",
+        "resources/intellij.platform.concurrency.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.concurrency` end
+
+### auto-generated section `build intellij.platform.concurrency.tests` start
+jvm_library(
+    name = "concurrency-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "testSrc/**/*.kt",
+            "testSrc/**/*.java",
+            "testSrc/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.concurrency.tests",
+    resource_strip_prefix = "testResources",
+    resources = glob(
+        ["testResources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    runtime_deps = ["//platform/platform-tests:tests_test_lib"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//platform/util",
+        "//platform/core-api:core",
+        "//libraries/assertj-core",
+        "//libraries/junit6",
+        "//platform/util/concurrency",
+    ],
+)
+### auto-generated section `build intellij.platform.concurrency.tests` end
+
+### auto-generated section `iml intellij.platform.concurrency.tests` start
+exports_files(
+    [
+        "intellij.platform.concurrency.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.concurrency.tests` end

@@ -1,0 +1,50 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.platform.ide.pluginSignatureVerifier` start
+content_module_jar(module = ":plugin-signature-verifier")
+### auto-generated section `dev intellij.platform.ide.pluginSignatureVerifier` end
+
+### auto-generated section `build intellij.platform.ide.pluginSignatureVerifier` start
+jvm_library(
+    name = "plugin-signature-verifier",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.ide.pluginSignatureVerifier",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/jetbrains/annotations",
+        "//libraries/caffeine",
+        "//libraries/zip-signer",
+        "//platform/core-api:core",
+        "//platform/platform-api:ide",
+        "//platform/ide-core",
+        "//platform/ide-core/plugins",
+        "//platform/platform-impl:ide-impl",
+        "//platform/platform-util-io:ide-util-io",
+        "//platform/util",
+    ],
+)
+### auto-generated section `build intellij.platform.ide.pluginSignatureVerifier` end
+
+### auto-generated section `iml intellij.platform.ide.pluginSignatureVerifier` start
+exports_files(
+    [
+        "intellij.platform.ide.pluginSignatureVerifier.iml",
+        "resources/intellij.platform.ide.pluginSignatureVerifier.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.ide.pluginSignatureVerifier` end

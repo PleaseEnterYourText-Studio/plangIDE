@@ -1,0 +1,49 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `build intellij.kotlin.gradle.tooling.tests` start
+jvm_library(
+    name = "tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "test/**/*.kt",
+            "test/**/*.java",
+            "test/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.kotlin.gradle.tooling.tests",
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "@lib//:kotlin-project-model",
+        "//libraries/kotlin/test:libraries-kotlinTest",
+        "//libraries/junit6",
+        "//plugins/kotlin/base/project-model",
+        "//plugins/kotlin/gradle/gradle-tooling:kotlin-gradle-tooling",
+        "//plugins/kotlin/gradle/gradle-tooling/impl",
+        "//plugins/gradle/tooling-extension-api:toolingExtension",
+        "//plugins/gradle/tooling-extension-impl:toolingExtension-impl",
+        "//libraries/gradle",
+        "//libraries/kotlin/tooling-core:libraries-kotlin-tooling-core",
+    ],
+)
+### auto-generated section `build intellij.kotlin.gradle.tooling.tests` end
+
+### auto-generated section `iml intellij.kotlin.gradle.tooling.tests` start
+exports_files(
+    [
+        "intellij.kotlin.gradle.tooling.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.kotlin.gradle.tooling.tests` end
+
+### auto-generated section `test intellij.kotlin.gradle.tooling.tests` start
+jps_test(
+    name = "tests_test",
+    runtime_deps = [":tests_test_lib"],
+)
+### auto-generated section `test intellij.kotlin.gradle.tooling.tests` end

@@ -1,0 +1,75 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.platform.lsp.impl` start
+content_module_jar(module = ":lsp-impl")
+### auto-generated section `dev intellij.platform.lsp.impl` end
+
+### auto-generated section `build intellij.platform.lsp.impl` start
+jvm_library(
+    name = "lsp-impl",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.lsp.impl",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    exports = ["//platform/lsp"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/lsp4j",
+        "//libraries/lsp4j/jsonrpc",
+        "//platform/core-impl",
+        "//libraries/gson",
+        "//platform/analysis-api:analysis",
+        "//platform/code-style-api:codeStyle",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/platform-impl:ide-impl",
+        "//libraries/xtext-xbase",
+        "//platform/indexing-api:indexing",
+        "//platform/lsp",
+        "//platform/ide-core-impl",
+        "//platform/ide-core",
+        "//platform/core-api:core",
+        "//platform/platform-api:ide",
+        "//platform/backend/workspace",
+        "//platform/editor-ui-ex:editor-ex",
+        "//platform/projectModel-api:projectModel",
+        "//platform/workspace/jps",
+        "//platform/consoleView",
+        "//platform/consoleView/impl",
+        "//platform/lang-api:lang",
+        "//platform/lang-impl",
+        "//platform/platform-util-io:ide-util-io",
+        "//platform/progress/shared:ide-progress",
+        "//platform/core-ui",
+        "//platform/markdown-utils",
+        "//platform/statistics",
+        "//platform/workspace/storage",
+        "//platform/foldings",
+        "//platform/util/progress",
+        "//platform/util:util-ui",
+        "//platform/code-style-impl:codeStyle-impl",
+        "//platform/refactoring",
+    ],
+)
+### auto-generated section `build intellij.platform.lsp.impl` end
+
+### auto-generated section `iml intellij.platform.lsp.impl` start
+exports_files(
+    [
+        "intellij.platform.lsp.impl.iml",
+        "resources/intellij.platform.lsp.impl.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.lsp.impl` end

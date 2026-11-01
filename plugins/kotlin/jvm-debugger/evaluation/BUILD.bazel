@@ -1,0 +1,90 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//build:compiler-options.bzl", "create_kotlinc_options")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev kotlin.jvm-debugger.evaluation` start
+content_module_jar(module = ":evaluation")
+### auto-generated section `dev kotlin.jvm-debugger.evaluation` end
+
+### auto-generated section `build kotlin.jvm-debugger.evaluation` start
+create_kotlinc_options(
+    name = "custom_evaluation",
+    opt_in = [
+        "org.jetbrains.kotlin.psi.KtExperimentalApi",
+        "org.jetbrains.kotlin.psi.KtNonPublicApi",
+        "org.jetbrains.kotlin.psi.KtIdeApi",
+        "org.jetbrains.kotlin.analysis.api.KaExperimentalApi",
+        "org.jetbrains.kotlin.analysis.api.KaIdeApi",
+        "org.jetbrains.kotlin.analysis.api.KaPlatformInterface",
+        "org.jetbrains.kotlin.analysis.api.fir.diagnostics.KaUnstableDiagnosticApi",
+        "org.jetbrains.kotlin.analysis.api.KaNonPublicApi",
+        "org.jetbrains.kotlin.analysis.api.KaContextParameterApi",
+        "org.jetbrains.kotlin.analysis.api.permissions.KaAllowProhibitedAnalyzeFromWriteAction",
+    ],
+    x_context_parameters = True,
+)
+
+jvm_library(
+    name = "evaluation",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = ":custom_evaluation",
+    module_name = "kotlin.jvm-debugger.evaluation",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/asm",
+        "//libraries/kotlinc/kotlin-compiler-common:libraries-kotlinc-kotlin-compiler-common",
+        "//libraries/kotlinc/analysis-api:libraries-kotlinc-analysis-api",
+        "//libraries/kotlinc/analysis-api-platform-interface:libraries-kotlinc-analysis-api-platform-interface",
+        "//platform/util",
+        "//platform/core-api:core",
+        "//platform/core-impl",
+        "//plugins/kotlin/base/util",
+        "//plugins/kotlin/base/project-structure",
+        "//plugins/kotlin/base/analysis",
+        "//plugins/kotlin/base/code-insight",
+        "//plugins/kotlin/base/psi",
+        "//plugins/kotlin/base/statistics",
+        "//plugins/kotlin/jvm-debugger/base/util",
+        "//java/debugger/openapi:java-debugger",
+        "//plugins/kotlin/jvm-debugger/eval4j",
+        "//plugins/kotlin/jvm-debugger/core",
+        "//platform/xdebugger-impl:debugger-impl",
+        "//platform/xdebugger-impl/shared",
+        "//java/java-psi-api:psi",
+        "//java/java-psi-impl:psi-impl",
+        "//java/java-syntax:syntax",
+        "//java/debugger/impl",
+        "//java/java-frontback-psi-api:frontback-psi",
+        "//plugins/kotlin/jvm-debugger/coroutines",
+        "//platform/statistics",
+        "//plugins/kotlin/base/facet",
+        "//platform/xdebugger-impl/rpc",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/platform-api:ide",
+        "//plugins/kotlin/j2k/k2:kotlin-j2k",
+    ],
+)
+### auto-generated section `build kotlin.jvm-debugger.evaluation` end
+
+### auto-generated section `iml kotlin.jvm-debugger.evaluation` start
+exports_files(
+    [
+        "kotlin.jvm-debugger.evaluation.iml",
+        "resources/kotlin.jvm-debugger.evaluation.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml kotlin.jvm-debugger.evaluation` end

@@ -1,0 +1,69 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//build:compiler-options.bzl", "create_kotlinc_options")
+
+jps_test(
+    name = "tests_test",
+    timeout = "moderate",
+    tags = ["community-aggregator"],
+    runtime_deps = [":tests_test_lib"],
+)
+### skip generation section `test intellij.platform.workspace.storage.tests`
+
+### auto-generated section `build intellij.platform.workspace.storage.tests` start
+create_kotlinc_options(
+    name = "custom_tests",
+    opt_in = [
+        "com.intellij.platform.workspace.storage.instrumentation.EntityStorageInstrumentationApi",
+        "com.intellij.platform.workspace.storage.WorkspaceEntityInternalApi",
+    ],
+)
+
+jvm_library(
+    name = "tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "testSrc/**/*.kt",
+            "testSrc/**/*.java",
+            "testSrc/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    associates = ["//platform/workspace/storage"],
+    kotlinc_opts = ":custom_tests",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/core-api:core",
+        "//platform/testFramework",
+        "//platform/workspace/storage/testEntities:testEntities_test_lib",
+        "//libraries/guava",
+        "//libraries/kotlin/reflect",
+        "//libraries/fastutil",
+        "@lib//:kotlin-stdlib",
+        "//platform/analysis-api:analysis",
+        "//libraries/kotlin/test:libraries-kotlinTest",
+        "//libraries/kryo5",
+        "//platform/testFramework/junit5",
+        "//libraries/kotlinx/collections-immutable:libraries-kotlinx-collections-immutable",
+        "//libraries/jetcheck",
+        "//libraries/junit4",
+        "//libraries/junit6",
+        "//libraries/junit6-params",
+    ],
+)
+### auto-generated section `build intellij.platform.workspace.storage.tests` end
+
+### auto-generated section `iml intellij.platform.workspace.storage.tests` start
+exports_files(
+    [
+        "intellij.platform.workspace.storage.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.workspace.storage.tests` end

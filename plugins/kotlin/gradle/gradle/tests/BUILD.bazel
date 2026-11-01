@@ -1,0 +1,90 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `build intellij.kotlin.gradle.gradle.tests` start
+jvm_library(
+    name = "tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "test/**/*.kt",
+            "test/**/*.java",
+            "test/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.kotlin.gradle.gradle.tests",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    exports = ["//libraries/kotlin/tooling-core:libraries-kotlin-tooling-core"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinc/kotlin-compiler-common:libraries-kotlinc-kotlin-compiler-common",
+        "//libraries/kotlinc/kotlin-jps-common:libraries-kotlinc-kotlin-jps-common",
+        "//libraries/kotlinc/kotlin-scripting-compiler-impl:libraries-kotlinc-kotlin-scripting-compiler-impl",
+        "@lib//:kotlinc-kotlin-compiler-tests",
+        "//libraries/guava",
+        "//libraries/kotlin/test:libraries-kotlinTest",
+        "//plugins/kotlin/base/util",
+        "//platform/platform-impl:ide-impl",
+        "//plugins/kotlin/base/project-model",
+        "//plugins/kotlin/base/compiler-configuration",
+        "//plugins/kotlin/base/plugin",
+        "//plugins/kotlin/base/facet",
+        "//plugins/kotlin/base/platforms",
+        "//java/testFramework",
+        "//plugins/kotlin/base/project-structure",
+        "//plugins/kotlin/base/analysis",
+        "//plugins/kotlin/base/code-insight",
+        "//plugins/kotlin/base/testFramework",
+        "//plugins/kotlin/project-configuration",
+        "//plugins/kotlin/frontend-independent",
+        "//platform/statistics",
+        "//plugins/kotlin/jvm/shared",
+        "//plugins/kotlin/migration",
+        "//plugins/kotlin/gradle/code-insight-groovy:kotlin-gradle-codeInsight-groovy",
+        "//plugins/kotlin/gradle/gradle",
+        "//plugins/kotlin/gradle/code-insight-common:kotlin-gradle-codeInsight-common",
+        "//plugins/groovy/groovy-psi:psi",
+        "//plugins/kotlin/tests-common:common-tests_test_lib",
+        "//plugins/kotlin/test-framework:test-framework_test_lib",
+        "//plugins/gradle/java",
+        "//plugins/gradle:gradle-tests_test_lib",
+        "//libraries/kotlin/reflect",
+        "//plugins/gradle/java:java-tests_test_lib",
+        "//plugins/kotlin/native",
+        "//plugins/gradle/tooling-extension-impl:toolingExtension-impl",
+        "//libraries/kotlinx/coroutines/core",
+        "//libraries/kotlin/tooling-core:libraries-kotlin-tooling-core",
+        "//plugins/kotlin/run-configurations/jvm",
+        "//plugins/groovy",
+        "//plugins/kotlin/completion/tests-shared:kotlin-completion-tests-shared_test_lib",
+        "//libraries/testng",
+        "//platform/testFramework",
+        "//platform/testFramework/junit5",
+        "//platform/util-ex",
+        "//libraries/junit6",
+        "//libraries/junit6-params",
+    ],
+)
+### auto-generated section `build intellij.kotlin.gradle.gradle.tests` end
+
+### auto-generated section `iml intellij.kotlin.gradle.gradle.tests` start
+exports_files(
+    [
+        "intellij.kotlin.gradle.gradle.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.kotlin.gradle.gradle.tests` end
+
+### auto-generated section `test intellij.kotlin.gradle.gradle.tests` start
+jps_test(
+    name = "tests_test",
+    runtime_deps = [":tests_test_lib"],
+)
+### auto-generated section `test intellij.kotlin.gradle.gradle.tests` end

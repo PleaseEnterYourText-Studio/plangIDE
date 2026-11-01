@@ -1,0 +1,55 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.platform.vcs.impl.backend` start
+content_module_jar(module = ":backend")
+### auto-generated section `dev intellij.platform.vcs.impl.backend` end
+
+### auto-generated section `build intellij.platform.vcs.impl.backend` start
+jvm_library(
+    name = "backend",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.vcs.impl.backend",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//platform/core-api:core",
+        "//platform/vcs-impl/shared",
+        "//platform/kernel/rpc.backend",
+        "//platform/platform-impl/rpc",
+        "//platform/backend",
+        "//platform/dvcs-impl/shared",
+        "//platform/vcs-impl",
+        "//platform/polySymbols/shared:polySymbols",
+        "//platform/polySymbols/backend",
+        "//platform/platform-api:ide",
+        "//platform/lang-impl",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/vcs-api:vcs",
+        "//platform/projectModel-api:projectModel",
+        "//platform/core-ui",
+    ],
+)
+### auto-generated section `build intellij.platform.vcs.impl.backend` end
+
+### auto-generated section `iml intellij.platform.vcs.impl.backend` start
+exports_files(
+    [
+        "intellij.platform.vcs.impl.backend.iml",
+        "resources/intellij.platform.vcs.impl.backend.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.vcs.impl.backend` end

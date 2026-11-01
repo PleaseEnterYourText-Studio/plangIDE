@@ -1,0 +1,53 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.junit.dashboard` start
+content_module_jar(module = ":dashboard")
+### auto-generated section `dev intellij.junit.dashboard` end
+
+### auto-generated section `build intellij.junit.dashboard` start
+jvm_library(
+    name = "dashboard",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.junit.dashboard",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//plugins/junit",
+        "//platform/execution.dashboard",
+        "//platform/execution",
+        "//platform/core-api:core",
+        "//java/java-psi-api:psi",
+        "//java/execution/openapi:java-execution",
+        "//java/execution/impl",
+        "//platform/execution-impl",
+        "//platform/smRunner",
+        "//platform/testRunner",
+        "//platform/statistics",
+        "//platform/util",
+        "//platform/ide-core",
+        "//libraries/jetbrains/annotations",
+    ],
+)
+### auto-generated section `build intellij.junit.dashboard` end
+
+### auto-generated section `iml intellij.junit.dashboard` start
+exports_files(
+    [
+        "intellij.junit.dashboard.iml",
+        "resources/intellij.junit.dashboard.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.junit.dashboard` end

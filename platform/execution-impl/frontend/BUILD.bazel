@@ -1,0 +1,59 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.platform.execution.impl.frontend` start
+content_module_jar(module = ":frontend")
+### auto-generated section `dev intellij.platform.execution.impl.frontend` end
+
+### auto-generated section `build intellij.platform.execution.impl.frontend` start
+jvm_library(
+    name = "frontend",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.execution.impl.frontend",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinx/serialization/core",
+        "//libraries/kotlinx/serialization/json",
+        "//platform/util",
+        "//platform/execution-impl",
+        "//platform/core-api:core",
+        "//platform/project/shared:project",
+        "//platform/platform-util-io:ide-util-io",
+        "//platform/platform-api:ide",
+        "//platform/platform-impl/rpc",
+        "//platform/ide-core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/execution",
+        "//platform/consoleView",
+        "//platform/consoleView/impl",
+        "//platform/core-ui",
+        "//platform/lang-impl",
+        "//platform/util/coroutines",
+        "//platform/lang-api:lang",
+        "//fleet/rpc",
+    ],
+)
+### auto-generated section `build intellij.platform.execution.impl.frontend` end
+
+### auto-generated section `iml intellij.platform.execution.impl.frontend` start
+exports_files(
+    [
+        "intellij.platform.execution.impl.frontend.iml",
+        "resources/intellij.platform.execution.impl.frontend.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.execution.impl.frontend` end

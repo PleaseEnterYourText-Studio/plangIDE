@@ -1,0 +1,94 @@
+// Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+package com.jetbrains.python.validation
+
+import com.intellij.lang.annotation.HighlightSeverity
+import com.intellij.psi.PsiComment
+import com.intellij.psi.PsiElement
+import com.jetbrains.python.PyNames
+import com.jetbrains.python.documentation.docstrings.DocStringFormat
+import com.jetbrains.python.documentation.docstrings.DocStringParser
+import com.jetbrains.python.documentation.docstrings.DocStringReferenceProvider
+import com.jetbrains.python.documentation.docstrings.DocStringUtil
+import com.jetbrains.python.documentation.docstrings.SphinxDocString
+import com.jetbrains.python.documentation.docstrings.SphinxReferences
+import com.jetbrains.python.highlighting.PyHighlighter
+import com.jetbrains.python.psi.PyAssignmentStatement
+import com.jetbrains.python.psi.PyClass
+import com.jetbrains.python.psi.PyElementVisitor
+import com.jetbrains.python.psi.PyExpressionStatement
+import com.jetbrains.python.psi.PyFile
+import com.jetbrains.python.psi.PyFunction
+import com.jetbrains.python.psi.PyStringLiteralExpression
+
+/**
+ * Highlights doc strings in classes, functions, and files.
+ */
+class PyDocStringHighlightingAnnotator : PyAnnotatorBase() {
+  override fun annotate(element: PsiElement, holder: PyAnnotationHolder) {
+    if (holder.isBatchMode) return
+    if (element is PsiComment) {
+      // Highlight the Sphinx role markers (e.g. :py:class:`...`) in a line comment like a docstring tag.
+      for (tagRange in SphinxReferences.findTagRanges(element)) {
+        holder.newSilentAnnotation(HighlightSeverity.INFORMATION)
+          .range(tagRange.shiftRight(element.getTextRange().startOffset))
+          .textAttributes(PyHighlighter.PY_DOC_COMMENT_TAG).create()
+      }
+      return
+    }
+    element.accept(PyDocStringAnnotatorVisitor(holder))
+  }
+}
+
+private class PyDocStringAnnotatorVisitor(private val holder: PyAnnotationHolder) : PyElementVisitor() {
+  override fun visitPyFile(node: PyFile) {
+    annotateDocStringStmt(DocStringUtil.findDocStringExpression(node))
+  }
+
+  override fun visitPyFunction(node: PyFunction) {
+    annotateDocStringStmt(DocStringUtil.findDocStringExpression(node.statementList))
+  }
+
+  override fun visitPyClass(node: PyClass) {
+    annotateDocStringStmt(DocStringUtil.findDocStringExpression(node.statementList))
+  }
+
+  override fun visitPyAssignmentStatement(node: PyAssignmentStatement) {
+    if (node.isAssignmentTo(PyNames.DOC)) {
+      val right = node.assignedValue
+      if (right is PyStringLiteralExpression) {
+        holder.newSilentAnnotation(HighlightSeverity.INFORMATION).range(right).textAttributes(PyHighlighter.PY_DOC_COMMENT).create()
+        annotateDocStringStmt(right)
+      }
+    }
+  }
+
+  override fun visitPyExpressionStatement(node: PyExpressionStatement) {
+    if (node.expression is PyStringLiteralExpression &&
+        DocStringUtil.isVariableDocString(node.expression as PyStringLiteralExpression)
+    ) {
+      annotateDocStringStmt(node.expression as PyStringLiteralExpression)
+    }
+  }
+
+  private fun annotateDocStringStmt(stmt: PyStringLiteralExpression?) {
+    if (stmt == null) return
+    if (DocStringParser.getConfiguredDocStringFormat(stmt) == DocStringFormat.REST) {
+      val tags = SphinxDocString.ALL_TAGS
+      var pos = 0
+      while (true) {
+        val textRange = DocStringReferenceProvider.findNextTag(stmt.getText(), pos, tags)
+        if (textRange == null) break
+        holder.newSilentAnnotation(
+          HighlightSeverity.INFORMATION).range(textRange.shiftRight(stmt.getTextRange().startOffset))
+          .textAttributes(PyHighlighter.PY_DOC_COMMENT_TAG).create()
+        pos = textRange.endOffset
+      }
+    }
+    // Highlight Sphinx cross-reference role/directive markers (e.g. :py:class:`...`) like other docstring tags.
+    for (tagRange in SphinxReferences.findTagRanges(stmt)) {
+      holder.newSilentAnnotation(HighlightSeverity.INFORMATION)
+        .range(tagRange.shiftRight(stmt.getTextRange().startOffset))
+        .textAttributes(PyHighlighter.PY_DOC_COMMENT_TAG).create()
+    }
+  }
+}

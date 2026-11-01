@@ -1,0 +1,80 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+jps_test(
+    name = "junit5-jimfs-tests_test",
+    timeout = "moderate",
+    tags = ["community-aggregator"],
+    runtime_deps = [":junit5-jimfs-tests_test_lib"],
+)
+
+### skip generation section `test intellij.platform.testFramework.junit5.jimfs.tests`
+
+### auto-generated section `build intellij.platform.testFramework.junit5.jimfs` start
+jvm_library(
+    name = "junit5.jimfs",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.testFramework.junit5.jimfs",
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//libraries/jetbrains/annotations",
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinx/coroutines/core",
+        "//libraries/junit6",
+        "@lib//:jimfs",
+        "//platform/testFramework/junit5",
+    ],
+)
+### auto-generated section `build intellij.platform.testFramework.junit5.jimfs` end
+
+### auto-generated section `iml intellij.platform.testFramework.junit5.jimfs` start
+exports_files(
+    [
+        "intellij.platform.testFramework.junit5.jimfs.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.testFramework.junit5.jimfs` end
+
+### auto-generated section `build intellij.platform.testFramework.junit5.jimfs.tests` start
+jvm_library(
+    name = "junit5-jimfs-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "tests/**/*.kt",
+            "tests/**/*.java",
+            "tests/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.testFramework.junit5.jimfs.tests",
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/junit6",
+        "//platform/testFramework",
+        "//platform/testFramework/junit5",
+        "//platform/util-ex",
+        "//platform/testFramework/junit5.jimfs",
+    ],
+)
+### auto-generated section `build intellij.platform.testFramework.junit5.jimfs.tests` end
+
+### auto-generated section `iml intellij.platform.testFramework.junit5.jimfs.tests` start
+exports_files(
+    [
+        "intellij.platform.testFramework.junit5.jimfs.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.testFramework.junit5.jimfs.tests` end

@@ -1,0 +1,28 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `build intellij.mps.resources` start
+jvm_library(
+    name = "mps-resources",
+    srcs = glob(
+        [],
+        allow_empty = True,
+    ),
+    module_name = "intellij.mps.resources",
+    resource_strip_prefix = "src",
+    resources = glob(
+        ["src/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `build intellij.mps.resources` end
+
+### auto-generated section `iml intellij.mps.resources` start
+exports_files(
+    [
+        "intellij.mps.resources.iml",
+        "src/META-INF/plugin.xml",
+        "src/idea/MPSApplicationInfo.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.mps.resources` end

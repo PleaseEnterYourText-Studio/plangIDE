@@ -1,0 +1,113 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//build:compiler-options.bzl", "create_kotlinc_options")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.python.codeInsight` start
+content_module_jar(
+    libraries = [
+        # do not sort,
+        "@lib//:python-code_insight-ml-completion-prev-exprs-models",
+        "@lib//:python-code_insight-completion-ranking-python-with-full-line",
+    ],
+    module = ":codeInsight",
+)
+### auto-generated section `dev intellij.python.codeInsight` end
+
+### auto-generated section `build intellij.python.codeInsight` start
+create_kotlinc_options(
+    name = "custom_codeInsight",
+    warn = "error",
+    x_warning_level = ["DEPRECATION:warning"],
+)
+
+jvm_library(
+    name = "codeInsight",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = ":custom_codeInsight",
+    module_name = "intellij.python.codeInsight",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/fastutil",
+        "//libraries/gson",
+        "//libraries/guava",
+        "//libraries/jetbrains/annotations",
+        "//libraries/jsoup",
+        "//libraries/jspecify",
+        "//libraries/kotlinx/coroutines/core",
+        "//libraries/stream",
+        "//platform/analysis-api:analysis",
+        "//platform/analysis-impl",
+        "//platform/code-style-api:codeStyle",
+        "//platform/code-style-impl:codeStyle-impl",
+        "//platform/util/concurrency",
+        "//platform/core-api:core",
+        "//platform/core-impl",
+        "//platform/core-ui",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/eel-nioFs",
+        "//platform/execution-impl",
+        "//platform/extensions",
+        "//platform/foldings",
+        "//platform/platform-api:ide",
+        "//platform/ide-core",
+        "//platform/ide-core-impl",
+        "//platform/platform-impl:ide-impl",
+        "//platform/platform-impl/internal",
+        "//platform/indexing-api:indexing",
+        "//platform/indexing-impl",
+        "//platform/lang-api:lang",
+        "//platform/lang-core",
+        "//platform/lang-impl",
+        "//platform/projectModel-api:projectModel",
+        "//platform/refactoring",
+        "//platform/statistics",
+        "//platform/util",
+        "//platform/util/jdom",
+        "//platform/util-rt",
+        "//platform/util:util-ui",
+        "//platform/vcs-api:vcs",
+        "//platform/workspace/jps",
+        "//platform/forms_rt:java-guiForms-rt",
+        "//RegExpSupport:regexp",
+        "//xml/xml-psi-impl:psi-impl",
+        "//python/python-ast:ast",
+        "//python/openapi:community",
+        "//python/python-core-impl:community-core-impl",
+        "//python/python-parser:parser",
+        "//python/python-psi-api:psi",
+        "//python/python-psi-impl:psi-impl",
+        "//python/python-pyproject:pyproject",
+        "//python/python-sdk/backend",
+        "//python/python-syntax:syntax",
+        "//python/python-syntax-core:syntax-core",
+        "@lib//:python-code_insight-ml-completion-prev-exprs-models",
+        "@lib//:python-code_insight-completion-ranking-python-with-full-line",
+    ],
+)
+### auto-generated section `build intellij.python.codeInsight` end
+
+### auto-generated section `iml intellij.python.codeInsight` start
+exports_files(
+    [
+        "intellij.python.codeInsight.iml",
+        "resources/colorSchemes/PythonDarcula.xml",
+        "resources/colorSchemes/PythonDefault.xml",
+        "resources/intellij.python.codeInsight.xml",
+        "resources/liveTemplates/Python.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.python.codeInsight` end

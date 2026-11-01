@@ -1,0 +1,57 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.platform.find` start
+content_module_jar(module = ":find")
+### auto-generated section `dev intellij.platform.find` end
+
+### auto-generated section `build intellij.platform.find` start
+jvm_library(
+    name = "find",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.find",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/util:util-ui",
+        "//platform/kernel/rpc.lite",
+        "//platform/runtime/product",
+        "@lib//:kotlin-stdlib",
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//platform/indexing-api:indexing",
+        "//platform/project/shared:project",
+        "//libraries/kotlinx/serialization/core",
+        "//platform/core-impl",
+        "//platform/lang-impl",
+        "//platform/usageView",
+        "//platform/core-ui",
+        "//platform/platform-impl:ide-impl",
+        "//platform/ide-core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/util/coroutines",
+        "//platform/platform-impl/rpc",
+    ],
+)
+### auto-generated section `build intellij.platform.find` end
+
+### auto-generated section `iml intellij.platform.find` start
+exports_files(
+    [
+        "intellij.platform.find.iml",
+        "resources/intellij.platform.find.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.find` end

@@ -1,0 +1,53 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `build intellij.java.testFramework.shared` start
+jvm_library(
+    name = "shared",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.java.testFramework.shared",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    exports = ["//java/java-impl:impl"],
+    deps = [
+        # do not sort,
+        "//java/openapi:java",
+        "//platform/core-api:core",
+        "//java/java-psi-api:psi",
+        "//jps/model-api:model",
+        "//platform/lang-core",
+        "//platform/projectModel-api:projectModel",
+        "//platform/util",
+        "//libraries/junit4",
+        "//platform/util/jdom",
+        "//platform/lang-api:lang",
+        "//java/java-impl:impl",
+        "//platform/testFramework",
+        "//java/idea-ui:ui",
+        "//platform/execution",
+        "//libraries/groovy",
+        "//java/java-syntax:syntax",
+        "//java/java-frontback-psi-api:frontback-psi",
+        "//platform/editor-ui-api:editor-ui",
+    ],
+)
+### auto-generated section `build intellij.java.testFramework.shared` end
+
+### auto-generated section `iml intellij.java.testFramework.shared` start
+exports_files(
+    [
+        "intellij.java.testFramework.shared.iml",
+        "resources/intellij.java.testFramework.shared.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.java.testFramework.shared` end

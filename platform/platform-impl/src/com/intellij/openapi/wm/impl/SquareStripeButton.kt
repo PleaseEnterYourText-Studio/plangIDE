@@ -1,0 +1,452 @@
+// Copyright 2000-2024 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+@file:Suppress("JAVA_MODULE_DOES_NOT_EXPORT_PACKAGE")
+package com.intellij.openapi.wm.impl
+
+import com.intellij.icons.AllIcons
+import com.intellij.ide.HelpTooltip
+import com.intellij.ide.actions.ActivateToolWindowAction
+import com.intellij.ide.actions.ToolWindowMoveAction
+import com.intellij.ide.ui.UISettings
+import com.intellij.ide.ui.UISettingsListener
+import com.intellij.openapi.actionSystem.ActionButtonComponent
+import com.intellij.openapi.actionSystem.ActionGroup
+import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.ActionPlaces
+import com.intellij.openapi.actionSystem.ActionUpdateThread
+import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.DataSink
+import com.intellij.openapi.actionSystem.PlatformDataKeys
+import com.intellij.openapi.actionSystem.Presentation
+import com.intellij.openapi.actionSystem.Toggleable
+import com.intellij.openapi.actionSystem.UiDataProvider
+import com.intellij.openapi.actionSystem.impl.ActionButton
+import com.intellij.openapi.project.DumbAwareToggleAction
+import com.intellij.openapi.util.ScalableIcon
+import com.intellij.openapi.wm.ToolWindowAnchor
+import com.intellij.toolWindow.ResizeStripeManager
+import com.intellij.toolWindow.StripeButtonUi
+import com.intellij.toolWindow.ToolWindowEventSource
+import com.intellij.toolWindow.ToolWindowLeftToolbar
+import com.intellij.toolWindow.ToolWindowRightToolbar
+import com.intellij.toolWindow.ToolWindowToolbar
+import com.intellij.toolWindow.extendedToolWindowsUi.ToolWindowHorizontalToolbar
+import com.intellij.toolWindow.extendedToolWindowsUi.ToolWindowStripeExtension
+import com.intellij.ui.ColorUtil
+import com.intellij.ui.ComponentUtil
+import com.intellij.ui.MouseDragHelper
+import com.intellij.ui.PopupHandler
+import com.intellij.ui.RelativeFont
+import com.intellij.ui.icons.HoledIcon
+import com.intellij.ui.icons.IconReplacer
+import com.intellij.ui.icons.loadIconCustomVersionOrScale
+import com.intellij.ui.icons.toStrokeIcon
+import com.intellij.ui.paint.use
+import com.intellij.ui.paint.useCopy
+import com.intellij.ui.scale.JBUIScale
+import com.intellij.util.concurrency.SynchronizedClearableLazy
+import com.intellij.util.ui.JBUI
+import com.intellij.util.ui.UIUtil
+import java.awt.Color
+import java.awt.Component
+import java.awt.Dimension
+import java.awt.GradientPaint
+import java.awt.Graphics
+import java.awt.Rectangle
+import java.awt.event.MouseEvent
+import java.awt.image.BufferedImage
+import java.util.function.Supplier
+import javax.swing.Icon
+import javax.swing.UIManager
+
+internal abstract class AbstractSquareStripeButton(
+  action: AnAction, presentation: Presentation,
+  minimumSize: Supplier<Dimension>? = null
+) :
+  ActionButton(action, presentation, ActionPlaces.TOOLWINDOW_TOOLBAR_BAR, minimumSize ?: Supplier { getStripeToolbarButtonSize(false) }) {
+
+  protected fun doInit(popupBuilder: () -> ActionGroup) {
+    setLook(SquareStripeButtonLook(this))
+    addMouseListener(object : PopupHandler() {
+      override fun invokePopup(component: Component, x: Int, y: Int) {
+        ResizeStripeManager.showPopup(popupBuilder.invoke(), component, x, y)
+      }
+    })
+  }
+
+  fun paintDraggingButton(g: Graphics, toolbarAnchor: ToolWindowAnchorEnum) {
+    (buttonLook as SquareStripeButtonLook).paintDraggingButton(g, toolbarAnchor)
+  }
+}
+
+/**
+ * With [syncsOnFirstUpdate], the first update, which [addNotify] runs, only applies the state of the tool window to the presentation.
+ * The registration batch of the button refreshes its tooltip and icon later, see `ToolWindowSetInitializer.postEntryProcessing`,
+ * and the look reads the state of the tool window when it paints, so the full update would only build a data context for nothing.
+ */
+internal class SquareStripeButton(val toolWindow: ToolWindowImpl, private var syncsOnFirstUpdate: Boolean = false) :
+  AbstractSquareStripeButton(SquareAnActionButton(toolWindow), createPresentation(toolWindow), null), UISettingsListener, UiDataProvider {
+
+  companion object {
+    private const val POPUP_GROUP_ID = "ToolWindowStripeButtonPopup"
+
+    fun createMoveGroup(): ToolWindowMoveAction.Group = ToolWindowMoveAction.Group()
+  }
+
+  private var myShowName = false
+
+  init {
+    doInit { ActionManager.getInstance().getAction(POPUP_GROUP_ID) as ActionGroup }
+    MouseDragHelper.setComponentDraggable(this, true)
+    setLook(createSquareStripeButtonLook())
+  }
+
+  override fun uiDataSnapshot(sink: DataSink) {
+    sink[PlatformDataKeys.TOOL_WINDOW] = toolWindow
+  }
+
+  override fun uiSettingsChanged(uiSettings: UISettings) {
+    (buttonLook as? UISettingsListener)?.uiSettingsChanged(uiSettings)
+  }
+
+  override fun paintButtonLook(g: Graphics) {
+    val look = buttonLook
+
+    if (look is SquareStripeButtonLookExtension) {
+      look.paintButtonLook(g)
+    } else {
+      super.paintButtonLook(g)
+    }
+  }
+
+  override fun updateUI() {
+    super.updateUI()
+
+    myPresentation.icon = scaleIcon((toolWindow.icon ?: AllIcons.Toolbar.Unknown) as ScalableIcon)
+    myPresentation.isEnabledAndVisible = true
+  }
+
+  fun updatePresentation() {
+    updateToolTipText()
+
+    myPresentation.icon = scaleIcon((toolWindow.icon ?: AllIcons.Toolbar.Unknown) as ScalableIcon)
+  }
+
+  override fun update() {
+    if (!syncsOnFirstUpdate) {
+      super.update()
+      return
+    }
+
+    syncsOnFirstUpdate = false
+    // what `SquareAnActionButton.isSelected` sets; the icon is the scaled icon of the tool window that the presentation supplies
+    myPresentation.isVisible = toolWindow.isShowStripeButton && toolWindow.isAvailable
+    Toggleable.setSelected(myPresentation, toolWindow.isVisible)
+    updateIcon()
+  }
+
+  fun isHovered(): Boolean = myRollover
+
+  fun isFocused(): Boolean = toolWindow.isActive
+
+  fun resetDrop() {
+    resetMouseState()
+  }
+
+  override fun updateToolTipText() {
+    HelpTooltip()
+      .setPlainTextTitle(toolWindow.stripeTitleProvider)
+      .setLocation(getAlignment(toolWindow.anchor, toolWindow.isSplitMode))
+      .setShortcut(ActionManager.getInstance().getKeyboardShortcut(ActivateToolWindowAction.Manager.getActionIdForToolWindow(toolWindow.id)))
+      .setInitialDelay(0)
+      .setHideDelay(0)
+      .installOn(this)
+    HelpTooltip.setMasterPopupOpenCondition(this) { !((parent as? AbstractDroppableStripe)?.isDroppingButton() ?: false) }
+
+    setOrUpdateShowName(ResizeStripeManager.isShowNames())
+  }
+
+  override fun checkSkipPressForEvent(e: MouseEvent): Boolean = e.button != MouseEvent.BUTTON1
+
+  private fun getAlignment(anchor: ToolWindowAnchor, splitMode: Boolean): HelpTooltip.Alignment {
+    return when (anchor.toEnum()) {
+      ToolWindowAnchorEnum.RIGHT -> HelpTooltip.Alignment.LEFT
+      ToolWindowAnchorEnum.LEFT -> HelpTooltip.Alignment.RIGHT
+      ToolWindowAnchorEnum.TOP -> HelpTooltip.Alignment.BOTTOM // Only with the ToolWindowStripeExtension
+      ToolWindowAnchorEnum.BOTTOM,
+        -> {
+        if (ToolWindowStripeExtension.exists) HelpTooltip.Alignment.TOP
+        else {
+          if (splitMode) HelpTooltip.Alignment.LEFT else HelpTooltip.Alignment.RIGHT
+        }
+      }
+    }
+  }
+
+  fun setOrUpdateShowName(value: Boolean) {
+    if (myShowName != value) {
+      myShowName = value
+
+      setLook(createSquareStripeButtonLook())
+      revalidate()
+      repaint()
+    }
+  }
+
+  override fun getPreferredSize(): Dimension {
+    val size = super.getPreferredSize()
+    val look = buttonLook
+
+    return if (look is SquareStripeButtonLookExtension) look.getPreferredSize(size)
+    else size
+  }
+
+  private fun createSquareStripeButtonLook(): SquareStripeButtonLook {
+    return if (ToolWindowStripeExtension.exists) {
+      ToolWindowStripeExtension.createSquareStripeButtonLook(this)
+    }
+    else {
+      if (myShowName) SquareStripeButtonLookHorizontalText(this) else SquareStripeButtonLook(this)
+    }
+  }
+}
+
+internal abstract class SquareStripeButtonLookExtension(protected val button: SquareStripeButton): SquareStripeButtonLook(button) {
+
+  abstract fun getPreferredSize(size: Dimension): Dimension
+
+  protected val toolWindow: ToolWindowImpl
+    get() = button.toolWindow
+
+  fun paintButtonLook(g: Graphics) {
+    paintBackground(g, button)
+    paintIcon(g, button, button.icon)
+
+    val color = if (button.popState == ActionButtonComponent.PUSHED) JBUI.CurrentTheme.ActionButton.pressedBorder()
+    else JBUI.CurrentTheme.ActionButton.hoverBorder()
+
+    if (color.alpha == 255) {
+      paintBorder(g, button)
+    }
+  }
+
+  protected fun getBackgroundColor(): Color {
+    if (button.isFocused()) {
+      return StripeButtonUi.SELECTED_BACKGROUND_COLOR
+    }
+    if (toolWindow.isVisible) {
+      return JBUI.CurrentTheme.ActionButton.pressedBackground()
+    }
+    if (button.isHovered()) {
+      return JBUI.CurrentTheme.ActionButton.hoverBackground()
+    }
+    return button.background
+  }
+}
+
+private class SquareStripeButtonLookHorizontalText(button: SquareStripeButton): SquareStripeButtonLookExtension(button) {
+
+  private var myPressedColor: Color? = null
+  private var myPressedColorKey: String? = null
+  private val iconLabelGap: Int
+    get() = JBUI.scale(3)
+
+  private fun getForegroundColor(): Color {
+    return if (toolWindow.isActive) StripeButtonUi.SELECTED_FOREGROUND_COLOR else StripeButtonUi.FOREGROUND_COLOR
+  }
+
+  override fun paintIcon(g: Graphics?, actionButton: ActionButtonComponent?, icon: Icon) {
+    // because SquareStripeButtonLook doesn't know about name and pref size contains it height we need change height for right icon layout
+    val buttonWrapper = object : ActionButtonComponent {
+      override fun getPopState() = actionButton!!.popState
+
+      override fun getWidth() = actionButton!!.width
+
+      override fun getHeight() = button.getPreferredSize().height - getLabelHeightWithGap()
+
+      override fun getInsets() = actionButton!!.insets
+    }
+    val color = UIManager.getColor("ToolWindow.Button.selectedForeground")
+    val renderedIcon = if (!toolWindow.isActive || color == null) icon else toStrokeIcon(icon, color)
+    super.paintIcon(g, buttonWrapper, renderedIcon)
+    val iconPosition = getIconPosition(buttonWrapper, renderedIcon)
+    iconPosition.y += renderedIcon.iconHeight
+
+    val f = getTextFont()
+    val fm = button.getFontMetrics(f)
+    val texts = getStripeSplitText()
+    val insets = button.insets
+    val textPadding = if (UISettings.getInstance().compactMode) 4 else 6
+    val textOffset = getTextOffset(button)
+    val x = insets.left + JBUI.scale(textPadding + textOffset)
+    var y = iconPosition.y + iconLabelGap
+    val totalWidth = button.width - insets.left - insets.right - JBUI.scale(textPadding * 2)
+    val textHeight = fm.height
+    var firstX: Int? = null
+
+    for (text in texts) {
+      val textWidth = UIUtil.computeStringWidth(button, fm, text)
+
+      g!!.useCopy { g2d ->
+        g2d.color = getForegroundColor()
+        g2d.font = f
+        UISettings.setupAntialiasing(g2d)
+        if (firstX == null || texts[0].length != texts[1].length) {
+          UIUtil.drawCenteredString(g2d, Rectangle(x, y, totalWidth, textHeight), text)
+          firstX = x.coerceAtLeast(x + (totalWidth - fm.stringWidth(text) - 1) / 2)
+        }
+        else {
+          g2d.drawString(text, firstX, y.coerceAtLeast(y + textHeight / 2 + fm.ascent * 2 / 5))
+        }
+
+        if (textWidth > totalWidth) {
+          val gradientWidth = JBUI.scale(3)
+          val gradientX = x + totalWidth - gradientWidth
+          var bgColor = getBackgroundColor()
+
+          // special case if we have hover/pressed color (0,0,0,alpha) or (255,255,255,alpha) that we don't know result bg color and will need calculate it
+          if ((bgColor.red == 0 && bgColor.green == 0 && bgColor.blue == 0 ||
+               bgColor.red == 255 && bgColor.green == 255 && bgColor.blue == 255) && bgColor.alpha < 255) {
+            val pressedColorKey = "${button.background.rgb}:${bgColor.rgb}"
+            if (myPressedColor == null || pressedColorKey != myPressedColorKey) {
+              val image = UIUtil.createImage(button, 4, 4, BufferedImage.TYPE_INT_ARGB)
+              image.createGraphics().use { imageG ->
+                imageG.color = button.background
+                imageG.fill(Rectangle(0, 0, 4, 4))
+                imageG.color = bgColor
+                imageG.fill(Rectangle(0, 0, 4, 4))
+              }
+              @Suppress("UseJBColor")
+              myPressedColor = Color(image.getRGB(2, 2))
+              myPressedColorKey = pressedColorKey
+            }
+            bgColor = myPressedColor!!
+          }
+          g2d.paint = GradientPaint(gradientX.toFloat(), y.toFloat(), ColorUtil.withAlpha(bgColor, 0.4),
+                                    (gradientX + gradientWidth).toFloat(), y.toFloat(), bgColor)
+
+          g2d.fill(Rectangle(gradientX, y, gradientWidth, textHeight))
+        }
+
+        y += textHeight
+      }
+    }
+  }
+
+  override fun getPreferredSize(size: Dimension): Dimension {
+    size.height += getLabelHeightWithGap()
+    return size
+  }
+
+  private fun getLabelHeightWithGap(): Int {
+    return iconLabelGap + button.getFontMetrics(getTextFont()).height * getStripeSplitText().size
+  }
+
+  private fun getTextFont() = RelativeFont.TINY.derive(button.font)
+
+  private fun getStripeSplitText(): List<String> {
+    val text = (toolWindow.stripeShortTitleProvider?.get() ?: toolWindow.stripeTitleProvider.get()).trim()
+    return text.split(" ", limit = 2)
+  }
+}
+
+private fun createPresentation(toolWindow: ToolWindowImpl): Presentation {
+  val presentation = Presentation(toolWindow.stripeTitleProvider)
+  presentation.iconSupplier = SynchronizedClearableLazy {
+    scaleIcon((toolWindow.icon ?: AllIcons.Toolbar.Unknown) as ScalableIcon)
+  }
+  presentation.isEnabledAndVisible = true
+  return presentation
+}
+
+internal fun getStripeToolbarButtonIconSize(): Int {
+  val extension = ToolWindowStripeExtension.getInstance() ?: return JBUI.CurrentTheme.Toolbar.stripeToolbarButtonIconSize()
+  return JBUIScale.scale(extension.getStripeIconUnscaledSize())
+}
+
+internal fun getStripeToolbarButtonSize(moreButton: Boolean): Dimension {
+  val extension = ToolWindowStripeExtension.getInstance()
+  return if (extension == null) JBUI.CurrentTheme.Toolbar.stripeToolbarButtonSize() else extension.getButtonMinSize(moreButton)
+}
+
+private fun scaleIcon(icon: ScalableIcon): Icon {
+  val iconSize = getStripeToolbarButtonIconSize()
+  return if (icon is HoledIcon && icon.icon is ScalableIcon) {
+    icon.replaceBy(object : IconReplacer {
+      override fun replaceIcon(icon: Icon): Icon {
+        return loadIconCustomVersionOrScale(icon = icon as ScalableIcon, size = iconSize)
+      }
+    })
+  }
+  else {
+    loadIconCustomVersionOrScale(icon = icon, size = iconSize)
+  }
+}
+
+private class SquareAnActionButton(private val window: ToolWindowImpl)
+  : DumbAwareToggleAction(window.stripeTitleProvider) {
+
+  override fun getActionUpdateThread() = ActionUpdateThread.EDT
+
+  override fun isSelected(e: AnActionEvent): Boolean {
+    val icon = window.icon ?: AllIcons.Toolbar.Unknown
+    e.presentation.icon = if (icon is ScalableIcon) scaleIcon(icon) else icon
+    e.presentation.isVisible = window.isShowStripeButton && window.isAvailable
+    return window.isVisible
+  }
+
+  override fun setSelected(e: AnActionEvent, state: Boolean) {
+    val project = e.project
+    if (project == null || project.isDisposed) {
+      return
+    }
+
+    val manager = window.toolWindowManager
+    if (state) {
+      manager.activated(window, ToolWindowEventSource.SquareStripeButton)
+    }
+    else {
+      manager.hideToolWindow(id = window.id,
+                             hideSide = false,
+                             moveFocus = true,
+                             removeFromStripe = false,
+                             source = ToolWindowEventSource.SquareStripeButton)
+    }
+  }
+}
+
+internal fun Component.getToolbarAnchor(): ToolWindowAnchorEnum? {
+  val stripe = ComponentUtil.getParentOfType(ToolWindowToolbar::class.java, this)
+
+  return when (stripe) {
+    is ToolWindowLeftToolbar -> ToolWindowAnchorEnum.LEFT
+    is ToolWindowRightToolbar -> ToolWindowAnchorEnum.RIGHT
+    is ToolWindowHorizontalToolbar -> {
+      when (stripe.anchor) {
+        ToolWindowAnchor.TOP -> ToolWindowAnchorEnum.TOP
+        ToolWindowAnchor.BOTTOM -> ToolWindowAnchorEnum.BOTTOM
+        else -> null
+      }
+    }
+    else -> null
+  }
+}
+
+/**
+ * A helper enum to avoid dead code in when/if constructions
+ */
+internal enum class ToolWindowAnchorEnum(val toolWindowAnchor: ToolWindowAnchor) {
+  TOP(ToolWindowAnchor.TOP),
+  LEFT(ToolWindowAnchor.LEFT),
+  BOTTOM(ToolWindowAnchor.BOTTOM),
+  RIGHT(ToolWindowAnchor.RIGHT)
+}
+
+internal fun ToolWindowAnchorEnum.isHorizontal(): Boolean {
+  return this == ToolWindowAnchorEnum.TOP || this == ToolWindowAnchorEnum.BOTTOM
+}
+
+internal fun ToolWindowAnchor.toEnum(): ToolWindowAnchorEnum {
+  return ToolWindowAnchorEnum.entries.find { it.toolWindowAnchor === this }
+         ?: throw IllegalStateException("Unknown anchor: $this")
+}

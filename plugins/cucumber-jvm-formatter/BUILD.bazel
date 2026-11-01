@@ -1,0 +1,45 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library", "jvm_provided_library")
+
+### auto-generated section `build intellij.cucumber.jvmFormatter` start
+jvm_provided_library(
+    name = "libraries_cucumber-core1_provided",
+    lib = "//libraries/cucumber-core1",
+)
+
+jvm_provided_library(
+    name = "libraries_junit4_provided",
+    lib = "//libraries/junit4",
+)
+
+jvm_library(
+    name = "cucumber-jvmFormatter",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = "@community//:k8",
+    module_name = "intellij.cucumber.jvmFormatter",
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:cucumber-core-2-provided",
+        "//plugins/junit_rt:junit-rt",
+        "//java/java-runtime:rt",
+        ":libraries_cucumber-core1_provided",
+        ":libraries_junit4_provided",
+    ],
+)
+### auto-generated section `build intellij.cucumber.jvmFormatter` end
+
+### auto-generated section `iml intellij.cucumber.jvmFormatter` start
+exports_files(
+    [
+        "intellij.cucumber.jvmFormatter.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.cucumber.jvmFormatter` end

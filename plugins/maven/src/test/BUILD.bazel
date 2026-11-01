@@ -1,0 +1,173 @@
+load("@community//build:bazel_targets_json.bzl", "current_bazel_targets_json")
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+BAZEL_TARGETS_JSON = current_bazel_targets_json()
+
+jps_test(
+    name = "maven-tests_test",
+    timeout = "short",
+    data = [
+        BAZEL_TARGETS_JSON,
+        "@community//java/java-tests:testData",
+    ],
+    jvm_flags = [
+        "-Dintellij.build.bazel.targets.json.file=$(rlocationpath %s)" % BAZEL_TARGETS_JSON,
+    ],
+    tags = ["community-aggregator"],
+    runtime_deps = [":maven-tests_test_lib"],
+)
+### skip generation section `test intellij.maven.tests`
+
+### auto-generated section `build intellij.maven.tests` start
+jvm_library(
+    name = "maven-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "java/**/*.kt",
+            "java/**/*.java",
+            "java/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.maven.tests",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//plugins/maven",
+        "//plugins/maven/delegation/junit",
+        "//plugins/maven/delegation/testng",
+        "//plugins/testng",
+        "//plugins/junit",
+        "//platform/testRunner",
+        "//platform/smRunner",
+        "//plugins/maven/plugin",
+        "//java/plugin",
+        "//plugins/maven/testFramework",
+        "//platform/analysis-api:analysis",
+        "//platform/code-style-api:codeStyle",
+        "//platform/core-api:core",
+        "//platform/core-ui",
+        "//platform/core-impl",
+        "//platform/editor-ui-api:editor-ui",
+        "//xml/xml-analysis-api:analysis",
+        "//platform/execution-impl",
+        "//platform/external-system-impl:externalSystem-impl",
+        "//jps/model-api:model",
+        "//platform/lang-core",
+        "//platform/projectModel-api:projectModel",
+        "//java/java-syntax:syntax",
+        "//platform/refactoring",
+        "//platform/structure-view-impl:structureView",
+        "//platform/testFramework",
+        "//platform/testFramework/junit5",
+        "//java/testFramework",
+        "//java/java-psi-api:psi",
+        "//platform/workspace/storage",
+        "//libraries/assertj-core",
+        "//platform/external-system-api/dependency-updater",
+        "//platform/external-system-impl:externalSystem-tests_test_lib",
+        "//plugins/properties/properties-psi-api:psi",
+        "//spellchecker",
+        "//plugins/grazie/src:core",
+        "//plugins/grazie/src/test:grazie-tests_test_lib",
+        "//platform/vcs-api:vcs",
+        "//plugins/groovy",
+        "//plugins/groovy/jps-plugin:jps",
+        "//platform/platform-util-io:ide-util-io",
+        "//platform/ide-core",
+        "//jps/model-impl",
+        "//platform/util/progress",
+        "//platform/workspace/jps",
+        "//libraries/guava",
+        "//plugins/maven/artifact-resolver/common",
+        "//libraries/mockito",
+        "//plugins/maven/jps",
+        "//plugins/maven/maven3-server-common:server-m3-common",
+        "//platform/util/jdom",
+        "//platform/util:util-ui",
+        "//platform/util-ex",
+        "//libraries/kotlinx/coroutines/core",
+        "//platform/code-style-impl:codeStyle-impl",
+        "//platform/external-system-api/testFramework",
+        "//platform/backend/workspace",
+        "//java/java-impl:impl",
+        "//platform/backend/observation",
+        "//libraries/hash4j",
+        "//libraries/kotlin/reflect",
+        "//libraries/kotlinx/serialization/core",
+        "//platform/statistics/testFramework",
+        "//platform/statistics",
+        "//xml/xml-psi-api:psi",
+        "//platform/xdebugger-api:debugger",
+        "//libraries/hamcrest",
+        "//platform/testFramework/eelJava",
+        "//platform/eel-provider",
+        "//xml/xml-psi-impl:psi-impl",
+        "//xml/xml-ui-common:ui-common",
+        "//platform/execution",
+        "//plugins/repository-search/completion",
+        "//plugins/maven/completion",
+        "//plugins/maven/jps/ide",
+        "//xml/xml-analysis-impl:analysis-impl",
+        "//platform/testFramework/junit5/codeInsight",
+        "//platform/usageView",
+        "//libraries/junit6",
+        "//libraries/junit6-params",
+    ],
+)
+### auto-generated section `build intellij.maven.tests` end
+
+### auto-generated section `iml intellij.maven.tests` start
+exports_files(
+    [
+        "intellij.maven.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.maven.tests` end
+
+### auto-generated section `build intellij.maven.tests.main` start
+jvm_library(
+    name = "maven-tests-main_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "main/testSrc/**/*.kt",
+            "main/testSrc/**/*.java",
+            "main/testSrc/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.maven.tests.main",
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/bootstrap/coroutine",
+        "//plugins/maven/src/test:maven-tests_test_lib",
+        "//plugins/maven/src/integrationTest:maven-integration-tests_test_lib",
+        "//plugins/maven/groovy:groovy-tests_test_lib",
+    ],
+)
+### auto-generated section `build intellij.maven.tests.main` end
+
+### auto-generated section `iml intellij.maven.tests.main` start
+exports_files(
+    [
+        "intellij.maven.tests.main.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.maven.tests.main` end
+
+### auto-generated section `test intellij.maven.tests.main` start
+jps_test(
+    name = "maven-tests-main_test",
+    runtime_deps = [":maven-tests-main_test_lib"],
+)
+### auto-generated section `test intellij.maven.tests.main` end

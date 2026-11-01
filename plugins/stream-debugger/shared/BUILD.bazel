@@ -1,0 +1,55 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.debugger.streams.shared` start
+content_module_jar(module = ":shared")
+### auto-generated section `dev intellij.debugger.streams.shared` end
+
+### auto-generated section `build intellij.debugger.streams.shared` start
+jvm_library(
+    name = "shared",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.debugger.streams.shared",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+        allow_empty = True,
+        exclude = ["resources/**/icon-robots.txt"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/kernel/rpc",
+        "//platform/util",
+        "//platform/core-api:core",
+        "@lib//:kotlin-stdlib",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/platform-impl/rpc",
+        "//libraries/kotlinx/coroutines/core",
+        "//libraries/kotlinx/serialization/core",
+        "//libraries/kotlinx/serialization/json",
+        "//platform/xdebugger-impl:debugger-impl",
+        "//platform/xdebugger-impl/rpc",
+        "//platform/xdebugger-impl/shared",
+        "//platform/xdebugger-impl/ui",
+        "//platform/statistics",
+    ],
+)
+### auto-generated section `build intellij.debugger.streams.shared` end
+
+### auto-generated section `iml intellij.debugger.streams.shared` start
+exports_files(
+    [
+        "intellij.debugger.streams.shared.iml",
+        "resources/intellij.debugger.streams.shared.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.debugger.streams.shared` end

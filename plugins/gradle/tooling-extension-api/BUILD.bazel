@@ -1,0 +1,47 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//build:compiler-options.bzl", "create_kotlinc_options")
+
+### auto-generated section `build intellij.gradle.toolingExtension` start
+create_kotlinc_options(
+    name = "custom_toolingExtension",
+    jvm_target = "8",
+    opt_in = ["org.jetbrains.kotlin.utils.addToStdlib.UnsafeCastFunction"],
+)
+
+jvm_library(
+    name = "toolingExtension",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = ":custom_toolingExtension",
+    module_name = "intellij.gradle.toolingExtension",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/jetbrains/annotations",
+        "//platform/external-system-rt:externalSystem-rt",
+        "//platform/util-rt",
+        "//libraries/gradle",
+    ],
+)
+### auto-generated section `build intellij.gradle.toolingExtension` end
+
+### auto-generated section `iml intellij.gradle.toolingExtension` start
+exports_files(
+    [
+        "intellij.gradle.toolingExtension.iml",
+        "resources/intellij.gradle.toolingExtension.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.gradle.toolingExtension` end

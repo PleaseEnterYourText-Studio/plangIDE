@@ -1,0 +1,72 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `build intellij.python.black.tests` start
+jvm_library(
+    name = "tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "testSrc/**/*.kt",
+            "testSrc/**/*.java",
+            "testSrc/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.python.black.tests",
+    resource_strip_prefix = "testResources",
+    resources = glob(
+        ["testResources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/jetbrains/annotations",
+        "//libraries/junit6",
+        "//libraries/kotlinx/coroutines/core",
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//platform/core-ui",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/platform-api:ide",
+        "//platform/ide-core",
+        "//platform/ide-core-impl",
+        "//platform/lang-api:lang",
+        "//platform/lang-core",
+        "//platform/lang-impl",
+        "//platform/projectModel-api:projectModel",
+        "//platform/testFramework",
+        "//platform/testFramework/common",
+        "//platform/testFramework/junit5",
+        "//platform/util",
+        "//python/python-black:black",
+        "//python/common",
+        "//python/openapi:community",
+        "//python:python-community-impl",
+        "//python/junit5Tests-framework:community-junit5Tests-framework_test_lib",
+        "//python/python-psi-api:psi",
+        "//python/python-pyproject:pyproject",
+        "//python/python-pytools/backend",
+        "//python/python-pytools/frontend",
+        "//python/python-sdk/backend",
+        "//python/python-test-env/junit5:junit5_test_lib",
+    ],
+)
+### auto-generated section `build intellij.python.black.tests` end
+
+### auto-generated section `iml intellij.python.black.tests` start
+exports_files(
+    [
+        "intellij.python.black.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.python.black.tests` end
+
+### auto-generated section `test intellij.python.black.tests` start
+jps_test(
+    name = "tests_test",
+    runtime_deps = [":tests_test_lib"],
+)
+### auto-generated section `test intellij.python.black.tests` end

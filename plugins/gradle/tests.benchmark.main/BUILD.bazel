@@ -1,0 +1,34 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `build intellij.gradle.tests.benchmark.main` start
+jvm_library(
+    name = "tests.benchmark.main_test_lib",
+    testonly = True,
+    srcs = glob(
+        [],
+        allow_empty = True,
+    ),
+    module_name = "intellij.gradle.tests.benchmark.main",
+    resource_strip_prefix = "testResources",
+    resources = glob(
+        ["testResources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//platform/bootstrap/coroutine",
+        "//plugins/gradle/tests.benchmark:tests.benchmark_test_lib",
+        "//plugins/gradle/java/tests.benchmark:tests.benchmark_test_lib",
+        "//plugins/gradle/completion/kotlin/tests.benchmark:tests.benchmark_test_lib",
+    ],
+)
+### auto-generated section `build intellij.gradle.tests.benchmark.main` end
+
+### auto-generated section `iml intellij.gradle.tests.benchmark.main` start
+exports_files(
+    [
+        "intellij.gradle.tests.benchmark.main.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.gradle.tests.benchmark.main` end

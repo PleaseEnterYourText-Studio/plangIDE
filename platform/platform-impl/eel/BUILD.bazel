@@ -1,0 +1,68 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//build:compiler-options.bzl", "create_kotlinc_options")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.platform.ide.impl.wsl` start
+content_module_jar(module = ":ide-impl-wsl")
+### auto-generated section `dev intellij.platform.ide.impl.wsl` end
+
+### auto-generated section `build intellij.platform.ide.impl.wsl` start
+create_kotlinc_options(
+    name = "custom_ide-impl-wsl",
+    opt_in = ["com.intellij.platform.eel.channels.EelDelicateApi"],
+    warn = "error",
+    x_warning_level = ["DEPRECATION:warning"],
+)
+
+jvm_library(
+    name = "ide-impl-wsl",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = ":custom_ide-impl-wsl",
+    module_name = "intellij.platform.ide.impl.wsl",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//libraries/jetbrains/annotations",
+        "@lib//:kotlin-stdlib",
+        "//platform/core-api:core",
+        "//libraries/caffeine",
+        "//platform/core-nio-fs",
+        "//platform/eel-provider",
+        "//platform/diagnostic/telemetry-impl",
+        "//platform/platform-impl:ide-impl",
+        "//platform/platform-util-io:ide-util-io",
+        "//platform/ijent",
+        "//platform/ijent/impl",
+        "//platform/execution",
+        "//platform/util-ex",
+        "//platform/util/coroutines",
+        "//platform/eel-impl",
+        "//platform/projectModel-api:projectModel",
+        "//platform/ide-core",
+        "//platform/eel-nioFs-impl",
+        "//platform/util:util-ui",
+        "//platform/util/annotations",
+    ],
+)
+### auto-generated section `build intellij.platform.ide.impl.wsl` end
+
+### auto-generated section `iml intellij.platform.ide.impl.wsl` start
+exports_files(
+    [
+        "intellij.platform.ide.impl.wsl.iml",
+        "resources/intellij.platform.ide.impl.wsl.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.ide.impl.wsl` end

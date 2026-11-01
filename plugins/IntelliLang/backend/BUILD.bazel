@@ -1,0 +1,59 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library", "jvm_provided_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.platform.langInjection.backend` start
+content_module_jar(module = ":backend")
+### auto-generated section `dev intellij.platform.langInjection.backend` end
+
+### auto-generated section `build intellij.platform.langInjection.backend` start
+jvm_provided_library(
+    name = "libraries_jetbrains_annotations_provided",
+    lib = "//libraries/jetbrains/annotations",
+)
+
+jvm_library(
+    name = "backend",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.langInjection.backend",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/core-api:core",
+        "//platform/util",
+        "//platform/analysis-impl",
+        "//platform/analysis-api:analysis",
+        "//plugins/IntelliLang:langInjection",
+        "//platform/util:util-ui",
+        "//platform/projectModel-api:projectModel",
+        "//platform/platform-api:ide",
+        "//platform/ide-core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/core-ui",
+        "@lib//:kotlin-stdlib",
+        "//platform/core-impl",
+        "//libraries/kotlinx/collections-immutable:libraries-kotlinx-collections-immutable",
+        ":libraries_jetbrains_annotations_provided",
+    ],
+)
+### auto-generated section `build intellij.platform.langInjection.backend` end
+
+### auto-generated section `iml intellij.platform.langInjection.backend` start
+exports_files(
+    [
+        "intellij.platform.langInjection.backend.iml",
+        "resources/intellij.platform.langInjection.backend.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.langInjection.backend` end

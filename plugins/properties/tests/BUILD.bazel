@@ -1,0 +1,110 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@jps_dynamic_deps_community//:targets.bzl", "BAZEL_TARGETS_JSON_COMMUNITY")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+jps_test(
+    name = "tests_test",
+    timeout = "long",
+    data = [
+        BAZEL_TARGETS_JSON_COMMUNITY,
+        "@community//java/java-tests:testData",
+    ],
+    jvm_flags = [
+        "-Dintellij.build.bazel.targets.json.file=$(rlocationpath %s)" % BAZEL_TARGETS_JSON_COMMUNITY,
+    ],
+    tags = ["community-aggregator"],
+    runtime_deps = [":tests_test_lib"],
+)
+### skip generation section `test intellij.properties.tests`
+
+### auto-generated section `build intellij.properties.tests` start
+jvm_library(
+    name = "tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "testSrc/**/*.kt",
+            "testSrc/**/*.java",
+            "testSrc/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.properties.tests",
+    visibility = ["//visibility:public"],
+    exports = ["//plugins/properties:properties-backend"],
+    runtime_deps = [
+        # do not sort,
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+        "//community-resources:customization",
+    ],
+    deps = [
+        # do not sort,
+        "//platform/analysis-api:analysis",
+        "//platform/code-style-api:codeStyle",
+        "//platform/core-api:core",
+        "//platform/diff-api:diff",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/indexing-api:indexing",
+        "//jps/model-api:model",
+        "//platform/lang-api:lang",
+        "//platform/platform-api:ide",
+        "//platform/lang-core",
+        "//platform/lang-impl",
+        "//platform/lang-impl/backend",
+        "//platform/platform-impl:ide-impl",
+        "//platform/ide-core",
+        "//platform/projectModel-api:projectModel",
+        "//platform/refactoring",
+        "//platform/structure-view-impl:structureView",
+        "//platform/testFramework",
+        "//platform/testFramework/structureView",
+        "//platform/util/diff",
+        "//platform/util:util-ui",
+        "//spellchecker",
+        "//plugins/grazie/src:core",
+        "//java/openapi:java",
+        "//xml/impl",
+        "//plugins/properties:properties-backend",
+        "//java/testFramework",
+        "//platform/platform-tests:tests_test_lib",
+        "//platform/boot",
+        "//platform/core-ui",
+        "//platform/core-impl",
+        "//plugins/properties/properties-psi-impl:backend-psi",
+        "//libraries/assertj-core",
+        "//platform/structuralsearch:structuralSearch-tests_test_lib",
+        "//plugins/properties/structuralsearch:structuralSearch",
+        "//tools/intellij.tools.ide.metrics.benchmark:ide-metrics-benchmark",
+        "//platform/diff-impl",
+        "//xml/xml-psi-api:psi",
+        "//libraries/fastutil",
+        "//libraries/kotlinx/collections-immutable:libraries-kotlinx-collections-immutable",
+        "//platform/util/concurrency",
+        "//libraries/junit4",
+        "//plugins/properties/properties-common:properties",
+        "//java/plugin",
+        "//plugins/java-i18n",
+        "//aether-dependency-resolver/plugin",
+        "//libraries/lucene.common",
+        "//platform/structure-view-impl/plugin",
+        "//platform/todo/plugin",
+        "//platform/testRunner/plugin",
+        "//platform/vcs/plugin",
+        "//plugins/grazie",
+        "//plugins/grazie/properties",
+        "//platform/bazel-runfiles",
+        "//platform/testFramework/junit5",
+        "//platform/testFramework/junit5/codeInsight",
+        "//libraries/junit6",
+    ],
+)
+### auto-generated section `build intellij.properties.tests` end
+
+### auto-generated section `iml intellij.properties.tests` start
+exports_files(
+    [
+        "intellij.properties.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.properties.tests` end

@@ -1,0 +1,156 @@
+// Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+package com.intellij.openapi.wm.impl
+
+import com.intellij.openapi.application.ModalityState
+import com.intellij.openapi.application.UI
+import com.intellij.openapi.application.UiWithModelAccess
+import com.intellij.openapi.application.asContextElement
+import com.intellij.openapi.components.serviceAsync
+import com.intellij.openapi.extensions.trackEachExtensionSafe
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Key
+import com.intellij.openapi.wm.IdeRootPaneNorthExtension
+import com.intellij.openapi.wm.WINDOW_INFO_DEFAULT_TOOL_WINDOW_PANE_ID
+import com.intellij.openapi.wm.ex.ProjectFrameCapabilitiesService
+import com.intellij.openapi.wm.ex.ProjectFrameCapability
+import com.intellij.toolWindow.ToolWindowPane
+import com.intellij.ui.ClientProperty
+import com.intellij.ui.components.JBBox
+import com.intellij.util.concurrency.annotations.RequiresEdt
+import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.jetbrains.annotations.VisibleForTesting
+import java.awt.BorderLayout
+import javax.swing.JComponent
+
+private val EXTENSION_KEY = Key.create<String>("extensionKey")
+
+/**
+ * Helper class which sets up a main IDE frame
+ */
+internal class IdeProjectFrameHelper(
+  frame: IdeFrameImpl,
+  loadingState: FrameLoadingState,
+  projectFrameTypeId: String?,
+) : ProjectFrameHelper(frame, loadingState, projectFrameTypeId) {
+  private val frameLoadingDone: Job = loadingState.done
+
+  @get:RequiresEdt(generateAssertion = false /* IJPL-115548 */)
+  lateinit var toolWindowPane: ToolWindowPane
+    private set
+
+  private var northPanel: JBBox? = null
+
+  override fun createCenterComponent(): JComponent {
+    val paneId = WINDOW_INFO_DEFAULT_TOOL_WINDOW_PANE_ID
+    val pane = ToolWindowPane.create(frame, coroutineScope, paneId)
+    toolWindowPane = pane
+    return pane.buttonManager.wrapWithControls(pane)
+  }
+
+  override suspend fun setProject(project: Project) {
+    val capabilities = serviceAsync<ProjectFrameCapabilitiesService>().getAll(project)
+    if (capabilities.contains(ProjectFrameCapability.WELCOME_EXPERIENCE) ||
+        capabilities.contains(ProjectFrameCapability.INTERACTIVE_ON_EDITOR_SHOWN)) {
+      // such a frame becomes interactive first: each north component, such as the navigation bar,
+      // builds its panel in EDT events that the tool window initialization would wait for
+      launchAfterFrameLoading(scope = coroutineScope, frameLoadingDone = frameLoadingDone, isProjectOpen = { project.isOpen }) {
+        installNorthComponents(project)
+      }
+    }
+    else {
+      installNorthComponents(project)
+    }
+    super.setProject(project)
+  }
+
+  private suspend fun installNorthComponents(project: Project) {
+    val northPanel = withContext(Dispatchers.UI) {
+      JBBox.createVerticalBox().also {
+        contentPane.add(it, BorderLayout.NORTH)
+        northPanel = it
+      }
+    }
+
+    IdeRootPaneNorthExtension.EP_NAME.trackEachExtensionSafe(coroutineScope) { extension, extensionScope ->
+      val key = extension.key
+      val flow = extension.component(project = project, isDocked = false, statusBar = statusBar!!)
+                 ?: channelFlow {
+                   withContext(Dispatchers.UI) {
+                     send(extension.createComponent(project = project, isDocked = false))
+                   }
+                   awaitClose()
+                 }
+
+      extensionScope.launch(ModalityState.any().asContextElement()) {
+        try {
+          flow.collect { component ->
+            withContext(Dispatchers.UiWithModelAccess) {
+              updateNorthPanelComponent(northPanel, key, component)
+            }
+          }
+        }
+        finally {
+          coroutineScope.launch(Dispatchers.UI + ModalityState.any().asContextElement()) {
+            updateNorthPanelComponent(northPanel, key, null)
+          }
+        }
+      }
+    }
+  }
+
+  private fun updateNorthPanelComponent(northPanel: JBBox, key: String, component: JComponent?) {
+    var insertIndex: Int = -1
+
+    val count = northPanel.componentCount
+    for (i in count - 1 downTo 0) {
+      val c = northPanel.getComponent(i)
+      if (ClientProperty.isSet(c, EXTENSION_KEY, key)) {
+        if (c === component) return // nothing to do
+
+        northPanel.remove(i) // remove old panel for this EP
+        insertIndex = i
+        break
+      }
+    }
+
+    if (component != null) {
+      ClientProperty.put(component, EXTENSION_KEY, key)
+      northPanel.add(component, null, insertIndex)
+    }
+  }
+
+  override fun updateContentComponents() {
+    northPanel?.revalidate()
+  }
+
+  override fun getNorthExtension(key: String): JComponent? {
+    return northPanel?.components?.firstOrNull { ClientProperty.isSet(it, EXTENSION_KEY, key) } as? JComponent
+  }
+}
+
+/**
+ * Runs [task] in [scope] once [frameLoadingDone] completes, that is, once the frame is interactive.
+ * When the loading is cancelled and the project is closed, [task] does not run.
+ */
+@VisibleForTesting
+internal fun launchAfterFrameLoading(
+  scope: CoroutineScope,
+  frameLoadingDone: Job,
+  isProjectOpen: () -> Boolean,
+  task: suspend () -> Unit,
+): Job {
+  return scope.launch(CoroutineName("task after frame loading") + ModalityState.any().asContextElement()) {
+    frameLoadingDone.join()
+    if (frameLoadingDone.isCancelled && !isProjectOpen()) {
+      return@launch
+    }
+    task()
+  }
+}

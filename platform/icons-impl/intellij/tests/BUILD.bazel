@@ -1,0 +1,63 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+jps_test(
+    name = "tests_test",
+    timeout = "moderate",
+    tags = ["community-aggregator"],
+    runtime_deps = [":tests_test_lib"],
+)
+
+### skip generation section `test intellij.platform.icons.impl.intellij.tests`
+
+### auto-generated section `build intellij.platform.icons.impl.intellij.tests` start
+jvm_library(
+    name = "tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "test/**/*.kt",
+            "test/**/*.java",
+            "test/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.icons.impl.intellij.tests",
+    visibility = ["//visibility:public"],
+    exports = [
+        # do not sort,
+        "//platform/icons-api",
+        "//platform/icons-api/rendering",
+        "//platform/icons-impl",
+        "//platform/icons-impl/intellij",
+    ],
+    runtime_deps = [
+        # do not sort,
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+        "//community-resources:customization",
+    ],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinx/coroutines/core",
+        "//platform/icons-api",
+        "//platform/icons-api/rendering",
+        "//platform/icons-impl",
+        "//platform/icons-impl/intellij",
+        "//libraries/kotlinx/serialization/json",
+        "//platform/testFramework/junit5",
+        "//platform/icons",
+        "//platform/testFramework",
+        "//libraries/junit6",
+    ],
+)
+### auto-generated section `build intellij.platform.icons.impl.intellij.tests` end
+
+### auto-generated section `iml intellij.platform.icons.impl.intellij.tests` start
+exports_files(
+    [
+        "intellij.platform.icons.impl.intellij.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.icons.impl.intellij.tests` end

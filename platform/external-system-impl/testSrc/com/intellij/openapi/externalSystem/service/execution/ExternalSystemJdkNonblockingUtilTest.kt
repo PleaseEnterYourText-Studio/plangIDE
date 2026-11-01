@@ -1,0 +1,74 @@
+// Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+package com.intellij.openapi.externalSystem.service.execution
+
+import com.intellij.idea.IJIgnore
+import com.intellij.openapi.externalSystem.service.execution.ExternalSystemJdkUtil.JAVA_HOME
+import com.intellij.openapi.externalSystem.service.execution.ExternalSystemJdkUtil.USE_INTERNAL_JAVA
+import com.intellij.openapi.externalSystem.service.execution.ExternalSystemJdkUtil.USE_JAVA_HOME
+import com.intellij.openapi.externalSystem.service.execution.ExternalSystemJdkUtil.USE_PROJECT_JDK
+import com.intellij.openapi.roots.ui.configuration.SdkLookupProvider.SdkInfo
+import com.intellij.platform.externalSystem.testFramework.service.execution.ExternalSystemTestUnknownSdkResolver
+import com.intellij.testFramework.roots.ui.configuration.TestSdkGenerator
+import com.intellij.testFramework.roots.ui.configuration.TestSdkType
+import com.intellij.testFramework.roots.ui.configuration.TestUnknownSdkResolver
+
+class ExternalSystemJdkNonblockingUtilTest : ExternalSystemJdkNonblockingUtilTestCase() {
+  fun `test nonblocking jdk resolution (project jdk)`() {
+    assertSdkInfo(SdkInfo.Undefined, USE_PROJECT_JDK)
+    val sdk = createAndRegisterSdk(isProjectSdk = true)
+    assertSdkInfo(sdk, USE_PROJECT_JDK)
+  }
+
+  @IJIgnore(issue = "IDEA-369675")
+  fun `test nonblocking jdk resolution (java home)`() {
+    val sdk = TestSdkGenerator.createNextSdk()
+    environment.withVariables(JAVA_HOME to null) { assertSdkInfo(SdkInfo.Undefined, USE_JAVA_HOME) }
+    environment.withVariables(JAVA_HOME to sdk.homePath) { assertSdkInfo(sdk.versionString!!, sdk.homePath!!, USE_JAVA_HOME) }
+  }
+
+  fun `test nonblocking jdk resolution (internal jdk)`() {
+    assertSdkInfo(jdkProvider.internalJdk, USE_INTERNAL_JAVA)
+  }
+
+  fun `test nonblocking jdk resolution (sdk name)`() {
+    val sdk = createAndRegisterSdk()
+    assertSdkInfo(sdk, sdk.name)
+  }
+
+  fun `test nonblocking jdk resolution (resolving)`() {
+    val sdk = createAndRegisterSdk()
+
+    assertSdkInfo(SdkInfo.Undefined, null)
+
+    sdkLookupProvider.newLookupBuilder()
+      .testSuggestedSdkFirst { sdk }
+      .onSdkNameResolved { assertSdkInfo(createResolvingSdkInfo(it!!), null) }
+      .onSdkResolved { assertSdkInfo(it!!, null) }
+      .executeLookup()
+    sdkLookupProvider.waitForLookup()
+    assertSdkInfo(sdk, null)
+
+    assertUnexpectedSdksRegistration {
+      ExternalSystemTestUnknownSdkResolver.unknownSdkFixMode = TestUnknownSdkResolver.TestUnknownSdkFixMode.TEST_LOCAL_FIX
+      sdkLookupProvider.newLookupBuilder()
+        .withSdkType(TestSdkType)
+        .onSdkNameResolved { assertSdkInfo(createResolvingSdkInfo(it!!), null) }
+        .onSdkResolved { assertSdkInfo(it!!, null) }
+        .executeLookup()
+      sdkLookupProvider.waitForLookup()
+      assertSdkInfo(sdk, null)
+    }
+
+    assertNewlyRegisteredSdks({ TestSdkGenerator.getCurrentSdk() }) {
+      ExternalSystemTestUnknownSdkResolver.unknownSdkFixMode = TestUnknownSdkResolver.TestUnknownSdkFixMode.TEST_DOWNLOADABLE_FIX
+      sdkLookupProvider.newLookupBuilder()
+        .withSdkType(TestSdkType)
+        .onSdkNameResolved { assertSdkInfo(createResolvingSdkInfo(it!!), null) }
+        .onSdkResolved { assertSdkInfo(it!!, null) }
+        .executeLookup()
+      sdkLookupProvider.waitForLookup()
+      assertSdkInfo(TestSdkGenerator.getCurrentSdk(), null)
+      assertNotSame(sdk, TestSdkGenerator.getCurrentSdk())
+    }
+  }
+}

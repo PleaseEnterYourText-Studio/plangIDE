@@ -1,0 +1,57 @@
+// Copyright 2000-2022 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+package com.intellij.java.codeInsight.javadoc;
+
+import com.intellij.JavaTestUtil;
+import com.intellij.testFramework.LightProjectDescriptor;
+import com.intellij.testFramework.NeedsIndex;
+import com.intellij.testFramework.TestIndexingModeSupporter;
+import com.intellij.testFramework.fixtures.BasePlatformTestCase;
+import com.intellij.testFramework.fixtures.IndexingModeCodeInsightTestFixture;
+import org.jetbrains.annotations.NotNull;
+
+
+import static com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase.JAVA_20;
+
+public class JavadocCompletionInSnippetTest extends BasePlatformTestCase implements TestIndexingModeSupporter {
+  private @NotNull IndexingMode myIndexingMode = IndexingMode.SMART;
+
+  @NeedsIndex.SmartMode(reason = "JavaGenerateMemberCompletionContributor.fillCompletionVariants works in smart mode only (for overriding method completion)")
+  public void testOverrideMethod() {
+    // nikita.eshkeev@jetbrains.com will fix it later
+    //doTest();
+  }
+
+  private void doTest() {
+    myFixture.configureByFile("before" + getTestName(false) + ".java");
+    myFixture.completeBasic();
+    myFixture.checkResultByFile("after" + getTestName(false) + ".java");
+  }
+
+  @Override
+  protected String getTestDataPath() {
+    return JavaTestUtil.getJavaTestDataPath() + "/codeInsight/javadoc/snippet/completion/";
+  }
+
+  @NotNull
+  @Override
+  protected LightProjectDescriptor getProjectDescriptor() {
+    return JAVA_20;
+  }
+
+  @Override
+  public void setIndexingMode(@NotNull IndexingMode mode) {
+    myIndexingMode = mode;
+  }
+
+  @Override
+  public @NotNull IndexingMode getIndexingMode() {
+    return myIndexingMode;
+  }
+
+  @Override
+  protected void setUp() throws Exception {
+    super.setUp();
+    myFixture = IndexingModeCodeInsightTestFixture.Companion.wrapFixture(myFixture, getIndexingMode());
+    myIndexingMode.setUpTest(getProject(), getTestRootDisposable());
+  }
+}

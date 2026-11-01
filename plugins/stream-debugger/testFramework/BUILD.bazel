@@ -1,0 +1,41 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `build intellij.debugger.streams.testFramework` start
+jvm_library(
+    name = "testFramework",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.debugger.streams.testFramework",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlin/test:libraries-kotlinTest",
+        "//libraries/stream",
+        "//plugins/stream-debugger/core",
+        "//platform/core-api:core",
+        "//platform/xdebugger-api:debugger",
+        "//platform/util",
+    ],
+)
+### auto-generated section `build intellij.debugger.streams.testFramework` end
+
+### auto-generated section `iml intellij.debugger.streams.testFramework` start
+exports_files(
+    [
+        "intellij.debugger.streams.testFramework.iml",
+        "resources/intellij.debugger.streams.testFramework.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.debugger.streams.testFramework` end

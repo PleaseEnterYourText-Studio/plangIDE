@@ -1,0 +1,18 @@
+<component name="libraryTable">
+  <library name="studio-platform" type="repository">
+    <properties include-transitive-deps="false" maven-id="org.jetbrains.intellij.deps:studio-platform:2026.2.1-475">
+      <verification>
+        <artifact url="file://$MAVEN_REPOSITORY$/org/jetbrains/intellij/deps/studio-platform/2026.2.1-475/studio-platform-2026.2.1-475.jar">
+          <sha256sum>b8325af9ccd8d90fabad7cc2262ed1061aa3301312046899f049969acad6dc3f</sha256sum>
+        </artifact>
+      </verification>
+    </properties>
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/jetbrains/intellij/deps/studio-platform/2026.2.1-475/studio-platform-2026.2.1-475.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/jetbrains/intellij/deps/studio-platform/2026.2.1-475/studio-platform-2026.2.1-475-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

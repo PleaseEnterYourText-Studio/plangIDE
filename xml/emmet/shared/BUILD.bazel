@@ -1,0 +1,51 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library", "jvm_provided_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.xml.emmet.shared` start
+content_module_jar(module = ":shared")
+### auto-generated section `dev intellij.xml.emmet.shared` end
+
+### auto-generated section `build intellij.xml.emmet.shared` start
+jvm_provided_library(
+    name = "libraries_kotlinx_serialization_core_provided",
+    lib = "//libraries/kotlinx/serialization/core",
+)
+
+jvm_library(
+    name = "shared",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.xml.emmet.shared",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/jetbrains/annotations",
+        "//xml/xml-ui-common:ui-common",
+        "//platform/platform-impl:ide-impl",
+        "//libraries/kotlinx/collections-immutable:libraries-kotlinx-collections-immutable",
+        "//platform/kernel/rpc",
+        ":libraries_kotlinx_serialization_core_provided",
+    ],
+)
+### auto-generated section `build intellij.xml.emmet.shared` end
+
+### auto-generated section `iml intellij.xml.emmet.shared` start
+exports_files(
+    [
+        "intellij.xml.emmet.shared.iml",
+        "resources/intellij.xml.emmet.shared.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.xml.emmet.shared` end

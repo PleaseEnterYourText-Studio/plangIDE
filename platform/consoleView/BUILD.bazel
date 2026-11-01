@@ -1,0 +1,50 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.platform.consoleView` start
+content_module_jar(module = ":consoleView")
+### auto-generated section `dev intellij.platform.consoleView` end
+
+### auto-generated section `build intellij.platform.consoleView` start
+jvm_library(
+    name = "consoleView",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.consoleView",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//platform/core-api:core",
+        "//platform/core-ui",
+        "//platform/util",
+        "//platform/util/base",
+        "//platform/util:util-ui",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/ide-core",
+        "//platform/lang-core",
+        "//platform/analysis-api:analysis",
+        "//platform/util/jdom",
+    ],
+)
+### auto-generated section `build intellij.platform.consoleView` end
+
+### auto-generated section `iml intellij.platform.consoleView` start
+exports_files(
+    [
+        "intellij.platform.consoleView.iml",
+        "resources/intellij.platform.consoleView.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.consoleView` end

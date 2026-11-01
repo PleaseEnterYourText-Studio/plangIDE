@@ -1,0 +1,64 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.platform.ide.ui.inspector` start
+content_module_jar(module = ":ide-ui-inspector")
+### auto-generated section `dev intellij.platform.ide.ui.inspector` end
+
+### auto-generated section `build intellij.platform.ide.ui.inspector` start
+jvm_library(
+    name = "ide-ui-inspector",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.ide.ui.inspector",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/analysis-api:analysis",
+        "//platform/code-style-api:codeStyle",
+        "//platform/core-api:core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/platform-impl:ide-impl",
+        "//platform/analysis-impl",
+        "//platform/lang-api:lang",
+        "//platform/core-ui",
+        "//platform/util:util-ui",
+        "//platform/core-impl",
+        "//platform/ide-core-impl",
+        "//platform/ide-core",
+        "//libraries/miglayout-swing",
+        "//platform/platform-impl/mig-layout",
+        "//libraries/guava",
+        "//libraries/kotlinx/serialization/core",
+        "//libraries/kotlinx/serialization/json",
+        "//platform/projectModel-api:projectModel",
+        "//platform/projectModel-impl",
+        "//platform/editor-ui-ex:editor-ex",
+        "//platform/consoleView",
+        "//platform/util/concurrency",
+        "//platform/platform-frontend:frontend",
+        "//platform/indexing-api:indexing",
+        "//platform/compose/swing-ui:swing",
+    ],
+)
+### auto-generated section `build intellij.platform.ide.ui.inspector` end
+
+### auto-generated section `iml intellij.platform.ide.ui.inspector` start
+exports_files(
+    [
+        "intellij.platform.ide.ui.inspector.iml",
+        "resources/intellij.platform.ide.ui.inspector.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.ide.ui.inspector` end

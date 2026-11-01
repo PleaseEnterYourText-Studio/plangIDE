@@ -1,0 +1,71 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.platform.execution.dashboard` start
+content_module_jar(module = ":execution.dashboard")
+### auto-generated section `dev intellij.platform.execution.dashboard` end
+
+### auto-generated section `build intellij.platform.execution.dashboard` start
+jvm_library(
+    name = "execution.dashboard",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.execution.dashboard",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//libraries/kotlinx/serialization/core",
+        "//libraries/kotlinx/serialization/json",
+        "//libraries/kotlinx/coroutines/core",
+        "//platform/projectModel-impl",
+        "//platform/core-api:core",
+        "//platform/core-ui",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/lang-impl",
+        "//platform/execution-impl",
+        "//platform/projectModel-api:projectModel",
+        "//platform/statistics",
+        "//platform/platform-impl:ide-impl",
+        "//libraries/fastutil",
+        "//libraries/guava",
+        "//platform/ide-core-impl",
+        "//platform/ide-core",
+        "//platform/execution.serviceView",
+        "//platform/platform-impl/rpc",
+        "//platform/kernel/rpc",
+        "//platform/project/shared:project",
+        "//platform/util/coroutines",
+        "//platform/util",
+        "//platform/platform-api:ide",
+        "//platform/object-serializer",
+        "//platform/lang-core",
+        "//platform/execution",
+        "//platform/consoleView",
+        "//platform/remote-topics/shared:rpc-topics",
+        "//platform/execution-impl/rpc",
+        "//platform/lang-api:lang",
+        "//platform/util/concurrency",
+        "//platform/util:util-ui",
+    ],
+)
+### auto-generated section `build intellij.platform.execution.dashboard` end
+
+### auto-generated section `iml intellij.platform.execution.dashboard` start
+exports_files(
+    [
+        "intellij.platform.execution.dashboard.iml",
+        "resources/intellij.platform.execution.dashboard.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.execution.dashboard` end

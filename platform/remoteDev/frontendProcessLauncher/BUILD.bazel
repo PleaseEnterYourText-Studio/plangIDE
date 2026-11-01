@@ -1,0 +1,60 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.remoteDev.frontendProcessLauncher` start
+content_module_jar(module = ":frontendProcessLauncher")
+### auto-generated section `dev intellij.remoteDev.frontendProcessLauncher` end
+
+### auto-generated section `build intellij.remoteDev.frontendProcessLauncher` start
+jvm_library(
+    name = "frontendProcessLauncher",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.remoteDev.frontendProcessLauncher",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/core-api:core",
+        "//platform/remoteDev-util",
+        "//platform/runtime/repository",
+        "//platform/core-impl",
+        "//platform/progress/shared:ide-progress",
+        "//platform/ide-core",
+        "//platform/platform-util-io:ide-util-io",
+        "//libraries/download-pgp-verifier",
+        "//libraries/jackson3/jackson:libraries-jackson3",
+        "//libraries/jackson3/databind",
+        "//platform/projectModel-api:projectModel",
+        "//platform/rd-platform-community:rd-community",
+        "//libraries/rd/core",
+        "//platform/statistics",
+        "//platform/util/progress",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/bootstrap",
+        "//platform/platform-impl:ide-impl",
+        "//platform/util/concurrency",
+        "//platform/productMode",
+        "//platform/analysis-api:analysis",
+    ],
+)
+### auto-generated section `build intellij.remoteDev.frontendProcessLauncher` end
+
+### auto-generated section `iml intellij.remoteDev.frontendProcessLauncher` start
+exports_files(
+    [
+        "intellij.remoteDev.frontendProcessLauncher.iml",
+        "resources/intellij.remoteDev.frontendProcessLauncher.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.remoteDev.frontendProcessLauncher` end

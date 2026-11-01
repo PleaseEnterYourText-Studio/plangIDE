@@ -1,0 +1,125 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+jps_test(
+    name = "testRunner-tests_test",
+    timeout = "moderate",
+    tags = ["community-aggregator"],
+    runtime_deps = [":testRunner-tests_test_lib"],
+)
+
+### skip generation section `test intellij.platform.testRunner.tests`
+
+### auto-generated section `dev intellij.platform.testRunner` start
+content_module_jar(module = ":testRunner")
+### auto-generated section `dev intellij.platform.testRunner` end
+
+### auto-generated section `build intellij.platform.testRunner` start
+jvm_library(
+    name = "testRunner",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.testRunner",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//platform/diff-api:diff",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/testIntegration",
+        "//platform/platform-api:ide",
+        "//platform/lang-core",
+        "//platform/lang-impl",
+        "//platform/execution-impl",
+        "//platform/platform-impl:ide-impl",
+        "//platform/diff-impl",
+        "//platform/forms_rt:java-guiForms-rt",
+        "//libraries/fastutil",
+        "//platform/core-ui",
+        "//platform/platform-util-io:ide-util-io",
+        "//platform/ide-core-impl",
+        "//platform/ide-core",
+        "//platform/projectModel-api:projectModel",
+        "//platform/util/jdom",
+        "//platform/util:util-ui",
+        "//platform/analysis-impl",
+        "//platform/core-impl",
+        "//platform/execution",
+        "//platform/consoleView",
+        "//platform/consoleView/impl",
+        "//libraries/kotlinx/collections-immutable:libraries-kotlinx-collections-immutable",
+        "//platform/util/concurrency",
+    ],
+)
+### auto-generated section `build intellij.platform.testRunner` end
+
+### auto-generated section `iml intellij.platform.testRunner` start
+exports_files(
+    [
+        "intellij.platform.testRunner.iml",
+        "resources/intellij.platform.testRunner.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.testRunner` end
+
+### auto-generated section `build intellij.platform.testRunner.tests` start
+jvm_library(
+    name = "testRunner-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "testSrc/**/*.kt",
+            "testSrc/**/*.java",
+            "testSrc/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.testRunner.tests",
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//community-resources:customization",
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+    ],
+    deps = [
+        # do not sort,
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//platform/platform-api:ide",
+        "//platform/ide-core",
+        "//platform/lang-impl",
+        "//platform/platform-impl:ide-impl",
+        "//platform/xdebugger-api:debugger",
+        "//libraries/junit4",
+        "//platform/core-ui",
+        "//platform/ide-core-impl",
+        "//platform/util:util-ui",
+        "//platform/testFramework",
+        "//platform/xdebugger-impl:debugger-impl",
+        "//platform/core-impl",
+        "//platform/testRunner",
+    ],
+)
+### auto-generated section `build intellij.platform.testRunner.tests` end
+
+### auto-generated section `iml intellij.platform.testRunner.tests` start
+exports_files(
+    [
+        "intellij.platform.testRunner.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.testRunner.tests` end

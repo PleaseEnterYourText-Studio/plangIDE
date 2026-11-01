@@ -1,0 +1,55 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.maven.delegation.junit` start
+content_module_jar(module = ":junit")
+### auto-generated section `dev intellij.maven.delegation.junit` end
+
+### auto-generated section `build intellij.maven.delegation.junit` start
+jvm_library(
+    name = "junit",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.maven.delegation.junit",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//plugins/maven",
+        "//plugins/junit",
+        "//java/debugger/impl",
+        "//java/debugger/shared",
+        "//platform/smRunner",
+        "//platform/execution",
+        "//platform/execution-impl",
+        "//platform/lang-api:lang",
+        "//platform/ide-core",
+        "//platform/core-api:core",
+        "//platform/projectModel-api:projectModel",
+        "//platform/testRunner",
+        "//platform/lang-core",
+        "//platform/platform-util-io:ide-util-io",
+        "//platform/util/jdom",
+    ],
+)
+### auto-generated section `build intellij.maven.delegation.junit` end
+
+### auto-generated section `iml intellij.maven.delegation.junit` start
+exports_files(
+    [
+        "intellij.maven.delegation.junit.iml",
+        "resources/intellij.maven.delegation.junit.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.maven.delegation.junit` end

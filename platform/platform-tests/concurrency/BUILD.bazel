@@ -1,0 +1,74 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+jps_test(
+    name = "util-concurrency-tests_test",
+    timeout = "long",
+    tags = ["concurrency-tests"],
+    runtime_deps = [":util-concurrency-tests_test_lib"],
+)
+### skip generation section `test intellij.platform.util.concurrency.tests`
+
+### auto-generated section `build intellij.platform.util.concurrency.tests` start
+jvm_library(
+    name = "util-concurrency-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "testSrc/**/*.kt",
+            "testSrc/**/*.java",
+            "testSrc/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.util.concurrency.tests",
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//community-resources:customization",
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+    ],
+    deps = [
+        # do not sort,
+        "//libraries/junit4",
+        "//libraries/junit6",
+        "//libraries/junit6-params",
+        "//libraries/assertj-core",
+        "//libraries/kotlin/test:libraries-kotlinTest",
+        "//libraries/kotlin/test-assertions-core-jvm:libraries-kotlinTestAssertionsCoreJvm",
+        "//libraries/kotlinx/coroutines/core",
+        "//platform/util-ex",
+        "//platform/util:util-ui",
+        "//platform/util/coroutines",
+        "//platform/util/concurrency",
+        "//platform/analysis-api:analysis",
+        "//platform/analysis-impl",
+        "//platform/code-style-api:codeStyle",
+        "//platform/core-api:core",
+        "//platform/core-impl",
+        "//platform/core-ui",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/ide-core",
+        "//platform/ide-core-impl",
+        "//platform/platform-impl/concurrency",
+        "//platform/progress/shared:ide-progress",
+        "//platform/platform-util-io:ide-util-io",
+        "//platform/lang-core",
+        "//platform/projectModel-impl",
+        "//platform/service-container",
+        "//platform/service-container:serviceContainer-tests_test_lib",
+        "//platform/backend/observation",
+        "//platform/testFramework",
+        "//platform/testFramework/junit5",
+    ],
+)
+### auto-generated section `build intellij.platform.util.concurrency.tests` end
+
+### auto-generated section `iml intellij.platform.util.concurrency.tests` start
+exports_files(
+    [
+        "intellij.platform.util.concurrency.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.util.concurrency.tests` end

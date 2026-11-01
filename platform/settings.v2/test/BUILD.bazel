@@ -1,0 +1,59 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+jps_test(
+    name = "test_test",
+    timeout = "moderate",
+    tags = ["community-aggregator"],
+    runtime_deps = [":test_test_lib"],
+)
+### skip generation section `test intellij.platform.settings.v2.test`
+
+### auto-generated section `build intellij.platform.settings.v2.test` start
+jvm_library(
+    name = "test_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    associates = ["//platform/settings.v2/backend"],
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//platform/settings.v2/shared",
+        "//libraries/jetbrains/annotations",
+        "//platform/settings.v2",
+        "//platform/core-api:core",
+        "//platform/projectModel-api:projectModel",
+        "//platform/platform-impl:ide-impl",
+        "//platform/ide-core",
+        "//platform/analysis-api:analysis",
+        "//xml/plugin",
+        "//platform/testFramework",
+        "//platform/testFramework/junit5",
+        "//libraries/junit4",
+        "//libraries/kotlinx/serialization/core",
+        "//libraries/junit6",
+        "//platform/editor-ui-api:editor-ui",
+    ],
+)
+### auto-generated section `build intellij.platform.settings.v2.test` end
+
+### auto-generated section `iml intellij.platform.settings.v2.test` start
+exports_files(
+    [
+        "intellij.platform.settings.v2.test.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.settings.v2.test` end

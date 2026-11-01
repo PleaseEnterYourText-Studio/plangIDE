@@ -1,0 +1,146 @@
+load("@community//build:bazel_targets_json.bzl", "current_bazel_targets_json")
+load("@community//build:tests-options.bzl", "jps_test")
+load("@jps_dynamic_deps_community//:targets.bzl", "ALL_COMMUNITY_TARGETS")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+BAZEL_TARGETS_JSON = current_bazel_targets_json()
+
+jps_test(
+    name = "groovy-tests_test",
+    timeout = "moderate",
+    data = ALL_COMMUNITY_TARGETS + [BAZEL_TARGETS_JSON],
+    jvm_flags = [
+        "-Dintellij.build.bazel.targets.json.file=$(rlocationpath %s)" % BAZEL_TARGETS_JSON,
+    ],
+    tags = ["community-aggregator"],
+    runtime_deps = [":groovy-tests_test_lib"],
+)
+### skip generation section `test intellij.maven.groovy.tests`
+
+### auto-generated section `dev intellij.maven.groovy` start
+content_module_jar(module = ":groovy")
+### auto-generated section `dev intellij.maven.groovy` end
+
+### auto-generated section `build intellij.maven.groovy` start
+jvm_library(
+    name = "groovy",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.maven.groovy",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//platform/lang-api:lang",
+        "//java/idea-ui:ui",
+        "//plugins/groovy",
+        "//plugins/groovy/jps-plugin:jps",
+        "//platform/platform-impl:ide-impl",
+        "//platform/observable",
+        "//platform/ide-core",
+        "//platform/lang-core",
+        "//platform/lang-impl",
+        "//plugins/maven",
+        "//platform/core-api:core",
+        "//platform/analysis-api:analysis",
+        "//xml/xml-parser:parser",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/core-impl",
+        "//xml/xml-psi-api:psi",
+        "//plugins/maven/completion",
+        "//plugins/repository-search/completion",
+        "//platform/projectModel-api:projectModel",
+        "//jps/model-api:model",
+        "//platform/util/jdom",
+        "//platform/util:util-ui",
+        "//libraries/kotlinx/collections-immutable:libraries-kotlinx-collections-immutable",
+        "//java/java-psi-api:psi",
+    ],
+)
+### auto-generated section `build intellij.maven.groovy` end
+
+### auto-generated section `iml intellij.maven.groovy` start
+exports_files(
+    [
+        "intellij.maven.groovy.iml",
+        "resources/intellij.maven.groovy.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.maven.groovy` end
+
+### auto-generated section `build intellij.maven.groovy.tests` start
+jvm_library(
+    name = "groovy-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "test/**/*.kt",
+            "test/**/*.java",
+            "test/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.maven.groovy.tests",
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//plugins/maven/groovy",
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+        "//community-resources:customization",
+    ],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//platform/lang-api:lang",
+        "//java/idea-ui:ui",
+        "//plugins/groovy",
+        "//plugins/groovy-scripting",
+        "//plugins/groovy/jps-plugin:jps",
+        "//platform/platform-impl:ide-impl",
+        "//platform/lang-impl",
+        "//plugins/maven",
+        "//platform/core-api:core",
+        "//platform/analysis-api:analysis",
+        "//platform/core-impl",
+        "//platform/projectModel-api:projectModel",
+        "//platform/util-ex",
+        "//platform/testFramework",
+        "//java/testFramework",
+        "//java/java-psi-api:psi",
+        "//plugins/maven/testFramework",
+        "//libraries/assertj-core",
+        "//platform/testFramework/junit5",
+        "//platform/structuralsearch:structuralSearch",
+        "//platform/structuralsearch/plugin",
+        "//platform/vcs-impl",
+        "//platform/vcs/plugin",
+        "//libraries/junit6",
+        "//libraries/junit6-params",
+        "//platform/structure-view-impl/plugin",
+        "//xml/plugin",
+        "//aether-dependency-resolver/plugin",
+        "//platform/testRunner/plugin",
+    ],
+)
+### auto-generated section `build intellij.maven.groovy.tests` end
+
+### auto-generated section `iml intellij.maven.groovy.tests` start
+exports_files(
+    [
+        "intellij.maven.groovy.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.maven.groovy.tests` end

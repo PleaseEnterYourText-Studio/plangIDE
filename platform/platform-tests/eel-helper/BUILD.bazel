@@ -1,0 +1,44 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `build intellij.platform.eelHelper` start
+jvm_library(
+    name = "eel-helper",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.eelHelper",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/jackson3/jackson:libraries-jackson3",
+        "//libraries/jackson3/module-kotlin:libraries-jackson3-module-kotlin",
+        "//libraries/jackson3/databind",
+        "//libraries/kotlin/reflect",
+        "//platform/util-rt",
+        "//platform/util/annotations",
+        "//libraries/jetbrains/annotations",
+        "@lib//:platform-eel_helper-jline-terminal",
+        "@lib//:jline-terminal-jansi",
+        "@lib//:jline-terminal-jna",
+    ],
+)
+### auto-generated section `build intellij.platform.eelHelper` end
+
+### auto-generated section `iml intellij.platform.eelHelper` start
+exports_files(
+    [
+        "intellij.platform.eelHelper.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.eelHelper` end

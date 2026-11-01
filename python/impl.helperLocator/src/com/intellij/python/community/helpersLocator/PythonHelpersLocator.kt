@@ -1,0 +1,167 @@
+// Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+package com.intellij.python.community.helpersLocator
+
+import com.intellij.ide.plugins.PluginManagerCore
+import com.intellij.ide.plugins.getPluginDistDirByClass
+import com.intellij.openapi.application.PathManager
+import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.extensions.ExtensionPointName
+import com.intellij.util.PathUtil
+import com.intellij.util.concurrency.annotations.RequiresBackgroundThread
+import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.annotations.NonNls
+import org.jetbrains.annotations.TestOnly
+import java.nio.file.Path
+import kotlin.io.path.absolutePathString
+import kotlin.io.path.exists
+import kotlin.io.path.pathString
+
+@ApiStatus.Internal
+interface PythonHelpersLocator {
+  companion object {
+    val LOG: Logger = logger<PythonHelpersLocator>()
+    private const val PROPERTY_HELPERS_LOCATION = "idea.python.helpers.path"
+    const val COMMUNITY_HELPERS_MODULE_NAME: String = "intellij.python.helpers"
+    private val EP_NAME: ExtensionPointName<PythonHelpersLocator> = ExtensionPointName("com.jetbrains.python.pythonHelpersLocator")
+
+    /**
+     * @return A list of Path objects representing the roots of the Python Helpers.
+     */
+    @ApiStatus.Internal
+    @JvmStatic
+    fun getHelpersRoots(): List<Path> = EP_NAME.extensionList.mapNotNull { it.getRoot() }
+
+    /**
+     * Retrieves a path to the root file of the Community Helpers extension.
+     *
+     * @return The root Path of the Community Helpers extension.
+     */
+    @ApiStatus.Internal
+    @JvmStatic
+    fun getCommunityHelpersRoot(): Path = EP_NAME.extensionList.first().getCommunityHelpersRootPath()
+
+    /**
+     * Retrieves Path of a helper file given its resource name.
+     *
+     * @param resourceName The name of the helper resource file.
+     * @return Path of the helper file.
+     * @throws IllegalStateException if the file does not exist. The helpers are part of the installation,
+     * so a missing file is a bug.
+     */
+    @JvmStatic
+    @RequiresBackgroundThread(generateAssertion = false /* PY-93235 */)
+    fun findPathInHelpers(resourceName: String): Path {
+      for (helperRoot in getHelpersRoots()) {
+        val path = Path.of(helperRoot.pathString, resourceName)
+        if (path.exists())
+          return path
+      }
+      error("File $resourceName does not exist in helpers root. Installation broken?")
+    }
+
+
+    @ApiStatus.Internal
+    @TestOnly
+    @JvmStatic
+    @RequiresBackgroundThread(generateAssertion = false /* PY-93235 */)
+    fun getPythonCommunityPath(): Path {
+      val pathFromUltimate = Path.of(PathManager.getHomePath(), "community/python")
+      if (pathFromUltimate.exists()) {
+        return pathFromUltimate
+      }
+      return Path.of(PathManager.getHomePath(), "python")
+    }
+
+    /**
+     * Retrieves the absolute path of a helper file given its resource name.
+     *
+     * @param resourceName The name of the helper resource file (for example, `pydev` or `jupyter_debug`).
+     * @return The absolute path of the helper file.
+     * @throws IllegalStateException if the file does not exist. See [findPathInHelpers].
+     */
+    @ApiStatus.Internal
+    @JvmStatic
+    @RequiresBackgroundThread(generateAssertion = false /* PY-93235 */)
+    fun findPathStringInHelpers(@NonNls resourceName: String): String = findPathInHelpers(resourceName).absolutePathString()
+  }
+
+  @ApiStatus.Internal
+  fun getRoot(): Path? = getCommunityHelpersRootPath().normalize()
+
+  private fun getCommunityHelpersRootPath(): Path {
+    val property = System.getProperty(PROPERTY_HELPERS_LOCATION)
+    if (property != null) {
+      return Path.of(property)
+    }
+    else {
+      return getHelpersRoot(COMMUNITY_HELPERS_MODULE_NAME, "/python/helpers").also {
+        assertHelpersLayout(it)
+      }
+    }
+  }
+
+  @ApiStatus.Internal
+  @RequiresBackgroundThread(generateAssertion = false /* PY-93235 */)
+  fun getHelpersRoot(moduleName: String, relativePath: String): Path {
+    return findRootByJarPath(
+      aClass = PythonHelpersLocator::class.java,
+      moduleName = moduleName,
+      relativePath = relativePath,
+    )
+  }
+
+  @ApiStatus.Internal
+  fun findRootByJarPath(aClass: Class<*>, moduleName: String, relativePath: String): Path =
+    findModuleRootByJarPath(aClass, moduleName, relativePath)
+
+  @RequiresBackgroundThread(generateAssertion = false /* PY-93235 */)
+  private fun assertHelpersLayout(root: Path): Path {
+    if (!root.exists()) {
+      LOG.info("Helpers root does not exist: $root")
+    }
+    listOf("generator3", "pycharm", "pycodestyle.py", "pydev", "syspath.py").forEach { child ->
+      if (!root.resolve(child).exists()) {
+        LOG.info("No '$child' inside $root")
+      }
+    }
+
+    return root
+  }
+}
+
+internal class PythonHelpersLocatorDefault : PythonHelpersLocator
+
+/**
+ * Resolves the root of a resource-only module.
+ *
+ * It works from sources and from an installed plugin.
+ */
+@ApiStatus.Internal
+fun findModuleRootByJarPath(aClass: Class<*>, moduleName: String, relativePath: String): Path {
+  if (PluginManagerCore.isRunningFromSources()) {
+    return Path.of(PathManager.getCommunityHomePath(), relativePath)
+  }
+
+  getPluginDistDirByClass(aClass)?.let {
+    return it.resolve(PathUtil.getFileName(relativePath))
+  }
+
+  val jarPath = PathUtil.getJarPathForClass(aClass)
+  getPluginBaseDir(jarPath)?.let {
+    return it.resolve(PathUtil.getFileName(relativePath))
+  }
+
+  return Path.of(jarPath).parent.toAbsolutePath().resolve(moduleName)
+}
+
+private fun getPluginBaseDir(jarPath: String): Path? {
+  if (jarPath.endsWith(".jar")) {
+    val path = Path.of(jarPath)
+
+    PythonHelpersLocator.LOG.assertTrue(path.exists(), "$path to plugin base bir does not exists")
+    return path.parent.parent
+  }
+
+  return null
+}

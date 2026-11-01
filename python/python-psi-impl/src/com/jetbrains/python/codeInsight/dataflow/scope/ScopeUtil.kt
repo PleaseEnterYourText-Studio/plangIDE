@@ -1,0 +1,85 @@
+// Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+package com.jetbrains.python.codeInsight.dataflow.scope
+
+import com.intellij.psi.PsiElement
+import com.intellij.psi.util.PsiTreeUtil
+import com.jetbrains.python.codeInsight.controlflow.ControlFlowCache.getControlFlow
+import com.jetbrains.python.codeInsight.controlflow.ControlFlowCache.getScope
+import com.jetbrains.python.codeInsight.controlflow.ReadWriteInstruction
+import com.jetbrains.python.codeInsight.controlflow.ScopeOwner
+import com.jetbrains.python.psi.PyClass
+import com.jetbrains.python.psi.PyFunction
+import com.jetbrains.python.psi.PyNamedParameter
+import com.jetbrains.python.psi.impl.PyExceptPartNavigator
+import com.jetbrains.python.psi.impl.PyForStatementNavigator
+import com.jetbrains.python.psi.impl.PyListCompExpressionNavigator
+
+object ScopeUtil {
+  @JvmStatic
+  fun getParameterScope(element: PsiElement?): PsiElement? {
+    if (element is PyNamedParameter) {
+      val function = PsiTreeUtil.getParentOfType(element, PyFunction::class.java, false)
+      if (function != null) {
+        return function
+      }
+    }
+
+    val exceptPart = PyExceptPartNavigator.getPyExceptPartByTarget(element)
+    if (exceptPart != null) {
+      return exceptPart
+    }
+
+    val forStatement = PyForStatementNavigator.getPyForStatementByIterable(element)
+    if (forStatement != null) {
+      return forStatement
+    }
+
+    val listCompExpression = PyListCompExpressionNavigator.getPyListCompExpressionByVariable(element)
+    if (listCompExpression != null) {
+      return listCompExpression
+    }
+    return null
+  }
+
+  /**
+   * Return the scope owner for the element. This also applies for elements of instance `AstScopeOwner`.
+   * <br></br>
+   * Scope owner is not always the first ScopeOwner parent of the element. Some elements are resolved in outer scopes.
+   * <br></br>
+   * This method does not access AST if underlying PSI is stub based.
+   */
+  @JvmStatic
+  fun getScopeOwner(element: PsiElement?): ScopeOwner? {
+    return ScopeUtilCore.getScopeOwner(element) as ScopeOwner?
+  }
+
+  @JvmStatic
+  fun getDeclarationScopeOwner(anchor: PsiElement?, name: String?): ScopeOwner? {
+    if (name != null) {
+      val originalScopeOwner = getScopeOwner(anchor)
+      var scopeOwner = originalScopeOwner
+      while (scopeOwner != null) {
+        if (scopeOwner !is PyClass || scopeOwner === originalScopeOwner) {
+          val scope = getScope(scopeOwner)
+          if (scope.containsDeclaration(name)) {
+            return scopeOwner
+          }
+        }
+        scopeOwner = getScopeOwner(scopeOwner)
+      }
+    }
+    return null
+  }
+
+  @JvmStatic
+  fun getElementsOfAccessType(
+    name: String,
+    scopeOwner: ScopeOwner,
+    type: ReadWriteInstruction.ACCESS,
+  ): Sequence<PsiElement> =
+    getControlFlow(scopeOwner).instructions
+      .asSequence()
+      .filterIsInstance<ReadWriteInstruction>()
+      .filter { name == it.name && type == it.access }
+      .mapNotNull { it.element }
+}

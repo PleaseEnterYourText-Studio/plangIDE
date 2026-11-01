@@ -1,0 +1,17 @@
+// Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+package org.jetbrains.kotlin.tools.projectWizard.wizard
+
+import org.jetbrains.kotlin.idea.base.test.TestRoot
+import org.jetbrains.kotlin.idea.test.TestMetadataUtil
+import org.junit.jupiter.api.Test
+import java.io.File
+
+@TestRoot("project-wizard/tests")
+internal class MavenKotlinNewProjectWizardTest : MavenKotlinNewProjectWizardTestCase() {
+    override val testDirectory: String
+        get() = "testData/mavenNewProjectWizard"
+    override val testRoot: File? = TestMetadataUtil.getTestRoot(MavenKotlinNewProjectWizardTest::class.java)
+
+    @Test
+    fun testSimpleProjectKotlin() = runNewProjectTestCase()
+}

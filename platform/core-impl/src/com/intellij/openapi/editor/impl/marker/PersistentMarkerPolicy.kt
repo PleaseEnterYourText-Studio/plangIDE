@@ -1,0 +1,98 @@
+// Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+package com.intellij.openapi.editor.impl.marker
+
+import com.intellij.openapi.editor.ex.DocumentText
+import com.intellij.openapi.editor.ex.DocumentPatch
+import com.intellij.openapi.editor.impl.lineDiff
+import com.intellij.openapi.editor.impl.marker.PMarkerRoot.MarkerEntry
+import com.intellij.util.diff.FilesTooBigForDiffException
+import org.jetbrains.annotations.ApiStatus
+
+/**
+ * Range-marker policy that attempts to retain a marker through large replacements by translating its line and column
+ * coordinates through a line diff. If diff translation is unavailable, it falls back to [DefaultMarkerPolicy].
+ */
+object PersistentMarkerPolicy : MarkerPolicy {
+  override val isPersistent: Boolean
+    get() = true
+
+  fun requiresFullTraversal(
+      patch: DocumentPatch,
+      beforeText: DocumentText,
+      afterText: DocumentText,
+  ): Boolean = patch.mayUseDiffTranslation(beforeText, afterText)
+
+  override fun transform(
+      entry: MarkerEntry,
+      patch: DocumentPatch,
+      beforeText: DocumentText,
+      afterText: DocumentText,
+  ): MarkerTransformResult {
+    if (!entry.shouldTranslateViaDiff(patch, beforeText, afterText)) {
+      return DefaultMarkerPolicy.transform(entry, patch, beforeText, afterText)
+    }
+    val translated = translate(entry, patch, beforeText, afterText)
+    return if (translated.isValid) {
+      translated
+    }
+    else {
+      DefaultMarkerPolicy.transform(entry, patch, beforeText, afterText)
+    }
+  }
+
+  private fun translate(
+      entry: MarkerEntry,
+      patch: DocumentPatch,
+      beforeText: DocumentText,
+      afterText: DocumentText,
+  ): MarkerTransformResult {
+    val startLine = beforeText.lineNumber(entry.nodeStart)
+    val endLine = beforeText.lineNumber(entry.nodeEnd)
+    val startColumn = entry.nodeStart - beforeText.lineStartOffset(startLine)
+    val endColumn = entry.nodeEnd - beforeText.lineStartOffset(endLine)
+
+    val lineDiff = patch.lineDiff(beforeText)
+    val changeStartLine = afterText.lineNumber(lineDiff.changeStartOffset)
+    val afterChars = afterText.chars()
+    val translatedStartLine: Int
+    val translatedEndLine: Int
+    try {
+      translatedStartLine = lineDiff.translateLineStrict(startLine, changeStartLine, afterChars)
+      translatedEndLine = lineDiff.translateLineStrict(endLine, changeStartLine, afterChars)
+    }
+    catch (_: FilesTooBigForDiffException) {
+      return MarkerTransformResult(MarkerTransformError.INVALIDATED_BY_EDIT)
+    }
+    if (translatedStartLine !in 0..<afterText.lineCount()) return MarkerTransformResult(MarkerTransformError.INVALIDATED_BY_EDIT)
+    if (translatedEndLine !in 0..<afterText.lineCount()) return MarkerTransformResult(MarkerTransformError.INVALIDATED_BY_EDIT)
+
+    val startOffset = afterText.lineStartOffset(translatedStartLine) + startColumn
+    if (startOffset >= afterText.length()) return MarkerTransformResult(MarkerTransformError.INVALIDATED_BY_EDIT)
+    val endOffset = afterText.lineStartOffset(translatedEndLine) + endColumn
+    if (endOffset > afterText.length() || endOffset < startOffset) return MarkerTransformResult(MarkerTransformError.INVALIDATED_BY_EDIT)
+    if (translatedEndLine < translatedStartLine) return MarkerTransformResult(MarkerTransformError.INVALIDATED_BY_EDIT)
+    if (translatedStartLine == translatedEndLine && endColumn < startColumn) return MarkerTransformResult(MarkerTransformError.INVALIDATED_BY_EDIT)
+
+    return MarkerTransformResult(startOffset, endOffset)
+  }
+
+  private fun MarkerEntry.shouldTranslateViaDiff(
+      patch: DocumentPatch,
+      beforeText: DocumentText,
+      afterText: DocumentText,
+  ): Boolean {
+    if (patch.isWholeTextReplacement(beforeText)) return true
+    if (patch.startOffset() >= nodeEnd || patch.endOffset() <= nodeStart) return false
+    return patch.mayUseDiffTranslation(beforeText, afterText)
+  }
+
+  private fun DocumentPatch.mayUseDiffTranslation(beforeText: DocumentText, afterText: DocumentText): Boolean {
+    if (isWholeTextReplacement(beforeText)) return true
+    val oldLength = endOffset() - startOffset()
+    return maxOf(newFragment().length, oldLength) * 5 >= afterText.length() * 4
+  }
+
+  private fun DocumentPatch.isWholeTextReplacement(beforeText: DocumentText): Boolean {
+    return beforeText.length() != 0 && originStartOffset() == 0 && originEndOffset() == beforeText.length()
+  }
+}

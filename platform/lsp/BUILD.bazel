@@ -1,0 +1,57 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.platform.lsp` start
+content_module_jar(module = ":lsp")
+### auto-generated section `dev intellij.platform.lsp` end
+
+### auto-generated section `build intellij.platform.lsp` start
+jvm_library(
+    name = "lsp",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.lsp",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/lsp4j",
+        "//libraries/lsp4j/jsonrpc",
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/platform-api:ide",
+        "//platform/lang-api:lang",
+        "//platform/platform-util-io:ide-util-io",
+        "//platform/ide-core",
+        "//platform/projectModel-api:projectModel",
+        "//platform/util:util-ui",
+        "//platform/markdown-utils",
+        "//platform/core-ui",
+        "//platform/eel",
+        "//platform/eel-provider",
+        "//platform/eel-nioFs",
+    ],
+)
+### auto-generated section `build intellij.platform.lsp` end
+
+### auto-generated section `iml intellij.platform.lsp` start
+exports_files(
+    [
+        "intellij.platform.lsp.iml",
+        "resources/META-INF/intellij.moduleSets.libraries.lsp4j.xml",
+        "resources/intellij.platform.lsp.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.lsp` end

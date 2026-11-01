@@ -1,0 +1,73 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.mcpserver.toolsets` start
+content_module_jar(module = ":mcpserver.toolsets")
+### auto-generated section `dev intellij.mcpserver.toolsets` end
+
+### auto-generated section `build intellij.mcpserver.toolsets` start
+jvm_library(
+    name = "mcpserver.toolsets",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.mcpserver.toolsets",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//libraries/jetbrains/annotations",
+        "@lib//:kotlin-stdlib",
+        "//plugins/mcp-server:mcpserver",
+        "//libraries/kotlinx/coroutines/core",
+        "//libraries/kotlinx/serialization/core",
+        "//libraries/kotlinx/serialization/json",
+        "//libraries/io",
+        "//platform/indexing-api:indexing",
+        "//platform/xdebugger-impl:debugger-impl",
+        "//platform/xdebugger-impl/rpc",
+        "//platform/xdebugger-api:debugger",
+        "//platform/refactoring",
+        "//platform/usageView",
+        "//platform/lang-api:lang",
+        "//platform/lang-impl",
+        "//platform/buildView",
+        "//platform/core-api:core",
+        "//platform/core-ui",
+        "//platform/analysis-api:analysis",
+        "//platform/projectModel-api:projectModel",
+        "//platform/progress/shared:ide-progress",
+        "//platform/util/concurrency",
+        "//platform/ide-core",
+        "//platform/ide-core-impl",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/util:util-ui",
+        "//platform/util-ex",
+        "//platform/core-impl",
+        "//platform/execution-impl",
+        "//platform/execution",
+        "//platform/consoleView",
+        "//platform/platform-impl:ide-impl",
+        "//platform/util/coroutines",
+        "//platform/util/diff",
+    ],
+)
+### auto-generated section `build intellij.mcpserver.toolsets` end
+
+### auto-generated section `iml intellij.mcpserver.toolsets` start
+exports_files(
+    [
+        "intellij.mcpserver.toolsets.iml",
+        "resources/intellij.mcpserver.toolsets.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.mcpserver.toolsets` end

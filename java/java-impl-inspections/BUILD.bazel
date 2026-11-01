@@ -1,0 +1,75 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.java.impl.inspections` start
+content_module_jar(module = ":impl-inspections")
+### auto-generated section `dev intellij.java.impl.inspections` end
+
+### auto-generated section `build intellij.java.impl.inspections` start
+jvm_library(
+    name = "impl-inspections",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.java.impl.inspections",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//java/openapi:java",
+        "//java/java-analysis-impl:analysis-impl",
+        "//libraries/stream",
+        "//java/java-psi-api:psi",
+        "//java/java-impl:impl",
+        "//java/java-indexing-api:indexing",
+        "//platform/analysis-api:analysis",
+        "//platform/code-style-api:codeStyle",
+        "//platform/core-api:core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/platform-impl:ide-impl",
+        "//libraries/fastutil",
+        "//platform/ide-core-impl",
+        "//platform/ide-core",
+        "//java/compiler/openapi:java-compiler",
+        "//libraries/asm",
+        "//java/java-impl-refactorings:impl-refactorings",
+        "//platform/indexing-api:indexing",
+        "//jps/model-api:model",
+        "//platform/projectModel-api:projectModel",
+        "//platform/refactoring",
+        "//platform/util/jdom",
+        "//platform/usageView",
+        "//platform/backend/workspace",
+        "//platform/core-ui",
+        "//platform/core-impl",
+        "//platform/util/text-matching",
+        "//java/codeserver/highlighting",
+        "//java/codeserver/core",
+        "//platform/workspace/storage",
+        "//java/java-syntax:syntax",
+        "//java/java-frontback-psi-api:frontback-psi",
+        "//xml/xml-psi-api:psi",
+        "//libraries/kotlinx/collections-immutable:libraries-kotlinx-collections-immutable",
+        "//platform/util/concurrency",
+        "//platform/lang-api:lang",
+    ],
+)
+### auto-generated section `build intellij.java.impl.inspections` end
+
+### auto-generated section `iml intellij.java.impl.inspections` start
+exports_files(
+    [
+        "intellij.java.impl.inspections.iml",
+        "resources/intellij.java.impl.inspections.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.java.impl.inspections` end

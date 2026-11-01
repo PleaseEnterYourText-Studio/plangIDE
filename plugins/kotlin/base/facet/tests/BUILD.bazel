@@ -1,0 +1,80 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `build intellij.kotlin.base.facet.tests` start
+jvm_library(
+    name = "tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "test/**/*.kt",
+            "test/**/*.java",
+            "test/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.kotlin.base.facet.tests",
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//plugins/kotlin:kotlin-plugin-community-main",
+        "//platform/structuralsearch/plugin",
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+        "//community-resources:customization",
+    ],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinc/kotlin-compiler-common:libraries-kotlinc-kotlin-compiler-common",
+        "//libraries/kotlinc/kotlin-jps-common:libraries-kotlinc-kotlin-jps-common",
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//platform/workspace/storage",
+        "//plugins/kotlin/base/util",
+        "//plugins/kotlin/base/compiler-configuration",
+        "//plugins/kotlin/tests-common:common-tests_test_lib",
+        "//plugins/kotlin/base/testFramework",
+        "//java/idea-ui:ui",
+        "//plugins/kotlin/base/plugin",
+        "//plugins/kotlin/base/platforms",
+        "//plugins/kotlin/base/project-model",
+        "//plugins/kotlin/base/resources:kotlin-base-resources",
+        "//platform/util/jdom",
+        "//platform/core-impl",
+        "//platform/lang-core",
+        "//platform/lang-api:lang",
+        "//platform/projectModel-api:projectModel",
+        "//platform/external-system-api:externalSystem",
+        "//platform/external-system-impl:externalSystem-impl",
+        "//java/openapi:java",
+        "//java/java-impl:impl",
+        "//platform/workspace/jps",
+        "//platform/backend/workspace",
+        "//platform/testFramework",
+        "//platform/ide-core",
+        "//java/testFramework",
+        "//plugins/kotlin/base/facet",
+        "//java/idea-ui:ui-tests_test_lib",
+        "//plugins/kotlin/test-framework:test-framework_test_lib",
+        "//plugins/kotlin/project-configuration",
+        "//libraries/junit4",
+        "//platform/scratch/plugin",
+    ],
+)
+### auto-generated section `build intellij.kotlin.base.facet.tests` end
+
+### auto-generated section `iml intellij.kotlin.base.facet.tests` start
+exports_files(
+    [
+        "intellij.kotlin.base.facet.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.kotlin.base.facet.tests` end
+
+### auto-generated section `test intellij.kotlin.base.facet.tests` start
+jps_test(
+    name = "tests_test",
+    runtime_deps = [":tests_test_lib"],
+)
+### auto-generated section `test intellij.kotlin.base.facet.tests` end

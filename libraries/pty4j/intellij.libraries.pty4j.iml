@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_8" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/resources" type="java-resource" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module" module-name="intellij.libraries.jna" scope="RUNTIME" />
+    <orderEntry type="module-library" exported="">
+      <library name="pty4j" type="repository">
+        <properties include-transitive-deps="false" maven-id="org.jetbrains.pty4j:pty4j:0.14.0">
+          <verification>
+            <artifact url="file://$MAVEN_REPOSITORY$/org/jetbrains/pty4j/pty4j/0.14.0/pty4j-0.14.0.jar">
+              <sha256sum>4190d2a6afbfaf80b538fb5dff3978b541c344c07398ed317bb7c87e6d8a6745</sha256sum>
+            </artifact>
+          </verification>
+        </properties>
+        <CLASSES>
+          <root url="jar://$MAVEN_REPOSITORY$/org/jetbrains/pty4j/pty4j/0.14.0/pty4j-0.14.0.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="jar://$MAVEN_REPOSITORY$/org/jetbrains/pty4j/pty4j/0.14.0/pty4j-0.14.0-sources.jar!/" />
+        </SOURCES>
+      </library>
+    </orderEntry>
+  </component>
+</module>

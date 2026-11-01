@@ -1,0 +1,66 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `build intellij.platform.ijent.community.ui` start
+jvm_library(
+    name = "ui",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.ijent.community.ui",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//libraries/jediterm-core",
+        "//libraries/jediterm-ui",
+        "//platform/observable",
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinx/coroutines/core",
+        "//platform/eel",
+        "//libraries/jetbrains/annotations",
+        "//platform/util",
+        "//platform/eel-provider",
+        "//platform/ijent",
+        "//platform/ide-core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/core-api:core",
+        "//platform/progress/shared:ide-progress",
+        "//platform/platform-api:ide",
+        "//platform/workspace/storage",
+        "//platform/ijent/impl",
+        "//platform/core-ui",
+        "//platform/core-nio-fs",
+        "//platform/eel-nioFs-impl",
+        "//platform/projectModel-api:projectModel",
+        "//platform/platform-impl:ide-impl",
+        "//platform/util:util-ui",
+        "//platform/util/coroutines",
+        "//platform/lang-api:lang",
+        "//platform/execution",
+        "//platform/execution-impl",
+        "//platform/lang-impl",
+        "//platform/ide-core-impl",
+        "//platform/core-impl",
+        "//platform/util/progress",
+        "//platform/util/annotations",
+    ],
+)
+### auto-generated section `build intellij.platform.ijent.community.ui` end
+
+### auto-generated section `iml intellij.platform.ijent.community.ui` start
+exports_files(
+    [
+        "intellij.platform.ijent.community.ui.iml",
+        "resources/intellij.platform.ijent.community.ui.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.ijent.community.ui` end

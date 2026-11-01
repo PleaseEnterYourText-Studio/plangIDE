@@ -1,0 +1,57 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library", "jvm_provided_library", "resourcegroup")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.platform.icons` start
+content_module_jar(module = ":icons")
+### auto-generated section `dev intellij.platform.icons` end
+
+### auto-generated section `build intellij.platform.icons` start
+resourcegroup(
+    name = "icons_resources",
+    srcs = glob(
+        ["compatibilityResources/**/*"],
+    ),
+    strip_prefix = "compatibilityResources",
+)
+
+jvm_provided_library(
+    name = "libraries_jetbrains_annotations_provided",
+    lib = "//libraries/jetbrains/annotations",
+)
+
+jvm_library(
+    name = "icons",
+    srcs = glob(
+        [
+            "generated/**/*.kt",
+            "generated/**/*.java",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.icons",
+    resource_jars = [":icons_resources"],
+    resource_strip_prefix = "src",
+    resources = glob(
+        ["src/**/*"],
+        allow_empty = True,
+        exclude = ["src/**/icon-robots.txt"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//platform/icons-api",
+        ":libraries_jetbrains_annotations_provided",
+    ],
+)
+### auto-generated section `build intellij.platform.icons` end
+
+### auto-generated section `iml intellij.platform.icons` start
+exports_files(
+    [
+        "intellij.platform.icons.iml",
+        "src/intellij.platform.icons.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.icons` end

@@ -1,0 +1,86 @@
+// Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+package com.jetbrains.python.sdk.add.v2.venv
+
+import com.intellij.openapi.module.Module
+import com.intellij.openapi.observable.properties.ObservableProperty
+import com.intellij.openapi.ui.validation.DialogValidationRequestor
+import com.intellij.python.sdk.backend.PythonInterpreter
+import com.intellij.ui.dsl.builder.Panel
+import com.jetbrains.python.PyBundle.message
+import com.jetbrains.python.errorProcessing.PyResult
+import com.jetbrains.python.newProject.collector.InterpreterStatisticsInfo
+import com.jetbrains.python.sdk.ModuleOrProject
+import com.jetbrains.python.sdk.add.v2.DetectedSelectableInterpreter
+import com.jetbrains.python.sdk.add.v2.ExistingSelectableInterpreter
+import com.jetbrains.python.sdk.add.v2.InstallableSelectableInterpreter
+import com.jetbrains.python.sdk.add.v2.InterpreterWithPath
+import com.jetbrains.python.sdk.add.v2.ManuallyAddedSelectableInterpreter
+import com.jetbrains.python.sdk.add.v2.PathHolder
+import com.jetbrains.python.sdk.add.v2.PythonAddInterpreterModel
+import com.jetbrains.python.sdk.add.v2.PythonExistingEnvironmentConfigurator
+import com.jetbrains.python.sdk.add.v2.PythonInterpreterComboBox
+import com.jetbrains.python.sdk.add.v2.PythonInterpreterCreationTargets
+import com.jetbrains.python.sdk.add.v2.ValidatedPath
+import com.jetbrains.python.sdk.add.v2.mapDistinctSortedForExistingEnvironment
+import com.jetbrains.python.sdk.add.v2.pythonInterpreterComboBox
+import com.jetbrains.python.sdk.add.v2.setupSdk
+import com.jetbrains.python.sdk.add.v2.toStatisticsField
+import com.jetbrains.python.statistics.InterpreterCreationMode
+import com.jetbrains.python.statistics.InterpreterType
+import kotlinx.coroutines.CoroutineScope
+
+internal class PythonExistingEnvironmentSelector<P : PathHolder>(model: PythonAddInterpreterModel<P>, private val module: Module?) :
+  PythonExistingEnvironmentConfigurator<P>(model) {
+  private lateinit var comboBox: PythonInterpreterComboBox<P>
+  override val toolExecutable: ObservableProperty<ValidatedPath.Executable<P>?>? = null
+  override val toolExecutablePersister: suspend (P) -> Unit = { }
+
+  override fun setupUI(panel: Panel, validationRequestor: DialogValidationRequestor) {
+    with(panel) {
+      comboBox = pythonInterpreterComboBox(
+        model.fileSystem,
+        title = message("sdk.create.custom.python.path"),
+        selectedSdkProperty = model.state.selectedInterpreter,
+        validationRequestor = validationRequestor,
+        onPathSelected = model::addManuallyAddedPythonNotNecessarilySystem,
+        // Existing < 3.8 interpreters stay usable, but the IDE no longer provides pip/setuptools for them.
+        additionalValidation = { unsupportedPythonManagementWarning(it) },
+      )
+    }
+  }
+
+  override fun onShown(scope: CoroutineScope) {
+    comboBox.initialize(scope, model.allInterpreters.mapDistinctSortedForExistingEnvironment(module))
+  }
+
+  override suspend fun getOrCreateSdk(moduleOrProject: ModuleOrProject): PyResult<PythonInterpreter> {
+    // todo error handling, nullability issues
+    val interpreter: InterpreterWithPath<P> = when (val interpreter = model.state.selectedInterpreter.get()) {
+      is InstallableSelectableInterpreter, null -> throw AssertionError("This code should never be called and it is here due to lack of abstraction")
+      is DetectedSelectableInterpreter,
+      is ExistingSelectableInterpreter,
+      is ManuallyAddedSelectableInterpreter,
+        -> interpreter
+    }
+
+    val pythonInterpreter = interpreter.setupSdk(
+      moduleOrProject = moduleOrProject,
+      fileSystem = model.fileSystem,
+      targetPanelExtension = model.state.targetPanelExtension.get(),
+    )
+    return pythonInterpreter
+  }
+
+  override fun createStatisticsInfo(target: PythonInterpreterCreationTargets): InterpreterStatisticsInfo {
+    val statisticsTarget = target.toStatisticsField() // todo fix for wsl
+    return InterpreterStatisticsInfo(
+      type = InterpreterType.REGULAR,
+      target = statisticsTarget,
+      globalSitePackage = false,
+      makeAvailableToAllProjects = false,
+      previouslyConfigured = true,
+      isWSLContext = false, // todo fix for wsl
+      creationMode = InterpreterCreationMode.CUSTOM
+    )
+  }
+}

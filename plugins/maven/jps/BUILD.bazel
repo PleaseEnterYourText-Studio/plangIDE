@@ -1,0 +1,113 @@
+load("@community//build:bazel_targets_json.bzl", "current_bazel_targets_json")
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+BAZEL_TARGETS_JSON = current_bazel_targets_json()
+
+jps_test(
+    name = "jps-tests_test",
+    timeout = "short",
+    data = [
+        ":testData",
+        BAZEL_TARGETS_JSON,
+    ],
+    jvm_flags = [
+        "-Dintellij.build.bazel.targets.json.file=$(rlocationpath %s)" % BAZEL_TARGETS_JSON,
+    ],
+    tags = ["community-compiler-test"],
+    runtime_deps = [":jps-tests_test_lib"],
+)
+### skip generation section `test intellij.maven.jps.tests`
+
+filegroup(
+    name = "testData",
+    srcs = glob(["testData/**"]),
+)
+
+### auto-generated section `dev intellij.maven.jps` start
+content_module_jar(module = ":jps")
+### auto-generated section `dev intellij.maven.jps` end
+
+### auto-generated section `build intellij.maven.jps` start
+jvm_library(
+    name = "jps",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = "@community//:k11",
+    module_name = "intellij.maven.jps",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//jps/model-api:model",
+        "//jps/model-impl",
+        "//platform/util",
+        "//jps/jps-builders:build",
+        "//jps/model-serialization",
+        "//libraries/plexus-utils",
+        "//platform/util/jdom",
+        "//platform/util/base/multiplatform",
+        "//platform/util/base",
+        "//libraries/hash4j",
+        "//libraries/fastutil",
+    ],
+)
+### auto-generated section `build intellij.maven.jps` end
+
+### auto-generated section `iml intellij.maven.jps` start
+exports_files(
+    [
+        "intellij.maven.jps.iml",
+        "resources/intellij.maven.jps.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.maven.jps` end
+
+### auto-generated section `build intellij.maven.jps.tests` start
+jvm_library(
+    name = "jps-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "testSrc/**/*.kt",
+            "testSrc/**/*.java",
+            "testSrc/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.maven.jps.tests",
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//jps/model-api:model",
+        "//platform/util",
+        "//platform/testFramework",
+        "//platform/bazel-runfiles",
+        "//jps/jps-builders:build",
+        "//jps/model-serialization:model-serialization-tests_test_lib",
+        "//jps/jps-builders:build-tests_test_lib",
+        "//libraries/junit6",
+        "//plugins/maven/jps",
+    ],
+)
+### auto-generated section `build intellij.maven.jps.tests` end
+
+### auto-generated section `iml intellij.maven.jps.tests` start
+exports_files(
+    [
+        "intellij.maven.jps.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.maven.jps.tests` end

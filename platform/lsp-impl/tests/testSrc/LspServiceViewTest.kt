@@ -1,0 +1,215 @@
+package com.intellij.platform.lsp
+
+import com.intellij.execution.impl.ConsoleViewImpl
+import com.intellij.execution.impl.EditorHyperlinkSupport
+import com.intellij.execution.ui.ConsoleViewContentType
+import com.intellij.idea.TestFor
+import com.intellij.openapi.application.EDT
+import com.intellij.platform.lsp.common.assertContentType
+import com.intellij.platform.lsp.common.awaitConsoleText
+import com.intellij.platform.lsp.common.awaitErrorOutput
+import com.intellij.platform.lsp.common.awaitNotification
+import com.intellij.platform.lsp.common.collectNotifications
+import com.intellij.platform.lsp.common.configureServerSession
+import com.intellij.platform.lsp.common.stopFakeServers
+import com.intellij.platform.lsp.common.fakeLspIntegrationFixture
+import com.intellij.platform.lsp.impl.serviceView.LspServiceViewContributor
+import com.intellij.platform.lsp.impl.serviceView.LspServiceViewSupport
+import com.intellij.platform.lsp.impl.serviceView.LspTrafficPayloadHyperlinkInfo
+import com.intellij.platform.lsp.impl.serviceView.ShowLspServerLogAction
+import com.intellij.platform.testFramework.junit5.codeInsight.fixture.codeInsightFixture
+import com.intellij.testFramework.common.timeoutRunBlocking
+import com.intellij.testFramework.junit5.TestApplication
+import com.intellij.testFramework.junit5.fixture.moduleFixture
+import com.intellij.testFramework.junit5.fixture.projectFixture
+import com.intellij.testFramework.junit5.fixture.tempPathFixture
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
+import org.eclipse.lsp4j.MessageParams
+import org.eclipse.lsp4j.MessageType
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
+import kotlin.time.Duration.Companion.milliseconds
+
+@TestApplication
+internal class LspServiceViewTest {
+  companion object {
+    private val tempDirFixture = tempPathFixture()
+    private val projectFixture = projectFixture(tempDirFixture, openAfterCreation = true)
+    private val project by projectFixture
+
+    @Suppress("unused")
+    private val moduleFixture = projectFixture.moduleFixture(tempDirFixture, addPathToSourceRoot = true)
+  }
+
+  private val codeInsightFixture by codeInsightFixture(projectFixture, tempDirFixture)
+
+  @Suppress("unused")
+  private val fakeLspIntegration by projectFixture.fakeLspIntegrationFixture()
+
+  @Test
+  fun `lsp server is shown in services view and its console receives messages`() = timeoutRunBlocking {
+    val virtualFile = codeInsightFixture.configureByText("test.txt", "hello world").virtualFile
+    val serverSession = configureServerSession(project, virtualFile)
+
+    val contributor = LspServiceViewContributor()
+    val clients = contributor.getServices(project)
+    assertEquals(1, clients.size, "The started LSP server should be listed in the Services view")
+    val lspClient = clients.single()
+
+    serverSession.sendNotification(serverSession.LOG_MESSAGE) { MessageParams(MessageType.Warning, "log-message-marker") }
+    serverSession.sendNotification(serverSession.LOG_MESSAGE) { MessageParams(MessageType.Error, "error-message-marker") }
+    serverSession.sendNotification(serverSession.SHOW_MESSAGE) { MessageParams(MessageType.Info, "show-message-marker") }
+
+    val console = requireNotNull(LspServiceViewSupport.getInstance(project).getOrCreateConsole(lspClient)) {
+      "A console should exist for a tracked LSP client"
+    }
+    val markers = listOf("log-message-marker", "error-message-marker", "show-message-marker")
+    var consoleText = ""
+    while (markers.any { it !in consoleText }) {
+      delay(50.milliseconds)
+      consoleText = withContext(Dispatchers.EDT) { console.getConsoleTextForTests() }
+    }
+
+    assertTrue("Starting" in consoleText, "Console should contain the server starting lifecycle message, got:\n$consoleText")
+    assertTrue("Server initialized" in consoleText, "Console should contain the server initialized lifecycle message, got:\n$consoleText")
+    assertTrue("WARN" in consoleText, "The window/logMessage warning should be printed with its level tag, got:\n$consoleText")
+    assertTrue("ERROR" in consoleText, "The window/logMessage error should be printed with its level tag, got:\n$consoleText")
+    assertTrue("window/showMessage: show-message-marker" in consoleText,
+               "The window/showMessage message should be printed with the method tag, got:\n$consoleText")
+    assertTrue("request 'initialize' (id=" in consoleText,
+               "Outbound JSON-RPC requests should be printed, got:\n$consoleText")
+    assertTrue("response (id=" in consoleText,
+               "Inbound JSON-RPC responses should be printed, got:\n$consoleText")
+    assertTrue("notification 'window/logMessage'" in consoleText,
+               "Inbound JSON-RPC notifications should be printed, got:\n$consoleText")
+
+    withContext(Dispatchers.EDT) {
+      val consoleView = console.getConsoleViewForTests()
+
+      // the markers include the level tag because the bare marker also occurs earlier, in the raw `IN` traffic payload
+      assertContentType(consoleView, "WARN  log-message-marker", ConsoleViewContentType.LOG_WARNING_OUTPUT)
+      assertContentType(consoleView, "ERROR error-message-marker", ConsoleViewContentType.LOG_ERROR_OUTPUT)
+      assertContentType(consoleView, "window/showMessage: show-message-marker", ConsoleViewContentType.LOG_INFO_OUTPUT)
+      assertContentType(consoleView, "Server initialized", ConsoleViewContentType.SYSTEM_OUTPUT)
+      assertContentType(consoleView, "OUT  ", ConsoleViewContentType.LOG_DEBUG_OUTPUT)
+      assertContentType(consoleView, "IN   ", ConsoleViewContentType.LOG_VERBOSE_OUTPUT)
+
+      val trafficLinks = findTrafficHyperlinks(consoleView)
+      val initializeRequestLink = requireNotNull(trafficLinks["request 'initialize'"]) {
+        "The 'initialize' request header should be a hyperlink, found links: ${trafficLinks.keys}"
+      }
+      assertTrue("\"initialize\"" in initializeRequestLink.json,
+                 "The hyperlink should carry the raw request payload, got: ${initializeRequestLink.json.take(200)}")
+      assertTrue(initializeRequestLink.header.startsWith("→"), "An outbound payload popup title should use the outbound arrow")
+
+      val logMessageNotificationLink = requireNotNull(trafficLinks["notification 'window/logMessage'"]) {
+        "The 'window/logMessage' notification header should be a hyperlink, found links: ${trafficLinks.keys}"
+      }
+      assertTrue("log-message-marker" in logMessageNotificationLink.json,
+                 "The hyperlink should carry the raw notification payload, got: ${logMessageNotificationLink.json.take(200)}")
+      assertTrue(logMessageNotificationLink.header.startsWith("←"), "An inbound payload popup title should use the inbound arrow")
+    }
+
+    stopFakeServers(project)
+  }
+
+  @Test
+  @TestFor(issues = ["IJPL-257420"])
+  fun `server error output is printed to the console`() = timeoutRunBlocking {
+    val virtualFile = codeInsightFixture.configureByText("test.txt", "hello world").virtualFile
+    val serverSession = configureServerSession(project, virtualFile)
+    val lspClient = LspServiceViewContributor().getServices(project).single()
+    val console = requireNotNull(LspServiceViewSupport.getInstance(project).getOrCreateConsole(lspClient)) {
+      "A console should exist for a tracked LSP client"
+    }
+
+    // The second line comes in two chunks. The console must show it as one line.
+    // A "\r\n" pair can also come in two chunks, and a lone '\r' ends a line.
+    serverSession.writeErrorOutput("INFO first-stderr-line\nERROR stderr-marker: dup")
+    awaitErrorOutput(lspClient, "stderr-marker: dup")
+    serverSession.writeErrorOutput("licate key\r")
+    awaitErrorOutput(lspClient, "licate key")
+    serverSession.writeErrorOutput("\nprogress-marker 1%\rprogress-marker 2%\r\n")
+
+    val expectedLines = listOf("STDERR INFO first-stderr-line", "STDERR ERROR stderr-marker: duplicate key",
+                               "STDERR progress-marker 1%", "STDERR progress-marker 2%")
+    val consoleText = awaitConsoleText(console, expectedLines)
+    assertFalse("STDERR licate key" in consoleText, "A line in two chunks should be printed as one line, got:\n$consoleText")
+    assertEquals(4, consoleText.lines().count { it.contains("STDERR") },
+                 "Each line should be printed once, and an empty line not at all, got:\n$consoleText")
+    withContext(Dispatchers.EDT) {
+      assertContentType(console.getConsoleViewForTests(), expectedLines[1], ConsoleViewContentType.ERROR_OUTPUT)
+    }
+
+    stopFakeServers(project)
+  }
+
+  @Test
+  @TestFor(issues = ["IJPL-257420"])
+  fun `incomplete last line is printed when the server process terminates`() = timeoutRunBlocking {
+    val virtualFile = codeInsightFixture.configureByText("test.txt", "hello world").virtualFile
+    val serverSession = configureServerSession(project, virtualFile)
+    val lspClient = LspServiceViewContributor().getServices(project).single()
+    val console = requireNotNull(LspServiceViewSupport.getInstance(project).getOrCreateConsole(lspClient)) {
+      "A console should exist for a tracked LSP client"
+    }
+
+    serverSession.writeErrorOutput("ERROR tail-marker")
+    awaitErrorOutput(lspClient, "tail-marker")
+    serverSession.terminateProcess()
+
+    // After an unexpected stop, the client stays tracked, so its console stays too
+    val consoleText = awaitConsoleText(console, listOf("STDERR ERROR tail-marker", "Server terminated unexpectedly"))
+    assertEquals(1, consoleText.lines().count { "tail-marker" in it }, "The tail should be printed once, got:\n$consoleText")
+
+    stopFakeServers(project)
+  }
+
+  @Test
+  @TestFor(issues = ["IJPL-257420"])
+  fun `very long line is printed before its end comes`() = timeoutRunBlocking {
+    val virtualFile = codeInsightFixture.configureByText("test.txt", "hello world").virtualFile
+    val serverSession = configureServerSession(project, virtualFile)
+    val lspClient = LspServiceViewContributor().getServices(project).single()
+    val console = requireNotNull(LspServiceViewSupport.getInstance(project).getOrCreateConsole(lspClient)) {
+      "A console should exist for a tracked LSP client"
+    }
+
+    serverSession.writeErrorOutput("long-line-marker " + "x".repeat(20_000))
+    awaitConsoleText(console, listOf("STDERR long-line-marker xxx"))
+
+    stopFakeServers(project)
+  }
+
+  @Test
+  @TestFor(issues = ["IJPL-257420"])
+  fun `error message does not offer the server log when the descriptor does not opt in`() = timeoutRunBlocking {
+    collectNotifications(project) { notifications ->
+      val virtualFile = codeInsightFixture.configureByText("test.txt", "hello world").virtualFile
+      val serverSession = configureServerSession(project, virtualFile)
+      serverSession.sendNotification(serverSession.SHOW_MESSAGE) { MessageParams(MessageType.Error, "error-marker") }
+
+      val notification = awaitNotification(notifications, "error-marker")
+      assertFalse(notification.actions.any { it is ShowLspServerLogAction },
+                  "Without the opt-in, an error message should not offer to show the server log")
+
+      stopFakeServers(project)
+    }
+  }
+
+  /** Maps the hyperlink text (up to the `(id=...)` part) to its [LspTrafficPayloadHyperlinkInfo]. */
+  private fun findTrafficHyperlinks(consoleView: ConsoleViewImpl): Map<String, LspTrafficPayloadHyperlinkInfo> {
+    val editor = requireNotNull(consoleView.editor) { "The console editor should be initialized" }
+    return editor.markupModel.allHighlighters
+      .mapNotNull { highlighter ->
+        val info = EditorHyperlinkSupport.getHyperlinkInfo(highlighter) as? LspTrafficPayloadHyperlinkInfo ?: return@mapNotNull null
+        val text = editor.document.getText(highlighter.textRange).substringBefore(" (id=")
+        text to info
+      }
+      .toMap()
+  }
+}

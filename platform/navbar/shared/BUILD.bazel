@@ -1,0 +1,47 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.platform.navbar` start
+content_module_jar(module = ":navbar")
+### auto-generated section `dev intellij.platform.navbar` end
+
+### auto-generated section `build intellij.platform.navbar` start
+jvm_library(
+    name = "navbar",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.navbar",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    exports = ["@lib//:kotlin-stdlib"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/jetbrains/annotations",
+        "//platform/core-ui",
+        "//platform/util",
+        "//platform/ide-core-impl",
+        "//platform/lang-impl",
+        "//platform/platform-impl:ide-impl",
+    ],
+)
+### auto-generated section `build intellij.platform.navbar` end
+
+### auto-generated section `iml intellij.platform.navbar` start
+exports_files(
+    [
+        "intellij.platform.navbar.iml",
+        "resources/intellij.platform.navbar.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.navbar` end

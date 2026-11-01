@@ -1,0 +1,106 @@
+// Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+package com.intellij.platform.eel.impl.base
+
+import com.intellij.platform.eel.EelExecApi
+import com.intellij.platform.eel.SafeDeferred
+import com.intellij.platform.util.annotations.VisibleToClasses
+import kotlinx.coroutines.CompletableDeferred
+import org.jetbrains.annotations.ApiStatus
+import java.util.concurrent.ConcurrentHashMap
+
+/**
+ * [makeEnvironmentVariablesDeferred] MUST return deferreds with `CoroutineStart.LAZY`.
+ */
+@ApiStatus.Internal
+@VisibleToClasses(
+  "com.intellij.platform.eel.impl.local.EelLocalExecPosixApi",
+  "com.intellij.platform.ijent.impl.base.GrpcIjentExecApiDelegate",
+)
+class EelExecApiEnvironmentVariableCache(
+  private val makeEnvironmentVariablesDeferred: (EelExecApi.EnvironmentVariablesOptions.Mode) -> SafeDeferred<Map<String, String>>,
+) {
+  /**
+   * If the first feature is present, it is already completed successfully.
+   * The second feature can be in any state.
+   */
+  @JvmInline
+  private value class EnvVarCache(private val pair: Pair<SafeDeferred<Map<String, String>>?, SafeDeferred<Map<String, String>>>) {
+    val envVarsInProgress: SafeDeferred<Map<String, String>> get() = pair.second
+
+    val latestKnownEnvVars: SafeDeferred<Map<String, String>>?
+      get() =
+        when (val s = envVarsInProgress.state) {
+          is SafeDeferred.State.Completed<*> -> envVarsInProgress
+          is SafeDeferred.State.Unsuccessful, SafeDeferred.State.Active -> pair.first
+        }
+  }
+
+  private val environmentVariablesCache = ConcurrentHashMap<EelExecApi.EnvironmentVariablesOptions.Mode, EnvVarCache>()
+
+  fun getDeferred(
+    mode: EelExecApi.EnvironmentVariablesOptions.Mode,
+    opts: EelExecApi.EnvironmentVariablesOptions,
+  ): EelExecApi.EnvironmentVariablesDeferred {
+    var newEnvVarCache: EnvVarCache
+
+    do {
+      val envVarCache = environmentVariablesCache[mode]
+      val successfullyUpdated: Boolean
+
+      if (envVarCache == null) {
+        newEnvVarCache = EnvVarCache(null to makeEnvironmentVariablesDeferred(mode))
+        successfullyUpdated = environmentVariablesCache.putIfAbsent(mode, newEnvVarCache) == null
+      }
+      else {
+        val latestKnownEnvVars = envVarCache.latestKnownEnvVars
+        if (!opts.onlyActual && latestKnownEnvVars != null) {
+          return EelExecApi.EnvironmentVariablesDeferred(latestKnownEnvVars)
+        }
+
+        when (envVarCache.envVarsInProgress.state) {
+          SafeDeferred.State.Active, is SafeDeferred.State.Unsuccessful -> {
+            return EelExecApi.EnvironmentVariablesDeferred(envVarCache.envVarsInProgress)
+          }
+
+          is SafeDeferred.State.Completed<*> -> {
+            // read again after checking isCompleted to avoid TOCTOU race
+            val latestKnownEnvVarsNew = envVarCache.latestKnownEnvVars
+            newEnvVarCache = EnvVarCache(latestKnownEnvVarsNew to makeEnvironmentVariablesDeferred(mode))
+            successfullyUpdated = environmentVariablesCache.replace(mode, envVarCache, newEnvVarCache)
+          }
+        }
+      }
+    }
+    while (!successfullyUpdated)
+
+    newEnvVarCache.envVarsInProgress.start()
+    return EelExecApi.EnvironmentVariablesDeferred(newEnvVarCache.envVarsInProgress)
+  }
+
+  fun updateCache(
+    mode: EelExecApi.EnvironmentVariablesOptions.Mode,
+    envVars: Map<String, String>,
+  ) {
+    val completedDeferred = SafeDeferred(CompletableDeferred(envVars))
+    var newEnvVarCache: EnvVarCache
+
+    do {
+      val envVarCache = environmentVariablesCache[mode]
+      val successfullyUpdated: Boolean
+
+      if (envVarCache == null) {
+        newEnvVarCache = EnvVarCache(null to completedDeferred)
+        successfullyUpdated = environmentVariablesCache.putIfAbsent(mode, newEnvVarCache) == null
+      }
+      else {
+        newEnvVarCache = EnvVarCache(completedDeferred to envVarCache.envVarsInProgress)
+        successfullyUpdated = environmentVariablesCache.replace(mode, envVarCache, newEnvVarCache)
+      }
+    }
+    while (!successfullyUpdated)
+  }
+
+  fun clear() {
+    environmentVariablesCache.clear()
+  }
+}

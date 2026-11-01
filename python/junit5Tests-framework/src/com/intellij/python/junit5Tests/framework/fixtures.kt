@@ -1,0 +1,104 @@
+package com.intellij.python.junit5Tests.framework
+
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.readAction
+import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.service
+import com.intellij.openapi.vfs.refreshAndFindVirtualFile
+import com.intellij.openapi.vfs.toNioPathOrNull
+import com.intellij.platform.util.coroutines.childScope
+import com.intellij.psi.PsiDirectory
+import com.intellij.psi.PsiFile
+import com.intellij.testFramework.junit5.fixture.TestFixture
+import com.intellij.testFramework.junit5.fixture.testFixture
+import com.jetbrains.python.errorProcessing.ErrorSink
+import com.jetbrains.python.errorProcessing.PyErrorDetail
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.job
+import kotlinx.coroutines.withContext
+import org.jetbrains.annotations.TestOnly
+import java.nio.file.Path
+import java.util.UUID
+import kotlin.io.path.createDirectories
+
+/** A directory named [name] inside the path of this fixture. The parent fixture deletes the whole tree. */
+@TestOnly
+fun TestFixture<Path>.subdirectoryFixture(name: String): TestFixture<Path> = testFixture(name) {
+  val parent = this@subdirectoryFixture.init()
+  val path = withContext(Dispatchers.IO) { parent.resolve(name).createDirectories() }
+  initialized(path) {}
+}
+
+/**
+ * [kotlinx.coroutines.CoroutineScope] that is limited by [com.intellij.openapi.application.Application]
+ */
+@TestOnly
+fun applicationScope(name: String = UUID.randomUUID().toString()): TestFixture<CoroutineScope> = testFixture {
+  @Service
+  class MyService(val scope: CoroutineScope)
+
+  var unhandledException: Throwable? = null
+  val handler = CoroutineExceptionHandler { _, exception ->
+   unhandledException = exception
+   throw exception
+  }
+  val scope = ApplicationManager.getApplication().service<MyService>().scope.childScope(name, handler)
+  initialized(scope) {
+    scope.coroutineContext.job.cancelAndJoin()
+    scope.cancel()
+    unhandledException?.let {
+      throw it
+    }
+  }
+}
+
+/**
+ * [ErrorSink] that collects errors into a list.
+ * On teardown, asserts that no unhandled errors remain.
+ * Use [errors] to inspect collected errors and [clear] to acknowledge them.
+ */
+@TestOnly
+class CollectingErrorSink internal constructor() : ErrorSink {
+  val errors: List<PyErrorDetail>
+    field = mutableListOf()
+
+  override suspend fun emit(value: PyErrorDetail) {
+    errors.add(value)
+  }
+
+  fun clear() {
+    errors.clear()
+  }
+}
+
+@TestOnly
+fun errorSinkFixture(): TestFixture<CollectingErrorSink> = testFixture {
+  val sink = CollectingErrorSink()
+  initialized(sink) {
+    check(sink.errors.isEmpty()) { "Unhandled errors in ErrorSink: ${sink.errors}" }
+  }
+}
+
+/**
+ * The source root must be on the local file system. An in-memory file system is not supported.
+ */
+@TestOnly
+fun TestFixture<PsiDirectory>.psiFileFixture(fileRelativePath: Path): TestFixture<PsiFile> = testFixture { _ ->
+  val sourceRootDirectory = this@psiFileFixture.init()
+  val rootVirtualFile = sourceRootDirectory.virtualFile
+  val rootPath = rootVirtualFile.toNioPathOrNull() ?: error("Can't get NIO path for $rootVirtualFile")
+  val filePath = rootPath.resolve(fileRelativePath)
+  val virtualFile = withContext(Dispatchers.IO) {
+    filePath.refreshAndFindVirtualFile() ?: error("Can't resolve VirtualFile for $filePath")
+  }
+
+  val psiFile = readAction {
+    sourceRootDirectory.manager.findFile(virtualFile)
+    ?: error("Can't find PsiFile for $virtualFile")
+  }
+  initialized(psiFile) {}
+}

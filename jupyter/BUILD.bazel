@@ -1,0 +1,50 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `build intellij.notebooks.jupyter.core` start
+jvm_library(
+    name = "notebooks-jupyter-core",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+            "gen/**/*.kt",
+            "gen/**/*.java",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.notebooks.jupyter.core",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+        allow_empty = True,
+        exclude = ["resources/**/icon-robots.txt"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//platform/core-api:core",
+        "//platform/core-impl",
+        "//platform/built-in-server-api:builtInServer",
+        "//platform/platform-util-netty:ide-util-netty",
+        "//libraries/http-client",
+        "//platform/util",
+        "//libraries/netty/buffer",
+        "//libraries/netty/codec-http:libraries-netty-codec-http",
+        "//platform/projectModel-api:projectModel",
+        "//platform/analysis-api:analysis",
+        "//platform/platform-impl:ide-impl",
+    ],
+)
+### auto-generated section `build intellij.notebooks.jupyter.core` end
+
+### auto-generated section `iml intellij.notebooks.jupyter.core` start
+exports_files(
+    [
+        "intellij.notebooks.jupyter.core.iml",
+        "resources/intellij.notebooks.jupyter.core.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.notebooks.jupyter.core` end

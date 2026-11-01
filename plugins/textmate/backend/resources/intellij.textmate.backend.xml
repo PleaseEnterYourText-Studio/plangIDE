@@ -1,0 +1,34 @@
+<idea-plugin>
+  <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+  <dependencies>
+    <module name="intellij.platform.backend"/>
+    <module name="intellij.textmate.common"/>
+    <module name="intellij.spellchecker"/>
+    <module name="intellij.libraries.kotlinx.collections.immutable"/>
+    <module name="intellij.platform.analysis"/>
+    <module name="intellij.platform.codeStyle"/>
+    <module name="intellij.platform.core"/>
+    <module name="intellij.platform.core.impl"/>
+    <module name="intellij.platform.editor.ui"/>
+    <module name="intellij.platform.ide.core"/>
+    <module name="intellij.platform.ide.impl"/>
+    <module name="intellij.platform.indexing.impl"/>
+    <module name="intellij.platform.lang.impl"/>
+    <module name="intellij.platform.util.ui"/>
+  </dependencies>
+  <!-- endregion -->
+  <extensions defaultExtensionNs="com.intellij">
+    <customLiveTemplate implementation="org.jetbrains.plugins.textmate.editor.TextMateCustomLiveTemplate"/>
+    <todoIndexer filetype="textmate" implementationClass="com.intellij.psi.impl.cache.impl.todo.PlainTextTodoIndexer"/>
+    <idIndexer filetype="textmate" implementationClass="com.intellij.psi.impl.cache.impl.id.PlainTextIdIndexer"/>
+    <indexPatternBuilder implementation="org.jetbrains.plugins.textmate.TextMatePatternBuilder"/>
+    <completion.contributor id="TextMateCompletionContributor" language="textmate"
+                            implementationClass="org.jetbrains.plugins.textmate.editor.TextMateCompletionContributor" order="last"/>
+    <applicationConfigurable groupId="editor"
+                             bundle="messages.IdeBundle"
+                             key="configurable.TextMateConfigurableProvider.display.name"
+                             id="reference.settingsdialog.textmate.bundles"
+                             provider="org.jetbrains.plugins.textmate.configuration.TextMateConfigurableProvider"/>
+    <spellchecker.support language="textmate" implementationClass="org.jetbrains.plugins.textmate.spellchecker.TextMateSpellingStrategy"/>
+  </extensions>
+</idea-plugin>

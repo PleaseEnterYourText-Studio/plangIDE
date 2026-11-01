@@ -1,0 +1,55 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.platform.inline.completion` start
+content_module_jar(module = ":inline-completion")
+### auto-generated section `dev intellij.platform.inline.completion` end
+
+### auto-generated section `build intellij.platform.inline.completion` start
+jvm_library(
+    name = "inline-completion",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.inline.completion",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/jetbrains/annotations",
+        "//platform/code-style-api:codeStyle",
+        "//platform/core-api:core",
+        "//platform/projectModel-api:projectModel",
+        "//platform/util",
+        "//platform/ide-core-impl",
+        "//platform/ide-core",
+        "//platform/platform-impl/codeinsight-inline:ide-codeinsight-inline",
+        "//platform/util:util-ui",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/platform-impl:ide-impl",
+        "//platform/lang-api:lang",
+        "//platform/core-ui",
+        "//platform/lang-impl",
+        "//platform/analysis-api:analysis",
+    ],
+)
+### auto-generated section `build intellij.platform.inline.completion` end
+
+### auto-generated section `iml intellij.platform.inline.completion` start
+exports_files(
+    [
+        "intellij.platform.inline.completion.iml",
+        "resources/intellij.platform.inline.completion.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.inline.completion` end

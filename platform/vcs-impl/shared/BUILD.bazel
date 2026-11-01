@@ -1,0 +1,139 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+jps_test(
+    name = "vcs-impl-shared-tests_test",
+    timeout = "moderate",
+    tags = ["community-aggregator"],
+    runtime_deps = [
+        ":vcs-impl-shared-tests_test_lib",
+        "//platform/vcs/plugin",
+    ],
+)
+### skip generation section `test intellij.platform.vcs.impl.shared.tests`
+
+### auto-generated section `dev intellij.platform.vcs.impl.shared` start
+content_module_jar(module = ":shared")
+### auto-generated section `dev intellij.platform.vcs.impl.shared` end
+
+### auto-generated section `build intellij.platform.vcs.impl.shared` start
+jvm_library(
+    name = "shared",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.vcs.impl.shared",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/kernel/rpc.lite",
+        "@lib//:kotlin-stdlib",
+        "//platform/core-api:core",
+        "//platform/project/shared:project",
+        "//platform/platform-api:ide",
+        "//platform/diff-impl",
+        "//platform/projectModel-api:projectModel",
+        "//platform/util:util-ui",
+        "//libraries/kotlinx/serialization/core",
+        "//libraries/kotlinx/serialization/json",
+        "//platform/platform-impl/rpc",
+        "//platform/diagnostic",
+        "//libraries/opentelemetry",
+        "//platform/platform-impl:ide-impl",
+        "//platform/platform-impl/error-tree-view",
+        "//platform/core-ui",
+        "//platform/util/coroutines",
+        "//platform/vcs-api/vcs-api-core:vcs-core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/lang-impl",
+        "//platform/util/concurrency",
+        "//platform/vcs-api/shared",
+        "//libraries/fastutil",
+        "//platform/util/jdom",
+        "//platform/ide-core-impl",
+        "//platform/ide-core",
+        "//platform/diagnostic/telemetry",
+        "//platform/core-impl",
+        "//platform/diff-api:diff",
+        "//platform/remote-topics/shared:rpc-topics",
+    ],
+)
+### auto-generated section `build intellij.platform.vcs.impl.shared` end
+
+### auto-generated section `iml intellij.platform.vcs.impl.shared` start
+exports_files(
+    [
+        "intellij.platform.vcs.impl.shared.iml",
+        "resources/intellij.platform.vcs.impl.shared.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.vcs.impl.shared` end
+
+### auto-generated section `build intellij.platform.vcs.impl.shared.tests` start
+jvm_library(
+    name = "vcs-impl-shared-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "testSrc/**/*.kt",
+            "testSrc/**/*.java",
+            "testSrc/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    associates = ["//platform/vcs-impl/shared"],
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//platform/vcs/plugin",
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+        "//community-resources:customization",
+    ],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//platform/core-api:core",
+        "//platform/platform-api:ide",
+        "//platform/diff-impl",
+        "//platform/util:util-ui",
+        "//platform/platform-impl:ide-impl",
+        "//platform/core-ui",
+        "//platform/vcs-api/vcs-api-core:vcs-core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/lang-impl",
+        "//platform/vcs-api/shared",
+        "//platform/ide-core-impl",
+        "//platform/ide-core",
+        "//platform/platform-impl/rpc",
+        "//platform/kernel/rpc",
+        "//platform/testFramework",
+        "//platform/testFramework/junit5",
+        "//platform/project/shared:project",
+        "//platform/projectModel-api:projectModel",
+        "//libraries/mockito",
+        "//platform/core-impl",
+        "//libraries/junit4",
+        "//libraries/junit6",
+    ],
+)
+### auto-generated section `build intellij.platform.vcs.impl.shared.tests` end
+
+### auto-generated section `iml intellij.platform.vcs.impl.shared.tests` start
+exports_files(
+    [
+        "intellij.platform.vcs.impl.shared.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.vcs.impl.shared.tests` end

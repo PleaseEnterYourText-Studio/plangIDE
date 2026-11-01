@@ -1,0 +1,162 @@
+// Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+package com.jetbrains.python.psi.impl.stubs;
+
+import com.google.common.collect.RangeSet;
+import com.intellij.openapi.util.Version;
+import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.psi.stubs.StubElement;
+import com.intellij.psi.util.QualifiedName;
+import com.intellij.util.ObjectUtils;
+import com.jetbrains.python.PyStubElementTypes;
+import com.jetbrains.python.psi.PyTargetExpression;
+import com.jetbrains.python.psi.stubs.PyLiteralKind;
+import com.jetbrains.python.psi.stubs.PyTargetExpressionStub;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+
+public class PyTargetExpressionStubImpl extends PyVersionSpecificStubBase<PyTargetExpression> implements PyTargetExpressionStub {
+  private final String myName;
+  private final InitializerType myInitializerType;
+  private final QualifiedName myInitializer;
+  private final @Nullable PyLiteralKind myAssignedLiteralKind;
+  private final @Nullable String myAssignedLiteralValue;
+  private final boolean myQualified;
+  private final boolean myTypeAliasLikeReference;
+  private final String myTypeComment;
+  private final String myAnnotation;
+  private final boolean myHasAssignedValue;
+
+  private final @Nullable String myDocString;
+  private final CustomTargetExpressionStub myCustomStub;
+
+  public PyTargetExpressionStubImpl(String name,
+                                    @Nullable String docString,
+                                    @Nullable String typeComment,
+                                    @Nullable String annotation,
+                                    boolean hasAssignedValue,
+                                    CustomTargetExpressionStub customStub,
+                                    StubElement parent,
+                                    @NotNull RangeSet<Version> versions) {
+    super(parent, PyStubElementTypes.TARGET_EXPRESSION, versions);
+    myName = name;
+    myTypeComment = typeComment;
+    myAnnotation = annotation;
+    myHasAssignedValue = hasAssignedValue;
+    myInitializerType = InitializerType.Custom;
+    myAssignedLiteralKind = null;
+    myAssignedLiteralValue = null;
+    myInitializer = null;
+    myQualified = false;
+    myTypeAliasLikeReference = false;
+    myCustomStub = customStub;
+    myDocString = docString;
+  }
+
+  public PyTargetExpressionStubImpl(final String name,
+                                    @Nullable String docString,
+                                    final InitializerType initializerType,
+                                    final QualifiedName initializer,
+                                    final @Nullable PyLiteralKind assignedLiteralKind,
+                                    final @Nullable String assignedLiteralValue,
+                                    final boolean qualified,
+                                    boolean typeAliasLikeReference,
+                                    @Nullable String typeComment,
+                                    @Nullable String annotation,
+                                    boolean hasAssignedValue,
+                                    final StubElement parentStub,
+                                    @NotNull RangeSet<Version> versions) {
+    super(parentStub, PyStubElementTypes.TARGET_EXPRESSION, versions);
+    myName = name;
+    myTypeComment = typeComment;
+    myAnnotation = annotation;
+    myHasAssignedValue = hasAssignedValue;
+    assert initializerType != InitializerType.Custom;
+    myInitializerType = initializerType;
+    myInitializer = initializer;
+    myAssignedLiteralKind = assignedLiteralKind;
+    myAssignedLiteralValue = assignedLiteralValue;
+    myQualified = qualified;
+    myTypeAliasLikeReference = typeAliasLikeReference;
+    myCustomStub = null;
+    myDocString = docString;
+  }
+
+  @Override
+  public String getName() {
+    return myName;
+  }
+
+  @Override
+  public InitializerType getInitializerType() {
+    return myInitializerType;
+  }
+
+  @Override
+  public QualifiedName getInitializer() {
+    return myInitializer;
+  }
+
+  @Override
+  public @Nullable PyLiteralKind getAssignedLiteralKind() {
+    return myAssignedLiteralKind;
+  }
+
+  @Override
+  public @Nullable String getAssignedLiteralValue() {
+    return myAssignedLiteralValue;
+  }
+
+  @Override
+  public boolean isQualified() {
+    return myQualified;
+  }
+
+  @Override
+  public boolean isTypeAliasLikeReference() {
+    return myTypeAliasLikeReference;
+  }
+
+  @Override
+  public @Nullable <T> T getCustomStub(Class<T> stubClass) {
+    return ObjectUtils.tryCast(myCustomStub, stubClass);
+  }
+
+  @Override
+  public @Nullable String getDocString() {
+    return myDocString;
+  }
+
+  @Override
+  public @Nullable String getTypeComment() {
+    return myTypeComment;
+  }
+
+  @Override
+  public @Nullable String getAnnotation() {
+    return myAnnotation;
+  }
+
+  @Override
+  public boolean hasAssignedValue() {
+    return myHasAssignedValue;
+  }
+
+  @Override
+  public String toString() {
+    return "PyTargetExpressionStubImpl{" +
+           "myName='" + myName + '\'' +
+           ", myInitializerType=" + myInitializerType +
+           ", myInitializer=" + myInitializer +
+           ", myAssignedLiteralKind=" + myAssignedLiteralKind +
+           ", myAssignedLiteralValue=" + myAssignedLiteralValue +
+           ", myQualified=" + myQualified +
+           ", myTypeAliasLikeReference=" + myTypeAliasLikeReference +
+           ", myTypeComment='" + myTypeComment + '\'' +
+           ", myAnnotation='" + myAnnotation + '\'' +
+           ", myHasAssignedValue=" + myHasAssignedValue +
+           ", myDocString='" + (myDocString != null ? StringUtil.escapeStringCharacters(myDocString) : null) + '\'' +
+           ", myCustomStub=" + myCustomStub +
+           '}';
+  }
+}

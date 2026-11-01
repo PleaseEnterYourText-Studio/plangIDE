@@ -1,0 +1,86 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+jps_test(
+    name = "execution-process-mediator-common-tests_test",
+    timeout = "moderate",
+    jvm_flags = ["-ea"],
+    tags = ["community-aggregator"],
+    runtime_deps = [":execution-process-mediator-common-tests_test_lib"],
+)
+### skip generation section `test intellij.execution.process.mediator.common.tests`
+
+### auto-generated section `build intellij.execution.process.mediator.common` start
+jvm_library(
+    name = "common",
+    srcs = glob(
+        [
+            "gen/**/*.kt",
+            "gen/**/*.java",
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.execution.process.mediator.common",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinx/coroutines/core",
+        "//libraries/jetbrains/annotations",
+        "//libraries/guava",
+        "//libraries/protobuf",
+        "//libraries/javax/annotation",
+        "//libraries/grpc",
+    ],
+)
+### auto-generated section `build intellij.execution.process.mediator.common` end
+
+### auto-generated section `iml intellij.execution.process.mediator.common` start
+exports_files(
+    [
+        "intellij.execution.process.mediator.common.iml",
+        "resources/intellij.execution.process.mediator.common.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.execution.process.mediator.common` end
+
+### auto-generated section `build intellij.execution.process.mediator.common.tests` start
+jvm_library(
+    name = "execution-process-mediator-common-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "testSrc/**/*.kt",
+            "testSrc/**/*.java",
+            "testSrc/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    associates = ["//platform/execution-process-mediator/common"],
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/junit6",
+        "@lib//:execution-process-mediator-common-tests-com-willowtreeapps-assertk-assertk-jvm",
+        "//libraries/grpc",
+    ],
+)
+### auto-generated section `build intellij.execution.process.mediator.common.tests` end
+
+### auto-generated section `iml intellij.execution.process.mediator.common.tests` start
+exports_files(
+    [
+        "intellij.execution.process.mediator.common.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.execution.process.mediator.common.tests` end

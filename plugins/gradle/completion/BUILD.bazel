@@ -1,0 +1,144 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//build:compiler-options.bzl", "create_kotlinc_options")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+jps_test(
+    name = "completion-tests_test",
+    timeout = "moderate",
+    sandbox = True,
+    tags = ["community-aggregator"],
+    runtime_deps = [":completion-tests_test_lib"],
+)
+### skip generation section `test intellij.gradle.completion.tests`
+
+### auto-generated section `dev intellij.gradle.completion` start
+content_module_jar(module = ":completion")
+### auto-generated section `dev intellij.gradle.completion` end
+
+### auto-generated section `build intellij.gradle.completion` start
+create_kotlinc_options(
+    name = "custom_completion",
+    opt_in = [
+        "kotlinx.serialization.InternalSerializationApi",
+        "kotlinx.serialization.ExperimentalSerializationApi",
+        "kotlinx.coroutines.ExperimentalCoroutinesApi",
+    ],
+)
+
+jvm_library(
+    name = "completion",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = ":custom_completion",
+    module_name = "intellij.gradle.completion",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//plugins/gradle",
+        "//platform/projectModel-api:projectModel",
+        "//plugins/repository-search/completion",
+        "//platform/core-api:core",
+        "//platform/platform-api:ide",
+        "//platform/core-impl",
+        "//platform/lang-api:lang",
+        "//platform/platform-impl:ide-impl",
+        "//platform/util-ex",
+        "@lib//:kotlin-stdlib",
+        "//platform/util/concurrency",
+        "//libraries/kotlinx/coroutines/core",
+        "//libraries/io",
+        "//platform/eel",
+        "//platform/external-system-api:externalSystem",
+        "//platform/analysis-api:analysis",
+        "//platform/analysis-impl",
+        "//platform/eel-provider",
+        "//platform/backend/observation",
+        "//platform/util/text-matching",
+        "//platform/statistics",
+        "//platform/lang-impl",
+        "//platform/util:util-ui",
+        "//platform/ide-core",
+        "//platform/editor-ui-api:editor-ui",
+    ],
+)
+### auto-generated section `build intellij.gradle.completion` end
+
+### auto-generated section `iml intellij.gradle.completion` start
+exports_files(
+    [
+        "intellij.gradle.completion.iml",
+        "resources/intellij.gradle.completion.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.gradle.completion` end
+
+### auto-generated section `build intellij.gradle.completion.tests` start
+create_kotlinc_options(
+    name = "custom_completion-tests",
+    opt_in = [
+        "kotlinx.serialization.InternalSerializationApi",
+        "kotlinx.serialization.ExperimentalSerializationApi",
+        "kotlinx.coroutines.ExperimentalCoroutinesApi",
+    ],
+)
+
+jvm_library(
+    name = "completion-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "tests/**/*.kt",
+            "tests/**/*.java",
+            "tests/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = ":custom_completion-tests",
+    module_name = "intellij.gradle.completion.tests",
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+        "//community-resources:customization",
+    ],
+    deps = [
+        # do not sort,
+        "//plugins/gradle",
+        "//platform/core-api:core",
+        "//platform/core-impl",
+        "//platform/lang-api:lang",
+        "//platform/platform-impl:ide-impl",
+        "//platform/testFramework",
+        "//platform/testFramework/junit5",
+        "@lib//:kotlin-stdlib",
+        "//platform/analysis-api:analysis",
+        "//platform/analysis-impl",
+        "//platform/util/text-matching",
+        "//plugins/gradle/completion",
+        "//plugins/repository-search/completion",
+        "//libraries/junit6",
+        "//libraries/junit6-params",
+    ],
+)
+### auto-generated section `build intellij.gradle.completion.tests` end
+
+### auto-generated section `iml intellij.gradle.completion.tests` start
+exports_files(
+    [
+        "intellij.gradle.completion.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.gradle.completion.tests` end

@@ -1,0 +1,45 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.markdown.spellchecker` start
+content_module_jar(module = ":spellchecker")
+### auto-generated section `dev intellij.markdown.spellchecker` end
+
+### auto-generated section `build intellij.markdown.spellchecker` start
+jvm_library(
+    name = "spellchecker",
+    srcs = glob(
+        [
+            "src/main/kotlin/**/*.kt",
+            "src/main/kotlin/**/*.java",
+            "src/main/kotlin/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.markdown.spellchecker",
+    resource_strip_prefix = "src/main/resources",
+    resources = glob(
+        ["src/main/resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    runtime_deps = ["//platform/backend"],
+    deps = [
+        # do not sort,
+        "//plugins/markdown/core:markdown",
+        "//platform/core-api:core",
+        "//platform/util",
+        "//platform/core-impl",
+        "//spellchecker",
+    ],
+)
+### auto-generated section `build intellij.markdown.spellchecker` end
+
+### auto-generated section `iml intellij.markdown.spellchecker` start
+exports_files(
+    [
+        "intellij.markdown.spellchecker.iml",
+        "src/main/resources/intellij.markdown.spellchecker.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.markdown.spellchecker` end

@@ -1,0 +1,196 @@
+// Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+package com.intellij.platform.todo.backend.rpc
+
+import com.intellij.ide.todo.TodoConfiguration
+import com.intellij.ide.todo.TodoConfigurationPropertyChangeListener
+import com.intellij.ide.todo.TodoFilter
+import com.intellij.ide.todo.model.TodoScope
+import com.intellij.ide.todo.model.toSearchScope
+import com.intellij.ide.todo.rpc.TodoEvent
+import com.intellij.ide.todo.rpc.TodoFilesWatchRequest
+import com.intellij.ide.todo.rpc.TodoRemoteApi
+import com.intellij.ide.todo.rpc.toTodoFilter
+import com.intellij.ide.vfs.VirtualFileId
+import com.intellij.ide.vfs.rpcId
+import com.intellij.ide.vfs.virtualFile
+import com.intellij.openapi.Disposable
+import com.intellij.openapi.application.readAction
+import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.blockingContextToIndicator
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Disposer
+import com.intellij.openapi.vcs.FileStatusListener
+import com.intellij.openapi.vcs.FileStatusManager
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.platform.project.ProjectId
+import com.intellij.platform.project.findProjectOrNull
+import com.intellij.platform.todo.backend.model.TodoBackendPsiListener
+import com.intellij.platform.todo.backend.model.TodoFileResultBuilder.buildTodoFileResult
+import com.intellij.psi.PsiManager
+import com.intellij.psi.search.PsiTodoSearchHelper
+import com.intellij.psi.search.SearchScope
+import com.intellij.util.asDisposable
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.ProducerScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.buffer
+import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.launch
+
+private val LOG: Logger = logger<TodoRemoteApiImpl>()
+
+internal class TodoRemoteApiImpl : TodoRemoteApi {
+
+  override fun watchTodoFiles(
+    projectId: ProjectId,
+    request: TodoFilesWatchRequest,
+  ): Flow<TodoEvent> = channelFlow {
+    val project = projectId.findProjectOrNull() ?: return@channelFlow
+    val filter = request.filter?.toTodoFilter()
+    val searchScope = readAction { request.scope.toSearchScope(project) }
+
+    val flowDisposable = this@channelFlow.asDisposable()
+    var scanDisposable: Disposable? = null
+
+    val fileChangesQueue = Channel<VirtualFile>(Channel.UNLIMITED)
+    var initialScanJob: Job? = null
+
+    fun scheduleInitialScan() {
+      initialScanJob?.cancel()
+      scanDisposable?.let(Disposer::dispose)
+
+      val currentScanDisposable = Disposer.newDisposable(flowDisposable)
+      scanDisposable = currentScanDisposable
+
+      initialScanJob = launch {
+        readAction {
+          blockingContextToIndicator {
+            sendInitialScanEvents(project, request.scope, searchScope, filter)
+          }
+          PsiManager.getInstance(project).addPsiTreeChangeListener(
+            TodoBackendPsiListener(::scheduleInitialScan) { file -> fileChangesQueue.trySend(file) },
+            currentScanDisposable
+          )
+        }
+      }
+    }
+
+    FileStatusManager.getInstance(project).addFileStatusListener(object : FileStatusListener {
+      override fun fileStatusesChanged() = scheduleInitialScan()
+      override fun fileStatusChanged(virtualFile: VirtualFile) { fileChangesQueue.trySend(virtualFile) }
+    }, flowDisposable)
+
+    launch {
+      for (file in fileChangesQueue) {
+        scheduleFileChanges(project, file, searchScope, filter)
+      }
+    }
+
+    project.messageBus.connect(flowDisposable).subscribe(
+      TodoConfigurationPropertyChangeListener.TOPIC,
+      TodoConfigurationPropertyChangeListener { event ->
+        if (event.propertyName == TodoConfiguration.PROP_TODO_PATTERNS ||
+            event.propertyName == TodoConfiguration.PROP_TODO_FILTERS ||
+            event.propertyName == TodoConfiguration.PROP_MULTILINE) {
+          scheduleInitialScan()
+        }
+      }
+    )
+
+    scheduleInitialScan()
+
+    awaitCancellation()
+  }.buffer(Channel.UNLIMITED)
+
+  private fun ProducerScope<TodoEvent>.sendInitialScanEvents(
+    project: Project,
+    scope: TodoScope,
+    searchScope: SearchScope?,
+    filter: TodoFilter?,
+  ) {
+    ProgressManager.checkCanceled()
+    val psiManager = PsiManager.getInstance(project)
+    trySend(TodoEvent.AllItemsRemoved)
+    when (scope) {
+      is TodoScope.CurrentFile -> sendTodoFileResult(project, psiManager, scope.fileId, filter)
+      is TodoScope.ChangeList -> scope.fileIds.forEach { sendTodoFileResult(project, psiManager, it, filter) }
+      is TodoScope.Project -> {
+        PsiTodoSearchHelper.getInstance(project).processFilesWithTodoItems { psiFile ->
+          ProgressManager.checkCanceled()
+          val virtualFile = psiFile.virtualFile ?: return@processFilesWithTodoItems true
+          val result = buildTodoFileResult(project, psiFile, virtualFile, filter)
+          if (result != null) {
+            trySend(TodoEvent.FileUpserted(result))
+          }
+          true
+        }
+      }
+      is TodoScope.NamedScope -> {
+        if (searchScope == null) {
+          LOG.error("Search scope is null")
+          return
+        }
+        PsiTodoSearchHelper.getInstance(project).processFilesWithTodoItems { psiFile ->
+          ProgressManager.checkCanceled()
+          val virtualFile = psiFile.virtualFile ?: return@processFilesWithTodoItems true
+          if (!searchScope.contains(virtualFile)) return@processFilesWithTodoItems true
+          val result = buildTodoFileResult(project, psiFile, virtualFile, filter)
+          if (result != null) {
+            trySend(TodoEvent.FileUpserted(result))
+          }
+          true
+        }
+      }
+    }
+    trySend(TodoEvent.ScanFinished)
+  }
+
+  private fun ProducerScope<TodoEvent>.sendTodoFileResult(
+    project: Project,
+    psiManager: PsiManager,
+    fileId: VirtualFileId,
+    filter: TodoFilter?,
+  ) {
+    ProgressManager.checkCanceled()
+    val virtualFile = fileId.virtualFile() ?: return
+    if (!virtualFile.isValid) return
+    val psiFile = psiManager.findFile(virtualFile) ?: return
+    val result = buildTodoFileResult(project, psiFile, virtualFile, filter) ?: return
+    trySend(TodoEvent.FileUpserted(result))
+  }
+
+  private suspend fun ProducerScope<TodoEvent>.scheduleFileChanges(
+    project: Project,
+    file: VirtualFile,
+    searchScope: SearchScope?,
+    filter: TodoFilter?,
+  ) {
+    readAction {
+      val psiManager = PsiManager.getInstance(project)
+      val helper = PsiTodoSearchHelper.getInstance(project)
+
+      if (!file.isValid || searchScope?.contains(file) == false) {
+        trySend(TodoEvent.FileRemoved(file.rpcId()))
+        return@readAction
+      }
+
+      val psiFile = psiManager.findFile(file)
+      if (psiFile == null || helper.getTodoItemsCount(psiFile) == 0) {
+        trySend(TodoEvent.FileRemoved(file.rpcId()))
+        return@readAction
+      }
+      ProgressManager.checkCanceled()
+      val result = buildTodoFileResult(project, psiFile, file, filter)
+      if (result != null) {
+        trySend(TodoEvent.FileUpserted(result))
+      }
+      else {
+        trySend(TodoEvent.FileRemoved(file.rpcId()))
+      }
+    }
+  }
+}

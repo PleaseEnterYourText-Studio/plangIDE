@@ -1,0 +1,1406 @@
+// Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+package com.intellij.openapi.project.impl
+
+import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
+import com.intellij.codeInsight.daemon.DaemonCodeAnalyzerSettings
+import com.intellij.concurrency.captureThreadContext
+import com.intellij.conversion.CannotConvertException
+import com.intellij.diagnostic.StartUpMeasurer
+import com.intellij.diagnostic.StartUpPerformanceService
+import com.intellij.diagnostic.dumpCoroutines
+import com.intellij.featureStatistics.fusCollectors.LifecycleUsageTriggerCollector
+import com.intellij.ide.IdeBundle
+import com.intellij.ide.RecentProjectMetaInfo
+import com.intellij.ide.RecentProjectsManager
+import com.intellij.ide.RecentProjectsManagerBase
+import com.intellij.ide.frame
+import com.intellij.ide.frameInfo
+import com.intellij.ide.impl.OpenProjectTask
+import com.intellij.ide.recentProjectMetaInfo
+import com.intellij.ide.util.runOnceForProject
+import com.intellij.idea.AppMode
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.CoroutineSupport
+import com.intellij.openapi.application.EDT
+import com.intellij.openapi.application.ModalityState
+import com.intellij.openapi.application.UI
+import com.intellij.openapi.application.UiWithModelAccess
+import com.intellij.openapi.application.asContextElement
+import com.intellij.openapi.application.impl.LaterInvocator
+import com.intellij.openapi.application.ui
+import com.intellij.openapi.components.ComponentManagerEx
+import com.intellij.openapi.components.serviceAsync
+import com.intellij.openapi.components.serviceIfCreated
+import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.openapi.fileEditor.FileEditorManagerKeys
+import com.intellij.openapi.fileEditor.FileEditorManagerListener
+import com.intellij.openapi.fileEditor.FileEditorOpenRequest
+import com.intellij.openapi.fileEditor.TextEditor
+import com.intellij.openapi.fileEditor.TextEditorWithPreview
+import com.intellij.openapi.fileEditor.impl.EditorComposite
+import com.intellij.openapi.fileEditor.impl.EditorsSplitters
+import com.intellij.openapi.fileEditor.impl.FileEditorManagerImpl
+import com.intellij.openapi.fileEditor.impl.stopOpenFilesActivity
+import com.intellij.openapi.fileEditor.impl.text.AsyncEditorLoader
+import com.intellij.openapi.options.advanced.AdvancedSettings
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.ReadmeShownUsageCollector.README_OPENED_ON_START_TS
+import com.intellij.openapi.project.guessProjectDir
+import com.intellij.openapi.project.isNotificationSilentMode
+import com.intellij.openapi.ui.Messages
+import com.intellij.openapi.util.ActionCallback
+import com.intellij.openapi.util.SystemInfo
+import com.intellij.openapi.util.SystemInfoRt
+import com.intellij.openapi.util.await
+import com.intellij.openapi.util.registry.RegistryManager
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.wm.IdeFocusManager
+import com.intellij.openapi.wm.ToolWindow
+import com.intellij.openapi.wm.ToolWindowId
+import com.intellij.openapi.wm.ToolWindowManager
+import com.intellij.openapi.wm.WindowManager
+import com.intellij.openapi.wm.ex.ProjectFrameCapabilitiesService
+import com.intellij.openapi.wm.ex.ProjectFrameCapability
+import com.intellij.openapi.wm.ex.ProjectFrameTypeService
+import com.intellij.openapi.wm.ex.ProjectFrameUiPolicy
+import com.intellij.openapi.wm.ex.ToolWindowManagerListener
+import com.intellij.openapi.wm.ex.WelcomeScreenProjectProvider
+import com.intellij.openapi.wm.ex.normalizeProjectFrameKey
+import com.intellij.openapi.wm.impl.FrameBoundsConverter
+import com.intellij.openapi.wm.impl.FrameInfo
+import com.intellij.openapi.wm.impl.FrameInfoHelper
+import com.intellij.openapi.wm.impl.FrameLoadingState
+import com.intellij.openapi.wm.impl.FrameTitleBuilder
+import com.intellij.openapi.wm.impl.IDE_FRAME_EVENT_LOG
+import com.intellij.openapi.wm.impl.IdeFrameImpl
+import com.intellij.openapi.wm.impl.IdeProjectFrameHelper
+import com.intellij.openapi.wm.impl.ToolWindowManagerImpl
+import com.intellij.openapi.wm.impl.WindowManagerImpl
+import com.intellij.openapi.wm.impl.checkForNonsenseBounds
+import com.intellij.openapi.wm.impl.updateFullScreenState
+import com.intellij.openapi.wm.impl.welcomeScreen.recentProjects.preloadRecentProjectsWithoutCurrent
+import com.intellij.platform.diagnostic.telemetry.impl.getTraceActivity
+import com.intellij.platform.diagnostic.telemetry.impl.rootTask
+import com.intellij.platform.diagnostic.telemetry.impl.span
+import com.intellij.platform.ide.bootstrap.hideSplash
+import com.intellij.platform.ide.diagnostic.startUpPerformanceReporter.FUSProjectHotStartUpMeasurer
+import com.intellij.platform.ide.diagnostic.startUpPerformanceReporter.recordStartupSpan
+import com.intellij.problems.WolfTheProblemSolver
+import com.intellij.psi.PsiManager
+import com.intellij.toolWindow.computeToolWindowBeans
+import com.intellij.ui.ScreenUtil
+import com.intellij.util.PlatformUtils
+import com.intellij.util.StartupUiGate
+import com.intellij.util.TimeoutUtil
+import com.intellij.util.concurrency.annotations.RequiresEdt
+import com.intellij.util.messages.SimpleMessageBusConnection
+import com.intellij.util.ui.accessibility.ScreenReader
+import com.intellij.openapi.wm.impl.EarlyProjectFrame
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CompletableJob
+import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.async
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
+import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.annotations.VisibleForTesting
+import java.awt.Component
+import java.awt.Dimension
+import java.awt.Frame
+import java.awt.KeyboardFocusManager
+import java.awt.Rectangle
+import java.awt.event.WindowEvent
+import java.awt.event.WindowStateListener
+import java.nio.file.Path
+import java.time.Instant
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicBoolean
+import javax.swing.JFrame
+import javax.swing.SwingUtilities
+import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.coroutines.resume
+import kotlin.math.min
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
+
+internal class IdeProjectFrameAllocator(
+  private val options: OpenProjectTask,
+  private val projectStoreBaseDir: Path,
+) : ProjectFrameAllocator {
+  private val deferredProjectFrameHelper = CompletableDeferred<IdeProjectFrameHelper>()
+
+  /**
+   * Completes when the first fill of the main menu of the frame may run, see [FrameLoadingState.mainMenuFillPermit].
+   */
+  private val mainMenuFillPermit: CompletableJob = createMainMenuFillPermit(options)
+
+  override suspend fun preInitProject(project: Project) {
+    // the earliest point that knows the project, before the background write actions of the pre-init
+    permitMainMenuFill(project)
+    if (serviceAsync<ProjectFrameCapabilitiesService>().has(project, ProjectFrameCapability.WELCOME_EXPERIENCE)) {
+      // the left panel of the welcome frame takes the list instead of collecting it on the EDT
+      preloadRecentProjectsWithoutCurrent(project)
+    }
+    project.getOrCreatePostOpenEditorsDeferred()
+    (FileEditorManager.getInstanceAsync(project) as? FileEditorManagerImpl)?.initJob?.join()
+  }
+
+  private suspend fun permitMainMenuFill(project: Project) {
+    if (mainMenuFillPermit.isCompleted) {
+      return
+    }
+    if (becomesInteractiveOnContentPainted(project)) {
+      @Suppress("UsagesOfObsoleteApi")
+      permitMainMenuFillOnContentPainted(
+        scope = (project as ComponentManagerEx).getCoroutineScope(),
+        permit = mainMenuFillPermit,
+        contentPainted = project.getOrCreateFrameContentPaintedDeferred(),
+        timeout = MAIN_MENU_FILL_PERMIT_TIMEOUT,
+      )
+    }
+    else {
+      mainMenuFillPermit.complete()
+    }
+  }
+
+  override suspend fun runInBackground(projectInitObservable: ProjectInitObservable) {
+    coroutineScope {
+      val app = ApplicationManager.getApplication()
+      val projectLoadingTimeoutWatcher = if (app == null || app.isInternal || app.isUnitTestMode) {
+        launch(CoroutineName("project loading timeout watcher")) {
+          delay(10.seconds)
+          // logged only during development, let's not spam users
+          logger<ProjectFrameAllocator>().warn("Cannot load project in 10 seconds: ${dumpCoroutines()}")
+        }
+      }
+      else {
+        null
+      }
+
+      try {
+        val project = projectInitObservable.awaitProjectInit()
+        hideSplashWhenEditorOrToolWindowShown(project)
+      }
+      finally {
+        projectLoadingTimeoutWatcher?.cancel()
+      }
+    }
+  }
+
+  override suspend fun run(projectInitObservable: ProjectInitObservable) {
+    span("frame allocator foreground") {
+      coroutineScope {
+        val job = currentCoroutineContext().job
+        val frameLoadingDone = createFrameLoadingDone(foregroundJob = job)
+        job.invokeOnCompletion { cause ->
+          if (cause != null) {
+            mainMenuFillPermit.complete()
+          }
+        }
+        val frameSettingsDeferred = async(CoroutineName("project frame settings resolving")) {
+          resolveFrameSettings()
+        }
+
+        val frameInitJob = launch(CoroutineName("project frame creating")) {
+          val loadingState = MutableLoadingState(done = frameLoadingDone, mainMenuFillPermit = mainMenuFillPermit)
+          span("frame creation") {
+            createFrameManager(loadingState, frameSettingsDeferred.await())
+          }
+        }
+        frameInitJob.invokeOnCompletion { cause ->
+          if (cause is CancellationException) {
+            job.cancel(cause)
+          }
+        }
+
+        val frameHelperInitJob = launch {
+          val project = projectInitObservable.awaitProjectPreInit()
+          val frameHelper = deferredProjectFrameHelper.await()
+
+          launch {
+            val windowManager = serviceAsync<WindowManager>() as WindowManagerImpl
+            // a frame that becomes interactive first starts the progress reporting of its status bar with its widgets, once it is interactive
+            val initializesStatusBar = !becomesInteractiveOnContentPainted(project)
+            span("frame assignment", Dispatchers.ui(CoroutineSupport.UiDispatcherKind.STRICT)) {
+              windowManager.assignFrame(frameHelper, project)
+              frameHelper.setRawProject(project, initializesStatusBar = initializesStatusBar)
+            }
+          }
+
+          launch {
+            val fileEditorManager = FileEditorManager.getInstanceAsync(project) as FileEditorManagerImpl
+            fileEditorManager.initJob.join()
+            span("frame document component install", Dispatchers.UiWithModelAccess) {
+              frameHelper.toolWindowPane.setDocumentComponent(fileEditorManager.mainSplitters)
+            }
+          }
+
+          launch {
+            span("project frame assigning") {
+              frameHelper.setProject(project)
+            }
+          }
+        }
+
+        val reopeningEditorJob = launch {
+          val project = projectInitObservable.awaitProjectInit()
+          span("restoreEditors") {
+            val fileEditorManager = FileEditorManager.getInstanceAsync(project) as FileEditorManagerImpl
+            val interactiveOnEditorShown = serviceAsync<ProjectFrameCapabilitiesService>()
+              .has(project, ProjectFrameCapability.INTERACTIVE_ON_EDITOR_SHOWN)
+            restoreEditors(
+              project = project,
+              fileEditorManager = fileEditorManager,
+              opensFileAfterProjectOpen = options.opensFileAfterProjectOpen,
+              onEditorsShown = if (interactiveOnEditorShown) {
+                { completeFrameLoadingOnEditorsShown(project = project, done = frameLoadingDone, frameHelperInitJob = frameHelperInitJob) }
+              }
+              else {
+                null
+              },
+            )
+          }
+
+          val start = projectInitObservable.projectInitTimestamp
+          if (start != -1L) {
+            StartUpMeasurer.addCompletedActivity(start, "editor reopening and frame waiting", getTraceActivity())
+          }
+        }
+
+        val toolWindowInitJob = launch {
+          val project = projectInitObservable.awaitProjectInit()
+          span("initFrame") {
+            launch(CoroutineName("tool window pane creation")) {
+              val deferredToolWindowManager = async { project.serviceAsync<ToolWindowManager>() as? ToolWindowManagerImpl }
+              // resolve the policy once: the provider of the welcome project policy writes a first-run flag
+              val projectFrameUiPolicyDeferred = async {
+                serviceAsync<ProjectFrameCapabilitiesService>().getUiPolicyForToolWindows(project)
+              }
+              // a welcome-experience frame registers the tool windows it shows first, and every other one after its content paints;
+              // a frame that becomes interactive when its editor is shown registers every tool window after that
+              val eagerToolWindowIdsDeferred = async {
+                val capabilities = serviceAsync<ProjectFrameCapabilitiesService>().getAll(project)
+                when {
+                  capabilities.contains(ProjectFrameCapability.WELCOME_EXPERIENCE) -> {
+                    val toolWindowManager = deferredToolWindowManager.await()
+                    toolWindowManager?.let { computeEagerToolWindowIdsOfWelcomeFrame(it, projectFrameUiPolicyDeferred.await()) }
+                  }
+                  capabilities.contains(ProjectFrameCapability.INTERACTIVE_ON_EDITOR_SHOWN) -> emptySet()
+                  else -> null
+                }
+              }
+              val taskListDeferred = async(CoroutineName("toolwindow init command creation")) {
+                val eagerToolWindowIds = eagerToolWindowIdsDeferred.await()
+                computeToolWindowBeans(
+                  project = project,
+                  projectFrameTypeId = frameSettingsDeferred.await().projectFrameTypeId,
+                  isIncluded = { eagerToolWindowIds == null || it in eagerToolWindowIds },
+                )
+              }
+
+              val toolWindowManager = deferredToolWindowManager.await() ?: return@launch
+              val projectFrameTypeId = frameSettingsDeferred.await().projectFrameTypeId
+              val projectFrameHelper = deferredProjectFrameHelper.await()
+              val toolWindowPane = withContext(Dispatchers.UI) {
+                projectFrameHelper.toolWindowPane
+              }
+              val projectFrameUiPolicy = projectFrameUiPolicyDeferred.await()
+              val earlyStartupToolWindowActivation = projectFrameUiPolicy?.let {
+                EarlyStartupToolWindowActivation.create(toolWindowManager, project, it)
+              }
+              span("tool window manager init") {
+                toolWindowManager.init(
+                  pane = toolWindowPane,
+                  reopeningEditorJob = reopeningEditorJob,
+                  taskListDeferred = taskListDeferred,
+                  projectFrameTypeId = projectFrameTypeId,
+                  onDefaultPaneToolWindowsRegistered = earlyStartupToolWindowActivation?.let { it::run },
+                  defersToolWindowRegistration = eagerToolWindowIdsDeferred.await() != null,
+                )
+              }
+              if (projectFrameUiPolicy != null) {
+                applyProjectFrameUiPolicy(
+                  toolWindowManager = toolWindowManager,
+                  project = project,
+                  projectFrameUiPolicy = projectFrameUiPolicy,
+                  isStartupToolWindowActivated = earlyStartupToolWindowActivation?.isAttempted == true,
+                )
+              }
+            }
+          }
+        }
+
+        launch {
+          val project = projectInitObservable.awaitProjectInit()
+          val frameHelper = deferredProjectFrameHelper.await()
+          frameInitJob.join() // StatusBar needs to be created
+          frameHelperInitJob.join()
+          project.getOrCreateIdeFrameDeferred().complete(frameHelper)
+        }
+
+        launch {
+          val project = projectInitObservable.awaitProjectInit()
+          if (serviceAsync<ProjectFrameCapabilitiesService>().has(project, ProjectFrameCapability.WELCOME_EXPERIENCE)) {
+            @Suppress("UsagesOfObsoleteApi")
+            completeFrameLoadingOnContentPainted(
+              scope = (project as ComponentManagerEx).getCoroutineScope(),
+              done = frameLoadingDone,
+              foregroundJob = job,
+              frameHelperInitJob = frameHelperInitJob,
+              contentPainted = project.getOrCreateFrameContentPaintedDeferred(),
+            )
+          }
+        }
+
+        launch {
+          val project = projectInitObservable.awaitProjectInit()
+          val startUpContextElementToPass = FUSProjectHotStartUpMeasurer.getStartUpContextElementToPass() ?: EmptyCoroutineContext
+
+          val onNoEditorsLeft = captureThreadContext { FUSProjectHotStartUpMeasurer.reportNoMoreEditorsOnStartup(System.nanoTime()) }
+
+          @Suppress("UsagesOfObsoleteApi")
+          (project as ComponentManagerEx).getCoroutineScope().launch(startUpContextElementToPass + rootTask()) {
+            val frameHelper = deferredProjectFrameHelper.await()
+            launch {
+              StartupUiGate.awaitEditorsShown()
+              installStatusBarWidgetsAndUpdateTitle(frameHelper = frameHelper, project = project, frameLoadingJob = job, frameLoadingDone = frameLoadingDone)
+            }
+
+            frameHelperInitJob.join() // initDockableContentFactory depends on it
+            reopeningEditorJob.join()
+
+            span("post open editors") {
+              postOpenEditors(
+                frameHelper = frameHelper,
+                fileEditorManager = FileEditorManager.getInstanceAsync(project) as FileEditorManagerImpl,
+                toolWindowInitJob = toolWindowInitJob,
+                project = project,
+              )
+            }
+          }.invokeOnCompletion { throwable ->
+            if (throwable != null) {
+              onNoEditorsLeft()
+              // `postOpenEditors` never ran, or never reached its own release
+              releaseStartupEmptyStatePresentationHold(project)
+            }
+            project.getOrCreatePostOpenEditorsDeferred().complete(Unit)
+          }
+        }
+      }
+    }
+  }
+
+  private suspend fun createFrameManager(loadingState: FrameLoadingState, frameSettings: ResolvedFrameSettings) {
+    val frame = getFrame()
+
+    withContext(Dispatchers.ui(CoroutineSupport.UiDispatcherKind.STRICT)) {
+      if (frame != null) {
+        if (!frame.isVisible) {
+          throw CancellationException("Pre-allocated frame was already closed")
+        }
+        val shownEarlyAt = EarlyProjectFrame.shownAtOf(frame)
+        val frameHelper =
+          IdeProjectFrameHelper(frame = frame, loadingState = loadingState, projectFrameTypeId = frameSettings.projectFrameTypeId)
+        completeFrameAndCloseOnCancel(frameHelper) {
+          if (options.forceOpenInNewFrame || shownEarlyAt != 0L) {
+            frameHelper.updateFullScreenState(frameSettings.frameInfo.fullScreen)
+          }
+          span("ProjectFrameHelper.init") {
+            frameHelper.init()
+          }
+          frameHelper.setInitBounds(frameSettings.frameInfo.bounds)
+          // the frame is visible already, so the new root pane gets its bounds here and not with the first menu fill
+          frame.validate()
+        }
+        if (shownEarlyAt != 0L) {
+          FUSProjectHotStartUpMeasurer.frameBecameVisible(shownEarlyAt)
+        }
+      }
+      else {
+        val frameHelper = IdeProjectFrameHelper(
+          createIdeFrame(frameSettings.frameInfo),
+          loadingState = loadingState,
+          projectFrameTypeId = frameSettings.projectFrameTypeId,
+        )
+        // must be after preInit (frame decorator is required to set a full-screen mode)
+        withContext(Dispatchers.UiWithModelAccess) {
+          frameHelper.frame.isVisible = true
+        }
+        completeFrameAndCloseOnCancel(frameHelper) {
+          frameHelper.updateFullScreenState(frameSettings.frameInfo.fullScreen)
+
+          span("ProjectFrameHelper.init") {
+            frameHelper.init()
+          }
+        }
+      }
+    }
+  }
+
+  private suspend inline fun completeFrameAndCloseOnCancel(
+    frameHelper: IdeProjectFrameHelper,
+    task: () -> Unit,
+  ) {
+    try {
+      task()
+      if (!deferredProjectFrameHelper.isCancelled) {
+        deferredProjectFrameHelper.complete(frameHelper)
+        return
+      }
+    }
+    catch (@Suppress("IncorrectCancellationExceptionHandling") _: CancellationException) {
+    }
+
+    // make sure that in case of some error we close the frame for a not loaded project
+    withContext(Dispatchers.ui(CoroutineSupport.UiDispatcherKind.STRICT) + NonCancellable) {
+      (serviceAsync<WindowManager>() as WindowManagerImpl).releaseFrame(frameHelper)
+    }
+  }
+
+  private fun getFrame(): IdeFrameImpl? {
+    return options.frame
+           ?: (serviceIfCreated<WindowManager>() as? WindowManagerImpl)?.removeAndGetRootFrame()
+           ?: EarlyProjectFrame.take()
+  }
+
+  private suspend fun getRecentProjectMetaInfo(): RecentProjectMetaInfo? {
+    return (serviceAsync<RecentProjectsManager>() as RecentProjectsManagerBase).getProjectMetaInfo(projectStoreBaseDir)
+  }
+
+  private suspend fun resolveFrameSettings(): ResolvedFrameSettings {
+    var frameInfo: FrameInfo? = options.frameInfo
+    var projectFrameTypeId: String? = options.projectFrameTypeId
+
+    val recentProjectMetaInfoFromOptions = options.recentProjectMetaInfo
+    if (frameInfo == null) {
+      frameInfo = recentProjectMetaInfoFromOptions?.frame
+    }
+    if (projectFrameTypeId == null) {
+      projectFrameTypeId = recentProjectMetaInfoFromOptions?.projectFrameTypeId
+    }
+
+    if (frameInfo == null || projectFrameTypeId == null) {
+      val recentProjectMetaInfo = getRecentProjectMetaInfo()
+      if (frameInfo == null) {
+        frameInfo = recentProjectMetaInfo?.frame
+      }
+      if (projectFrameTypeId == null) {
+        projectFrameTypeId = recentProjectMetaInfo?.projectFrameTypeId
+      }
+    }
+
+    // this is the one choke point that sees every effective frame type id, so an id nothing declares
+    // (a typo, or a plugin that is gone) is reported here instead of silently degrading to "no policy"
+    val normalizedFrameTypeId = projectFrameTypeId.normalizeProjectFrameKey()
+    if (normalizedFrameTypeId != null && serviceAsync<ProjectFrameTypeService>().findDescriptor(normalizedFrameTypeId) == null) {
+      logger<ProjectFrameAllocator>()
+        .warn("No <projectFrameType id=\"$normalizedFrameTypeId\"> is declared - frame-type policy is ignored for $projectStoreBaseDir")
+    }
+
+    return ResolvedFrameSettings(frameInfo = frameInfo ?: FrameInfo(), projectFrameTypeId = projectFrameTypeId)
+  }
+
+  private data class ResolvedFrameSettings(
+    @JvmField val frameInfo: FrameInfo,
+    @JvmField val projectFrameTypeId: String?,
+  )
+
+  override suspend fun projectNotLoaded(cannotConvertException: CannotConvertException?) {
+    mainMenuFillPermit.complete()
+    val frameHelper = if (deferredProjectFrameHelper.isCompleted) {
+      deferredProjectFrameHelper.await()
+    }
+    else {
+      deferredProjectFrameHelper.cancel("projectNotLoaded")
+      null
+    }
+
+    withContext(Dispatchers.EDT) {
+      if (cannotConvertException != null) {
+        Messages.showErrorDialog(
+          frameHelper?.frame,
+          IdeBundle.message("error.cannot.convert.project", cannotConvertException.message),
+          IdeBundle.message("title.cannot.convert.project")
+        )
+      }
+
+      if (frameHelper != null) {
+        // projectLoaded was called, but then due to some error, say cancellation, still projectNotLoaded is called
+        (serviceAsync<WindowManager>() as WindowManagerImpl).releaseFrame(frameHelper)
+      }
+    }
+  }
+}
+
+private suspend fun hideSplashWhenEditorOrToolWindowShown(project: Project) {
+  suspendCancellableCoroutine { continuation ->
+    val completed = AtomicBoolean(false)
+    val connection = project.messageBus.simpleConnect()
+
+    fun hideSplashAndResume() {
+      if (!completed.compareAndSet(false, true)) {
+        return
+      }
+      try {
+        hideSplash()
+        continuation.resume(Unit)
+      }
+      finally {
+        connection.disconnect()
+      }
+    }
+
+    try {
+      connection.subscribe(ToolWindowManagerListener.TOPIC, object : ToolWindowManagerListener {
+        override fun toolWindowShown(toolWindow: ToolWindow) {
+          hideSplashAndResume()
+        }
+      })
+      connection.subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, object : FileEditorManagerListener {
+        override fun fileOpened(source: FileEditorManager, file: VirtualFile) {
+          hideSplashAndResume()
+        }
+      })
+      continuation.invokeOnCancellation {
+        if (completed.compareAndSet(false, true)) {
+          connection.disconnect()
+        }
+      }
+    }
+    catch (e: Throwable) {
+      if (completed.compareAndSet(false, true)) {
+        connection.disconnect()
+      }
+      throw e
+    }
+  }
+}
+
+/**
+ * Activates [ProjectFrameUiPolicy.startupToolWindowIdToActivate] as soon as the tool windows of the default pane are registered.
+ * The activation does not wait for the `toolWindowsRegistered` event, the activation action registration, and the pending tasks.
+ * If the tool window is not registered at that time, [applyProjectFrameUiPolicy] activates it later.
+ */
+private class EarlyStartupToolWindowActivation private constructor(
+  private val toolWindowManager: ToolWindowManager,
+  private val project: Project,
+  private val toolWindowId: String,
+) {
+  companion object {
+    /**
+     * Returns null if the early activation can change the result of [applyProjectFrameUiPolicy].
+     * [applyProjectFrameUiPolicy] hides the tool windows outside the exclusive showing set before the activation.
+     * It hides a tool window of [ProjectFrameUiPolicy.toolWindowIdsToHideOnStartup] in the same EDT task as the activation.
+     */
+    fun create(
+      toolWindowManager: ToolWindowManager,
+      project: Project,
+      projectFrameUiPolicy: ProjectFrameUiPolicy,
+    ): EarlyStartupToolWindowActivation? {
+      val toolWindowId = projectFrameUiPolicy.startupToolWindowIdToActivate ?: return null
+      val exclusiveShowing = projectFrameUiPolicy.toolWindowIdsToExclusiveShowing
+      if (exclusiveShowing.isNotEmpty() && toolWindowId !in exclusiveShowing) {
+        return null
+      }
+      if (toolWindowId in projectFrameUiPolicy.toolWindowIdsToHideOnStartup) {
+        return null
+      }
+      return EarlyStartupToolWindowActivation(toolWindowManager, project, toolWindowId)
+    }
+  }
+
+  /**
+   * True if [run] found the tool window and started its activation.
+   * It is read after `ToolWindowManagerImpl.init` returns, so the activation is not repeated.
+   */
+  @Volatile
+  var isAttempted: Boolean = false
+    private set
+
+  @RequiresEdt
+  fun run() {
+    // the activation through `invokeLater` waits for a modal dialog to close
+    if (project.isDisposed || LaterInvocator.isInModalContext()) {
+      return
+    }
+    val toolWindow = toolWindowManager.getToolWindow(toolWindowId) ?: return
+    // set before the activation: a failed activation is not repeated, the same as the activation through `invokeLater`
+    isAttempted = true
+    toolWindow.activate(null)
+  }
+}
+
+/**
+ * Returns the ids of the tool windows that a welcome-experience frame registers before its content paints:
+ * the welcome set of the product, the startup tool window, and the tool windows that the stored layout shows.
+ * Returns null when the product declares no welcome set, so the frame registers every tool window at once.
+ */
+private fun computeEagerToolWindowIdsOfWelcomeFrame(
+  toolWindowManager: ToolWindowManagerImpl,
+  projectFrameUiPolicy: ProjectFrameUiPolicy?,
+): Set<String>? {
+  val welcomeToolWindowIds = WelcomeScreenProjectProvider.getToolWindowIdsToExclusiveShowing()
+  if (welcomeToolWindowIds.isEmpty()) {
+    return null
+  }
+
+  val result = HashSet(welcomeToolWindowIds)
+  projectFrameUiPolicy?.startupToolWindowIdToActivate?.let(result::add)
+  result.addAll(toolWindowManager.getToolWindowIdsShownByStoredLayout())
+  return result
+}
+
+@VisibleForTesting
+internal fun applyProjectFrameUiPolicy(
+  toolWindowManager: ToolWindowManager,
+  project: Project,
+  projectFrameUiPolicy: ProjectFrameUiPolicy,
+  isStartupToolWindowActivated: Boolean,
+) {
+  val exclusiveShowing = projectFrameUiPolicy.toolWindowIdsToExclusiveShowing
+  if (exclusiveShowing.isNotEmpty()) {
+    @Suppress("UnsafeOpenServiceCast")
+    fun hideNotExclusive(toHide: List<String>) {
+      if (toHide.isNotEmpty()) {
+        toolWindowManager.invokeLater {
+          val impl = toolWindowManager as ToolWindowManagerImpl
+          for (id in toHide) {
+            impl.hideToolWindow(id, removeFromStripe = true)
+          }
+        }
+      }
+    }
+
+    val messageBusConnection = project.messageBus.connect(project)
+    messageBusConnection.subscribe(ToolWindowManagerListener.TOPIC, object : ToolWindowManagerListener {
+      override fun toolWindowsRegistered(ids: List<String>, toolWindowManager: ToolWindowManager) {
+        hideNotExclusive(ids.filter { !exclusiveShowing.contains(it) })
+      }
+    })
+    // after the subscription: the deferred registration of a welcome-experience frame may register tool windows at any time
+    hideNotExclusive(toolWindowManager.toolWindowIds.filter { !exclusiveShowing.contains(it) })
+  }
+
+  val startupToolWindowId = projectFrameUiPolicy.startupToolWindowIdToActivate.takeUnless { isStartupToolWindowActivated }
+  val toolWindowIdsToHideOnStartup = projectFrameUiPolicy.toolWindowIdsToHideOnStartup
+  val pendingToolWindowIds = ConcurrentHashMap.newKeySet<String>().apply {
+    startupToolWindowId?.let(::add)
+    addAll(toolWindowIdsToHideOnStartup)
+  }
+  if (pendingToolWindowIds.isEmpty()) {
+    return
+  }
+
+  var connection: SimpleMessageBusConnection? = null
+
+  fun disconnectIfDone() {
+    if (project.isDisposed || pendingToolWindowIds.isEmpty()) {
+      connection?.disconnect()
+      connection = null
+    }
+  }
+
+  fun applyPolicyForToolWindowId(toolWindowId: String) {
+    if (!pendingToolWindowIds.contains(toolWindowId)) {
+      return
+    }
+    val toolWindow = toolWindowManager.getToolWindow(toolWindowId) ?: return
+    if (!pendingToolWindowIds.remove(toolWindowId)) {
+      return
+    }
+
+    toolWindowManager.invokeLater {
+      if (project.isDisposed) {
+        return@invokeLater
+      }
+
+      if (startupToolWindowId == toolWindowId) {
+        toolWindow.activate(null)
+      }
+      if (toolWindowId in toolWindowIdsToHideOnStartup) {
+        toolWindow.hide()
+      }
+    }
+
+    disconnectIfDone()
+  }
+
+  pendingToolWindowIds.toList().forEach(::applyPolicyForToolWindowId)
+  if (pendingToolWindowIds.isEmpty()) {
+    return
+  }
+
+  val expectedToolWindowManager = toolWindowManager
+  val messageBusConnection = project.messageBus.connect(project)
+  connection = messageBusConnection
+  messageBusConnection.subscribe(ToolWindowManagerListener.TOPIC, object : ToolWindowManagerListener {
+    override fun toolWindowsRegistered(ids: List<String>, toolWindowManager: ToolWindowManager) {
+      if (toolWindowManager !== expectedToolWindowManager) {
+        return
+      }
+
+      ids.forEach(::applyPolicyForToolWindowId)
+    }
+  })
+
+  // Cover ids registered between initial check and listener subscription.
+  pendingToolWindowIds.toList().forEach(::applyPolicyForToolWindowId)
+  disconnectIfDone()
+}
+
+private suspend fun restoreEditors(
+  project: Project,
+  fileEditorManager: FileEditorManagerImpl,
+  opensFileAfterProjectOpen: Boolean,
+  onEditorsShown: (suspend () -> Unit)? = null,
+) {
+  coroutineScope {
+    // only after FileEditorManager.init - DaemonCodeAnalyzer uses FileEditorManager
+    // DaemonCodeAnalyzer wants DaemonCodeAnalyzerSettings
+    val daemonCodeAnalyzerSettingsJob = launch {
+      serviceAsync<DaemonCodeAnalyzerSettings>()
+    }
+    launch {
+      // WolfTheProblemSolver uses PsiManager
+      project.serviceAsync<PsiManager>()
+      project.serviceAsync<WolfTheProblemSolver>()
+    }
+    launch {
+      daemonCodeAnalyzerSettingsJob.join()
+      project.serviceAsync<DaemonCodeAnalyzer>()
+    }
+
+    val (editorComponent, editorState) = fileEditorManager.init()
+    // the empty state may be built as soon as restoring is over, in parallel with the rest of the project open, but it must not be
+    // shown until project open is done opening editors of its own — the welcome tab and the README below are two of those.
+    // `ModalityState.any()`, like the release in `postOpenEditors`, so a modal dialog during startup cannot reorder the two, and
+    // `Dispatchers.EDT` because settling the empty state may mount or dispose components, which needs the write-intent lock.
+    withContext(NonCancellable + Dispatchers.EDT + ModalityState.any().asContextElement()) {
+      editorComponent.beginStartupEmptyStatePresentationHold()
+      if (opensFileAfterProjectOpen) {
+        // a file named on the command line is opened after project open has returned, so project open's own release does not cover it;
+        // `openFileFromCommandLine` releases this second hold
+        editorComponent.beginStartupEmptyStatePresentationHold()
+      }
+      if (editorState == null) {
+        // there is nothing to restore, so preparation may start at once
+        editorComponent.markNoEditorsToRestore()
+        editorComponent.finishStartupEditorRestore()
+      }
+      else {
+        // the same EDT event as the hold, so the restore starts its file preparation without another switch
+        editorComponent.markStartupEditorRestorePending(editorState)
+      }
+    }
+    if (editorState == null) {
+      StartUpMeasurer.addInstantEvent("no editors to restore")
+      onEditorsShown?.invoke()
+      StartupUiGate.markEditorsShown()
+      serviceAsync<StartUpPerformanceService>().editorRestoringTillHighlighted()
+      return@coroutineScope
+    }
+
+    try {
+      span("editor restoring") {
+        editorComponent.createEditors(state = editorState, emptyStateHidden = true)
+      }
+
+      // the dispatcher of the switch inside `focusSelectedEditor`, so that switch runs in place instead of queueing
+      // a second EDT event behind the editor creation
+      span("editor reopening post-processing", Dispatchers.EDT) {
+        focusSelectedEditor(editorComponent)
+      }
+      // before the gate opens: the loading layer leaves the EDT queue ahead of the work that the gate holds
+      onEditorsShown?.invoke()
+    }
+    finally {
+      // the rest of the frame UI waits for the restored editor, its focus included
+      StartupUiGate.markEditorsShown()
+    }
+  }
+}
+
+private suspend fun postOpenEditors(
+  frameHelper: IdeProjectFrameHelper,
+  fileEditorManager: FileEditorManagerImpl,
+  project: Project,
+  toolWindowInitJob: Job,
+) {
+  val startupEmptyStatePresentationHoldReleased = AtomicBoolean()
+
+  suspend fun releaseStartupEmptyStatePresentationHold() {
+    if (!startupEmptyStatePresentationHoldReleased.compareAndSet(false, true)) {
+      return
+    }
+    // `Dispatchers.EDT` rather than the strict UI dispatcher: releasing may mount or dispose the empty state right here, and both take
+    // the write-intent lock, which `Dispatchers.UI` forbids taking at all
+    withContext(NonCancellable + Dispatchers.EDT + ModalityState.any().asContextElement()) {
+      if (!project.isDisposed) {
+        // project open is done opening editors: whatever the editor area shows now is what it keeps
+        fileEditorManager.mainSplitters.endStartupEmptyStatePresentationHold()
+      }
+    }
+  }
+
+  try {
+    withContext(Dispatchers.EDT + ModalityState.any().asContextElement()) {
+      // read the state of dockable editors
+      fileEditorManager.initDockableContentFactory()
+
+      frameHelper.postInit()
+    }
+
+    project.getUserData(ProjectImpl.CREATION_TIME)?.let { startTime ->
+      LifecycleUsageTriggerCollector.onProjectOpenFinished(project, TimeoutUtil.getDurationMillis(startTime), frameHelper.isTabbedWindow)
+    }
+
+    // check after `initDockableContentFactory` - editor in a docked window
+    if (!fileEditorManager.hasOpenFiles()) {
+      stopOpenFilesActivity(project)
+      // An editor area whose empty state claims focus is where the caret belongs on a project that restored no editors, the same way it
+      // would belong in a restored editor. The request is made here, where "project open restored nothing" is known, and honoured when
+      // the empty state is presented — the hold released below. An editor opened after this point (the README) drops it again.
+      // Not on a remote dev host, which does not focus anything of its own on project open either — see `openProjectViewIfNeeded`.
+      val emptyStateClaimKept = AtomicBoolean(true)
+      var emptyStateFocusSettled: Deferred<Unit>? = null
+      val emptyStateTakesFocus = !AppMode.isRemoteDevHost() &&
+                                 withContext(Dispatchers.EDT + ModalityState.any().asContextElement()) {
+                                   val splitters = fileEditorManager.mainSplitters
+                                   splitters.emptyStateClaimsFocus().also { takesFocus ->
+                                     if (takesFocus) {
+                                       // The Project view below is opened without focus for this claim, which is a promise made before
+                                       // there is a component to keep it with. Where it cannot be kept — a provider that builds nothing,
+                                       // an empty state that is never presented — the Project view is focused after all, either here or
+                                       // at the point it is opened, whichever comes second.
+                                       emptyStateFocusSettled = splitters.requestEmptyStateFocusWhenPresentedAsync(onFocusUnclaimed = {
+                                         emptyStateClaimKept.set(false)
+                                         focusProjectViewIfOpened(project)
+                                       })
+                                     }
+                                   }
+                                 }
+      if (!isNotificationSilentMode(project)) {
+        finishEmptyEditorStartupBeforeProjectView(
+          finishOpeningStartupEditors = {
+            val readmeCheckStart = System.nanoTime()
+            findAndOpenReadmeIfNeeded(project)
+            recordStartupSpan("readme opening check", readmeCheckStart, System.nanoTime())
+          },
+          presentEmptyEditor = {
+            releaseStartupEmptyStatePresentationHold()
+            val settled = emptyStateFocusSettled
+            if (settled != null && withTimeoutOrNull(EMPTY_STATE_FOCUS_SETTLEMENT_TIMEOUT) { settled.await() } == null) {
+              // A broken or unexpectedly slow provider must not hold project open forever. Let Project view own focus; if the empty
+              // state eventually mounts, its existing focus-owner guard prevents it from stealing that focus back.
+              settled.cancel()
+              emptyStateClaimKept.set(false)
+            }
+          },
+          openProjectView = {
+            openProjectViewIfNeeded(project, toolWindowInitJob, focusProjectView = {
+              !emptyStateTakesFocus || !emptyStateClaimKept.get()
+            })
+          },
+        )
+      }
+      FUSProjectHotStartUpMeasurer.reportNoMoreEditorsOnStartup(System.nanoTime())
+    }
+  }
+  finally {
+    releaseStartupEmptyStatePresentationHold()
+  }
+}
+
+/**
+ * Finishes every startup operation that may open an editor, then presents the empty editor before making the Project view visible.
+ * Once a tool window owns focus, a claiming empty state deliberately refuses to steal it, so activating the Project view first would
+ * lose the startup focus claim.
+ */
+internal suspend fun finishEmptyEditorStartupBeforeProjectView(
+  finishOpeningStartupEditors: suspend () -> Unit,
+  presentEmptyEditor: suspend () -> Unit,
+  openProjectView: suspend () -> Unit,
+) {
+  finishOpeningStartupEditors()
+  presentEmptyEditor()
+  openProjectView()
+}
+
+/** Shows the Project view without making it active when the editor area keeps startup focus. */
+internal fun presentProjectViewOnStartup(
+  focusProjectView: Boolean,
+  showProjectView: () -> Unit,
+  activateProjectView: () -> Unit,
+) {
+  if (focusProjectView) {
+    activateProjectView()
+  }
+  else {
+    showProjectView()
+  }
+}
+
+private val EMPTY_STATE_FOCUS_SETTLEMENT_TIMEOUT = 5.seconds
+
+private val MAIN_MENU_FILL_PERMIT_TIMEOUT = 2.seconds
+
+/**
+ * Ends the startup presentation hold when [postOpenEditors] never got to release the hold [restoreEditors] took.
+ *
+ * This is the abandoning release rather than a paired one: restoring takes its hold uninterruptibly, so it may still be taken after
+ * project open has been cancelled, and a paired release that arrives first would be spent on a hold that does not exist yet.
+ */
+private fun releaseStartupEmptyStatePresentationHold(project: Project) {
+  val fileEditorManager = project.serviceIfCreated<FileEditorManager>() as? FileEditorManagerImpl ?: return
+  // `mainSplitters` is a lateinit assigned inside `initJob`, so it exists only once that job has completed successfully — and where it
+  // never did, restoring never returned from `init()` either, so no hold was ever taken
+  fileEditorManager.initJob.invokeOnCompletion { throwable ->
+    if (throwable != null) {
+      return@invokeOnCompletion
+    }
+    ApplicationManager.getApplication().invokeLater(
+      {
+        if (!project.isDisposed) {
+          fileEditorManager.mainSplitters.abandonStartupEmptyStatePresentationHold()
+        }
+      },
+      ModalityState.any(),
+    )
+  }
+}
+
+private suspend fun focusSelectedEditor(editorComponent: EditorsSplitters) {
+  val composite = editorComponent.currentWindow?.selectedComposite ?: return
+  // TODO: this check for JB Client is made to keep the same behaviour in monolith,
+  //   but in 253 we may remove this check and see what may be broken with async editor focus
+  if (PlatformUtils.isJetBrainsClient()) {
+    // in Remote Dev we cannot wait for composite availability synchronously,
+    // since editors come from the backend and this is a too long process
+    composite.coroutineScope.launch(Dispatchers.EDT + FUSProjectHotStartUpMeasurer.getContextElementWithEmptyProjectElementToPass()) {
+      composite.waitForAvailable()
+      focusSelectedEditorInComposite(composite)
+    }
+  }
+  else {
+    // let's focus the editor synchronously in local mode
+    // a composite closed before it published its editors cancels its own wait; that must not cancel project opening
+    val isAvailable = withTimeoutOrNull(10.seconds) {
+      try {
+        composite.waitForAvailable()
+        true
+      }
+      catch (@Suppress("IncorrectCancellationExceptionHandling") _: CancellationException) {
+        // the wait belongs to the composite, so only our own cancellation may stop project opening
+        currentCoroutineContext().ensureActive()
+        false
+      }
+    }
+    if (isAvailable == false) {
+      return
+    }
+    if (isAvailable == null) {
+      logger<ProjectFrameAllocator>().warn(
+        "Timed out waiting for editor to become available on project open (timeout=10s, file=${composite.file}, project=${composite.project.name})"
+      )
+      composite.coroutineScope.launch(Dispatchers.EDT) {
+        composite.waitForAvailable()
+        focusSelectedEditorInComposite(composite)
+      }
+      return
+    }
+    else {
+      withContext(Dispatchers.EDT) {
+        focusSelectedEditorInComposite(composite)
+      }
+    }
+  }
+}
+
+private fun focusSelectedEditorInComposite(composite: EditorComposite) {
+  val textEditor = composite.selectedEditor as? TextEditor
+  val preferredFocusedComponent = composite.preferredFocusedComponent ?: return
+  if (textEditor == null) {
+    FUSProjectHotStartUpMeasurer.firstOpenedUnknownEditor(composite.file, System.nanoTime())
+    preferredFocusedComponent.requestFocusInWindow()
+  }
+  else {
+    AsyncEditorLoader.performWhenLoaded(textEditor.editor) {
+      FUSProjectHotStartUpMeasurer.firstOpenedEditor(composite.file, composite.project, textEditor)
+      preferredFocusedComponent.requestFocusInWindow()
+    }
+  }
+}
+
+internal fun applyBoundsOrDefault(frame: JFrame, bounds: Rectangle?, restoreOnlyLocation: Boolean = false) {
+  if (bounds == null) {
+    setDefaultSize(frame)
+    frame.setLocationRelativeTo(null)
+  }
+  else {
+    if (restoreOnlyLocation) {
+      frame.location = bounds.location
+      // we need to guarantee that the size is smaller than this screen to be able to maximize the frame after this
+      setDefaultSize(frame, ScreenUtil.getScreenRectangle(bounds.location))
+    }
+    else {
+      frame.bounds = bounds
+    }
+  }
+}
+
+private fun setDefaultSize(frame: JFrame, screen: Rectangle = ScreenUtil.getMainScreenBounds()) {
+  val size = screen.size
+  size.width = min(1400, size.width - 20)
+  size.height = min(1000, size.height - 40)
+  frame.size = size
+  frame.minimumSize = Dimension(340, frame.minimumSize.height)
+}
+
+@ApiStatus.Internal
+fun createIdeFrame(frameInfo: FrameInfo): IdeFrameImpl {
+  val deviceBounds = frameInfo.bounds
+  if (deviceBounds == null) {
+    val frame = IdeFrameImpl()
+    setDefaultSize(frame)
+    frame.setLocationRelativeTo(null)
+    return frame
+  }
+  else {
+    checkForNonsenseBounds("IdeProjectFrameAllocatorKt.createNewProjectFrameProducer.deviceBounds", deviceBounds)
+    val bounds = FrameBoundsConverter.convertFromDeviceSpaceAndFitToScreen(deviceBounds)
+    val state = frameInfo.extendedState
+    val isMaximized = FrameInfoHelper.isMaximized(state)
+    val frame = IdeFrameImpl()
+    val restoreNormalBounds = isMaximized && frame.extendedState == Frame.NORMAL && bounds != null
+
+    // On macOS, setExtendedState(maximized) may UN-maximize the frame if the restored bounds are too large
+    // (so the OS will "autodetect" it as already maximized).
+    // Therefore, we only restore the location and use the default size (which is always computed to be less than the screen).
+    applyBoundsOrDefault(frame, bounds, restoreOnlyLocation = isMaximized && SystemInfo.isMac)
+
+    if (isMaximized && SystemInfo.isMac) {
+      frame.isAboutToBeMaximized = true
+      installMaximizeListener(frame)
+      if (IDE_FRAME_EVENT_LOG.isDebugEnabled) {
+        IDE_FRAME_EVENT_LOG.debug("Set about-to-be-maximized flag")
+      }
+    }
+
+    frame.extendedState = state
+    frame.minimumSize = Dimension(340, frame.minimumSize.height)
+
+    // This has to be done after restoring the actual state, as otherwise setExtendedState() may overwrite the normal bounds.
+    if (restoreNormalBounds) {
+      frame.normalBounds = bounds
+      frame.screenBounds = ScreenUtil.getScreenDevice(bounds)?.defaultConfiguration?.bounds
+      if (IDE_FRAME_EVENT_LOG.isDebugEnabled) { // avoid unnecessary concatenation
+        IDE_FRAME_EVENT_LOG.debug("Loaded saved normal bounds ${frame.normalBounds} for the screen ${frame.screenBounds}")
+      }
+    }
+    return frame
+  }
+}
+
+private fun installMaximizeListener(frame: IdeFrameImpl) {
+  frame.addWindowStateListener(object : WindowStateListener {
+    override fun windowStateChanged(e: WindowEvent) {
+      if ((e.newState and Frame.MAXIMIZED_BOTH) == Frame.MAXIMIZED_BOTH) {
+        frame.removeWindowStateListener(this)
+        frame.isAboutToBeMaximized = false
+        if (IDE_FRAME_EVENT_LOG.isDebugEnabled) {
+          IDE_FRAME_EVENT_LOG.debug("Frame maximized at size=${frame.size}; cleared about-to-be-maximized flag")
+        }
+      }
+    }
+  })
+}
+
+/**
+ * @param focusProjectView `false` when something else on this project's editor area takes focus instead — an empty state that claims
+ * it — so the Project view is shown without activation rather than activated and then focused away from. Asked at the moment the
+ * Project view is presented rather than in advance, because a claim on the editor area's focus can be given up before that moment.
+ */
+private suspend fun openProjectViewIfNeeded(project: Project, toolWindowInitJob: Job, focusProjectView: () -> Boolean) {
+  if (!serviceAsync<RegistryManager>().`is`("ide.open.project.view.on.startup")) {
+    return
+  }
+
+  toolWindowInitJob.join()
+
+  // todo should we use `runOnceForProject(project, "OpenProjectViewOnStart")` or not?
+  val toolWindowManager = project.serviceAsync<ToolWindowManager>()
+  val focusRestore = withContext(Dispatchers.ui(CoroutineSupport.UiDispatcherKind.STRICT)) outer@{
+    if (toolWindowManager.activeToolWindowId == null) {
+      val shouldFocusProjectView = focusProjectView()
+      val focusOwner = if (!shouldFocusProjectView && !AppMode.isRemoteDevHost()) {
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().focusOwner
+      }
+      else {
+        null
+      }
+      val toolWindow = toolWindowManager.getToolWindow(ToolWindowId.PROJECT_VIEW)
+      if (toolWindow != null) {
+        // maybe readAction
+        return@outer withContext(Dispatchers.EDT) {
+          presentProjectViewOnStartup(
+            focusProjectView = shouldFocusProjectView && !AppMode.isRemoteDevHost(),
+            showProjectView = { toolWindow.show(null) },
+            activateProjectView = { toolWindow.activate(null, true) },
+          )
+          focusOwner?.let { ProjectViewStartupFocusRestore(toolWindow, it, toolWindow.getReady(PROJECT_VIEW_STARTUP_REQUESTOR)) }
+        }
+      }
+    }
+    null
+  }
+
+  if (focusRestore != null) {
+    try {
+      withTimeoutOrNull(PROJECT_VIEW_STARTUP_READY_TIMEOUT) {
+        focusRestore.ready.await()
+      }
+    }
+    catch (e: CancellationException) {
+      throw e
+    }
+    catch (e: RuntimeException) {
+      logger<ProjectFrameAllocator>().warn("Project view did not become ready while preserving startup editor focus", e)
+    }
+    withContext(Dispatchers.EDT + ModalityState.any().asContextElement()) {
+      restoreStartupEditorFocus(project, focusRestore)
+    }
+  }
+}
+
+@RequiresEdt
+private fun restoreStartupEditorFocus(project: Project, restore: ProjectViewStartupFocusRestore) {
+  val focusOwner = restore.focusOwner
+  val currentFocusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().focusOwner
+  if (!shouldRestoreStartupEditorFocus(focusOwner, currentFocusOwner, restore.toolWindow.component)) {
+    return
+  }
+  IdeFocusManager.getInstance(project).requestFocusInProject(focusOwner, project)
+}
+
+/** Keeps a later user focus choice, while repairing focus stolen by Project view initialization. */
+internal fun shouldRestoreStartupEditorFocus(
+  startupFocusOwner: Component,
+  currentFocusOwner: Component?,
+  projectViewComponent: Component,
+): Boolean {
+  return startupFocusOwner.isShowing &&
+         (currentFocusOwner == null || SwingUtilities.isDescendingFrom(currentFocusOwner, projectViewComponent))
+}
+
+private data class ProjectViewStartupFocusRestore(
+  @JvmField val toolWindow: ToolWindow,
+  @JvmField val focusOwner: Component,
+  @JvmField val ready: ActionCallback,
+)
+
+private const val PROJECT_VIEW_STARTUP_REQUESTOR = "project view startup"
+private val PROJECT_VIEW_STARTUP_READY_TIMEOUT = 5.seconds
+
+/**
+ * Focuses the Project view that [openProjectViewIfNeeded] showed without activation, because the editor area's empty state claimed that
+ * focus and then found nothing to take it with.
+ *
+ * Does nothing when the Project view is not showing: it was never opened — notification silent mode, the registry key off — and there is
+ * nothing here to focus. Where that is only because it has not been opened *yet*, the claim is already known to be given up by the time
+ * it is, and it is opened focused instead.
+ */
+@RequiresEdt
+private fun focusProjectViewIfOpened(project: Project) {
+  if (project.isDisposed) {
+    return
+  }
+  val toolWindow = ToolWindowManager.getInstance(project).getToolWindow(ToolWindowId.PROJECT_VIEW) ?: return
+  if (toolWindow.isVisible) {
+    toolWindow.activate(null, true)
+  }
+}
+
+private suspend fun findAndOpenReadmeIfNeeded(project: Project) {
+  if (!isReadmeLookupOnStartupEnabled(project)) {
+    return
+  }
+
+  runOnceForProject(project = project, id = "ShowReadmeOnStart") {
+    val projectDir = project.guessProjectDir() ?: return@runOnceForProject
+    val files = mutableListOf(".github/README.md", "README.md", "docs/README.md")
+    if (SystemInfoRt.isFileSystemCaseSensitive) {
+      files.addAll(files.map { it.lowercase() })
+    }
+    val readme = files.firstNotNullOfOrNull(projectDir::findFileByRelativePath) ?: return@runOnceForProject
+    if (!readme.isDirectory) {
+      // Screen readers don't support JCEF preview (IJPL-59438)
+      val layout =
+        if (ScreenReader.isActive()) TextEditorWithPreview.Layout.SHOW_EDITOR_AND_PREVIEW else TextEditorWithPreview.Layout.SHOW_PREVIEW
+      readme.putUserData(TextEditorWithPreview.DEFAULT_LAYOUT_FOR_FILE, layout)
+      FileEditorManager.getInstanceAsync(project).openFile(readme, FileEditorOpenRequest.withFocus(true))
+
+      readme.putUserData(README_OPENED_ON_START_TS, Instant.now())
+      FUSProjectHotStartUpMeasurer.openedReadme(readme, System.nanoTime())
+    }
+  }
+}
+
+/**
+ * Tells if the project open looks for a README of [project] to open.
+ * A project with [ProjectFrameCapability.WELCOME_EXPERIENCE] gets no lookup.
+ */
+internal suspend fun isReadmeLookupOnStartupEnabled(project: Project): Boolean {
+  return AdvancedSettings.getBoolean("ide.open.readme.md.on.startup") &&
+         !FileEditorManagerKeys.DO_NOT_REOPEN_FILES.isIn(project) &&
+         !serviceAsync<ProjectFrameCapabilitiesService>().has(project, ProjectFrameCapability.WELCOME_EXPERIENCE)
+}
+
+/**
+ * Installs the default status bar widgets of [project] and updates the frame title.
+ * A [ProjectFrameCapability.WELCOME_EXPERIENCE] project installs its widgets after [frameLoadingJob] completes,
+ * and a [ProjectFrameCapability.INTERACTIVE_ON_EDITOR_SHOWN] project after [frameLoadingDone] completes,
+ * because the creation and the `install` of each widget is an EDT event that delays the frame becoming interactive.
+ * Its status bar starts the progress reporting at the same time, see [ProjectFrameHelper.setRawProject].
+ */
+private suspend fun installStatusBarWidgetsAndUpdateTitle(
+  frameHelper: IdeProjectFrameHelper,
+  project: Project,
+  frameLoadingJob: Job,
+  frameLoadingDone: Job,
+) {
+  val capabilities = serviceAsync<ProjectFrameCapabilitiesService>().getAll(project)
+  val awaited = when {
+    capabilities.contains(ProjectFrameCapability.WELCOME_EXPERIENCE) -> frameLoadingJob
+    capabilities.contains(ProjectFrameCapability.INTERACTIVE_ON_EDITOR_SHOWN) -> frameLoadingDone
+    else -> null
+  }
+  if (awaited == null) {
+    frameHelper.installDefaultProjectStatusBarWidgets(project)
+    frameHelper.updateTitle(serviceAsync<FrameTitleBuilder>().getProjectTitle(project), project)
+    return
+  }
+
+  frameHelper.updateTitle(serviceAsync<FrameTitleBuilder>().getProjectTitle(project), project)
+  // the caller runs in the project scope, not as a child of the frame loading job, so the wait cannot deadlock
+  awaited.join()
+  if (awaited.isCancelled && !project.isOpen) {
+    return
+  }
+  withContext(Dispatchers.UiWithModelAccess) {
+    frameHelper.initializeStatusBar()
+  }
+  frameHelper.installDefaultProjectStatusBarWidgets(project)
+}
+
+/**
+ * Returns the job that ends the loading state of a frame: until it completes, the loading layer consumes the input.
+ * It completes when [foregroundJob] completes, and its cancellation, for example, by ESC on the loading layer, cancels [foregroundJob].
+ */
+@VisibleForTesting
+internal fun createFrameLoadingDone(foregroundJob: Job): CompletableJob {
+  val done = Job()
+  foregroundJob.invokeOnCompletion { cause ->
+    if (cause == null) {
+      done.complete()
+    }
+    else {
+      done.cancel(cause as? CancellationException ?: CancellationException("The frame loading failed", cause))
+    }
+  }
+  done.invokeOnCompletion { cause ->
+    if (cause is CancellationException) {
+      foregroundJob.cancel(cause)
+    }
+  }
+  return done
+}
+
+/**
+ * Completes [done] once [frameHelperInitJob] is done and [contentPainted] is completed,
+ * so the loading state of a welcome frame ends when its content is painted, not when the tail of the tool window initialization ends.
+ * The waiter runs in [scope], so it never holds [foregroundJob], and it stops when [foregroundJob] ends.
+ */
+@VisibleForTesting
+internal fun completeFrameLoadingOnContentPainted(
+  scope: CoroutineScope,
+  done: CompletableJob,
+  foregroundJob: Job,
+  frameHelperInitJob: Job,
+  contentPainted: Deferred<Unit>,
+) {
+  val waiter = scope.launch(CoroutineName("frame content painted waiting")) {
+    frameHelperInitJob.join()
+    contentPainted.await()
+    // a failed frame helper initialization cancels the foreground job, and the loading state ends with it
+    if (!frameHelperInitJob.isCancelled && !foregroundJob.isCancelled) {
+      done.complete()
+    }
+  }
+  foregroundJob.invokeOnCompletion { waiter.cancel() }
+}
+
+/**
+ * Tells if the frame of [project] becomes interactive when its content paints, before the rest of its UI initializes.
+ */
+private suspend fun becomesInteractiveOnContentPainted(project: Project): Boolean {
+  val capabilities = serviceAsync<ProjectFrameCapabilitiesService>().getAll(project)
+  return capabilities.contains(ProjectFrameCapability.WELCOME_EXPERIENCE) ||
+         capabilities.contains(ProjectFrameCapability.INTERACTIVE_ON_EDITOR_SHOWN)
+}
+
+/**
+ * Ends the loading state of the frame of [project] once its restored editor is shown, and reports the frame content as painted.
+ * [done] completes first, so the loading layer leaves the EDT queue before the content paint releases the tool windows and the menu fill.
+ */
+private suspend fun completeFrameLoadingOnEditorsShown(project: Project, done: CompletableJob, frameHelperInitJob: Job) {
+  frameHelperInitJob.join()
+  if (frameHelperInitJob.isCancelled) {
+    return
+  }
+  done.complete()
+  project.getOrCreateFrameContentPaintedDeferred().complete(Unit)
+}
+
+/**
+ * Returns the permit of the first main menu fill of a frame opened with [options], see [FrameLoadingState.mainMenuFillPermit].
+ * A frame that is not initialized early learns about its project only after the project preparation, so its fill does not wait.
+ */
+@VisibleForTesting
+internal fun createMainMenuFillPermit(options: OpenProjectTask): CompletableJob {
+  val permit = Job()
+  if (!isFrameInitializedEarly(options)) {
+    permit.complete()
+  }
+  return permit
+}
+
+/**
+ * Completes [permit] when [contentPainted] completes, or after [timeout] when the paint does not come.
+ * The waiter runs in [scope], and its end in any way completes [permit], so a fill never waits for a disposed project.
+ */
+@VisibleForTesting
+internal fun permitMainMenuFillOnContentPainted(scope: CoroutineScope, permit: CompletableJob, contentPainted: Job, timeout: Duration) {
+  val waiter = scope.launch(CoroutineName("main menu fill permit waiting")) {
+    withTimeoutOrNull(timeout) {
+      contentPainted.join()
+    }
+  }
+  waiter.invokeOnCompletion { permit.complete() }
+}
+
+private class MutableLoadingState(override val done: Job, override val mainMenuFillPermit: Job) : FrameLoadingState

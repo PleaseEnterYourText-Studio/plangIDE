@@ -1,0 +1,42 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//build:compiler-options.bzl", "create_kotlinc_options")
+
+### auto-generated section `build intellij.platform.distributionContent` start
+create_kotlinc_options(
+    name = "custom_distribution-content",
+    opt_in = ["kotlinx.serialization.ExperimentalSerializationApi"],
+)
+
+jvm_library(
+    name = "distribution-content",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = ":custom_distribution-content",
+    module_name = "intellij.platform.distributionContent",
+    visibility = ["//visibility:public"],
+    runtime_deps = ["//libraries/okio:squareup-okio-jvm"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/kaml",
+        "//libraries/kotlinx/serialization/core",
+        "//libraries/kotlinx/serialization/json",
+        "//libraries/jetbrains/annotations",
+    ],
+)
+### auto-generated section `build intellij.platform.distributionContent` end
+
+### auto-generated section `iml intellij.platform.distributionContent` start
+exports_files(
+    [
+        "intellij.platform.distributionContent.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.distributionContent` end

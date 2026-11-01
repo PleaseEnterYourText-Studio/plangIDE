@@ -1,0 +1,402 @@
+// Copyright 2000-2024 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+package com.intellij.platform.util.io.storages.intmultimaps.extendiblehashmap;
+
+import com.intellij.platform.util.io.storages.StorageTestingUtils;
+import com.intellij.platform.util.io.storages.intmultimaps.DurableIntToMultiIntMapTestBase;
+import com.intellij.util.io.CorruptedException;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+import java.lang.foreign.Arena;
+import java.lang.foreign.MemorySegment;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.intellij.platform.util.io.storages.intmultimaps.extendiblehashmap.ExtendibleMapFactory.NotClosedProperlyAction.DROP_AND_CREATE_EMPTY_MAP;
+import static com.intellij.platform.util.io.storages.intmultimaps.extendiblehashmap.ExtendibleMapFactory.NotClosedProperlyAction.FAIL_SPECTACULARLY;
+import static com.intellij.platform.util.io.storages.intmultimaps.extendiblehashmap.ExtendibleMapFactory.NotClosedProperlyAction.IGNORE_AND_HOPE_FOR_THE_BEST;
+import static java.lang.foreign.ValueLayout.JAVA_BYTE;
+import static java.lang.foreign.ValueLayout.JAVA_SHORT;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+//TODO RC: move to platform.util.storage module's tests (DurableIntToMultiIntMapTestBase prevents it now)
+public class ExtendibleHashMapTest extends DurableIntToMultiIntMapTestBase<ExtendibleHashMap> {
+
+  public ExtendibleHashMapTest() {
+    super(/*entriesToTest: */4_000_000);
+  }
+
+  @Test
+  public void fullSegmentTableUsesItsLastSlot() throws IOException {
+    var storage = new TestStorage();
+    var map = new ExtendibleHashMap(storage);
+    try {
+      var failure = assertThrows(IllegalStateException.class, () -> {
+        for (int key = 1; key <= 100_000; key++) {
+          map.put(key, key);
+        }
+      });
+      assertTrue(failure.getMessage().contains("currentSize=512"), "The map must fill the table before expansion fails");
+      assertTrue(Short.toUnsignedInt(storage.segmentsTable().get(JAVA_SHORT, 1022)) > 0,
+                 "The last table slot must hold a segment index");
+    }
+    finally {
+      map.closeAndClean();
+    }
+  }
+
+  @Test
+  public void oldFileVersionIsRejectedBeforeMapping() throws IOException {
+    var oldPath = storagePath.resolveSibling("old-version.map");
+    var oldHeader = ByteBuffer.allocate(80).order(ByteOrder.nativeOrder());
+    oldHeader.putInt(ExtendibleHashMap.MAGIC_WORD);
+    oldHeader.putInt(1);
+    oldHeader.putInt(ExtendibleHashMap.DEFAULT_SEGMENT_SIZE);
+    Files.write(oldPath, oldHeader.array());
+
+    assertThrows(IOException.class, () -> ExtendibleMapFactory.mediumSize().open(oldPath));
+    assertEquals(oldHeader.capacity(), Files.size(oldPath),
+                 "The version check must not map or extend an old file");
+  }
+
+  @Test
+  public void freshlyCreatedMap_isProperlyClosedByDefinition() {
+    assertTrue(
+      multimap.wasProperlyClosed(),
+      "Freshly created ExtendibleHashMap is always 'properly closed'"
+    );
+  }
+
+  @Test
+  public void closedAndReopenedMap_isProperlyClosed() throws IOException {
+    multimap.close();
+    multimap = openFile(storagePath);
+    assertTrue(
+      multimap.wasProperlyClosed(),
+      "Closed and reopened ExtendibleHashMap is considered 'properly closed'"
+    );
+  }
+
+  @Test
+  public void notProperlyClosedMap_isDetectedAsNotProperlyClosed_onReopen() throws Exception {
+    multimap.put(1, 2);//put anything so map is 'modified'
+    StorageTestingUtils.emulateImproperClose(multimap);
+
+    multimap = openFile(storagePath);
+    assertFalse(
+      multimap.wasProperlyClosed(),
+      "Not-closed ExtendibleHashMap is considered NOT 'properly closed'"
+    );
+  }
+
+  @Test
+  public void notProperlyClosedMap_isReopenedAsIs_ifFactoryConfigured_IGNORE_AND_HOPE_FOR_THE_BEST() throws Exception {
+    multimap.put(1, 2);//put anything so map is 'modified'
+    StorageTestingUtils.emulateImproperClose(multimap);
+
+    multimap = open(
+      ExtendibleMapFactory.mediumSize().ifNotClosedProperly(IGNORE_AND_HOPE_FOR_THE_BEST),
+      storagePath
+    );
+    assertFalse(
+      multimap.wasProperlyClosed(),
+      "Not-closed ExtendibleHashMap is considered NOT 'properly closed'"
+    );
+    assertEquals(
+      1,
+      multimap.size(),
+      "reopened map has single entry it was put before"
+    );
+  }
+
+  @Test
+  public void notProperlyClosedMap_IsDroppedAndCreatedEmpty_ifFactoryConfigured_DROP_AND_CREATE_EMPTY_MAP() throws Exception {
+    multimap.put(1, 2);//put anything so map is 'modified'
+    StorageTestingUtils.emulateImproperClose(multimap);
+
+    multimap = open(
+      ExtendibleMapFactory.mediumSize().ifNotClosedProperly(DROP_AND_CREATE_EMPTY_MAP),
+      storagePath
+    );
+    assertTrue(
+      multimap.wasProperlyClosed(),
+      "Must be 'properly closed' since the map was re-created from 0 (factory's strategy=DROP_AND_CREATE_EMPTY_MAP)"
+    );
+    assertEquals(
+      0,
+      multimap.size(),
+      "Must be empty map, since it wasn't properly-closed, and factory's strategy=DROP_AND_CREATE_EMPTY_MAP"
+    );
+  }
+
+  @Test
+  public void notProperlyClosedMap_FailsToReopen_ifFactoryConfiguredTo_FAIL_SPECTACULARLY() throws Exception {
+    multimap.put(1, 2);//put anything so map is 'modified'
+    StorageTestingUtils.emulateImproperClose(multimap);
+
+    assertThrows(
+      CorruptedException.class,
+      () -> {
+        multimap = open(
+          ExtendibleMapFactory.mediumSize().ifNotClosedProperly(FAIL_SPECTACULARLY),
+          storagePath
+        );
+      });
+  }
+
+  @Test
+  public void closeAndClean_RemovesTheUnderlyingFile() throws IOException {
+    //RC: it is over-specification -- .closeAndClean() doesn't require to remove the file, only to clean the
+    //    content so new storage opened on top of it will be as-new. But this is the current implementation
+    //    of that spec:
+    multimap.closeAndClean();
+    assertFalse(
+      Files.exists(storagePath),
+      "File [" + storagePath + "] must NOT exist after .closeAndClean()"
+    );
+  }
+
+  @Test
+  public void removeReplaceAndClear_markMapAsDirty() throws IOException {
+    multimap.put(1, 10);
+    multimap.flush();
+    assertFalse(multimap.isDirty(), "A successful flush must mark the map as clean");
+
+    assertTrue(multimap.remove(1, 10));
+    assertTrue(multimap.isDirty(), "Removing an entry must mark the map as dirty");
+    multimap.flush();
+
+    multimap.put(1, 10);
+    multimap.flush();
+    assertTrue(multimap.replace(1, 10, 20));
+    assertTrue(multimap.isDirty(), "Replacing an entry must mark the map as dirty");
+    multimap.flush();
+
+    multimap.clear();
+    assertTrue(multimap.isDirty(), "Clearing a non-empty map must mark the map as dirty");
+  }
+
+  @Test
+  public void failedFlush_keepsMapDirtyAndOpened() throws IOException {
+    var storage = new TestStorage();
+    var map = new ExtendibleHashMap(storage);
+    try {
+      map.put(1, 10);
+      storage.failFlush = true;
+
+      assertThrows(IOException.class, map::flush);
+      assertTrue(map.isDirty());
+      assertEquals(TestStorage.FILE_STATUS_OPENED, storage.fileStatus());
+      assertEquals(1, storage.flushCount);
+
+      storage.failFlush = false;
+      map.flush();
+      assertFalse(map.isDirty());
+      assertEquals(TestStorage.FILE_STATUS_PROPERLY_CLOSED, storage.fileStatus());
+      assertEquals(2, storage.flushCount);
+    }
+    finally {
+      storage.failFlush = false;
+      map.closeAndClean();
+    }
+  }
+
+  @Test
+  public void close_flushesStorage() throws IOException {
+    var storage = new TestStorage();
+    var map = new ExtendibleHashMap(storage);
+    try {
+      map.put(1, 10);
+      map.close();
+
+      assertEquals(1, storage.flushCount);
+      assertEquals(TestStorage.FILE_STATUS_PROPERLY_CLOSED, storage.fileStatusAtClose);
+      assertFalse(storage.isOpen());
+    }
+    finally {
+      map.closeAndClean();
+    }
+  }
+
+  //===================== infrastructure ===============================================================
+
+  private Path storagePath;
+  private final List<ExtendibleHashMap> multimapsToCloseAndClean = new ArrayList<>();
+
+  @Override
+  protected ExtendibleHashMap openInDir(@NotNull Path tempDir) throws IOException {
+    if (!Files.isDirectory(tempDir)) {
+      throw new IllegalArgumentException(tempDir + " is not a directory");
+    }
+    Path storagePath = tempDir.resolve("map.map");
+    return openFile(storagePath);
+  }
+
+  protected ExtendibleHashMap openFile(@NotNull Path storagePath) throws IOException {
+    return open(ExtendibleMapFactory.mediumSize(), storagePath);
+  }
+
+  private ExtendibleHashMap open(@NotNull ExtendibleMapFactory factory,
+                                 @NotNull Path storagePath) throws IOException {
+    this.storagePath = storagePath;
+    ExtendibleHashMap multimap = factory.open(storagePath);
+
+    multimapsToCloseAndClean.add(multimap);
+
+    return multimap;
+  }
+
+  @AfterEach
+  void tearDown() throws IOException {
+    //TODO RC: there is no .forEach() & .isClosed() in NonDurableNonParallelIntToMultiIntMap
+    //         to use the same approach in base class -- but probably it is worth to do also?
+    for (ExtendibleHashMap mapToCheck : multimapsToCloseAndClean) {
+      if(!mapToCheck.isClosed()) {
+        assertInvariant_ValuesForEachKeysAreUnique(mapToCheck);
+      }
+    }
+
+    for (ExtendibleHashMap mapToClean : multimapsToCloseAndClean) {
+      mapToClean.closeAndUnsafelyUnmap();
+    }
+    //RC: maybe we can't remove the first once -- because second one is not yet unmapped?
+    for (ExtendibleHashMap mapToClean : multimapsToCloseAndClean) {
+      mapToClean.closeAndClean();
+    }
+  }
+
+  private static void assertInvariant_ValuesForEachKeysAreUnique(@NotNull ExtendibleHashMap multimap) throws IOException {
+    IntOpenHashSet keys = new IntOpenHashSet();
+    multimap.forEach((key, value) -> keys.add(key));
+    for (int key : keys) {
+      IntOpenHashSet values = new IntOpenHashSet();
+      multimap.lookup(key, value -> {
+        if (!values.add(value)) {
+          fail("get(" + key + ") values are non-unique: value[" + value + "] was already reported " + values);
+        }
+        return true;
+      });
+    }
+  }
+
+  private static final class TestStorage implements ExtendibleHashMapStorage {
+    private static final int SEGMENT_SIZE = 1024;
+    private static final long FILE_STATUS_OFFSET = Integer.BYTES * 4L + Byte.BYTES;
+    private static final byte FILE_STATUS_OPENED = 0;
+    private static final byte FILE_STATUS_PROPERLY_CLOSED = 1;
+
+    private final Arena arena = Arena.ofConfined();
+    private final List<MemorySegment> segments = new ArrayList<>();
+    private MemorySegment header;
+    private MemorySegment segmentsTable;
+
+    private boolean open = true;
+    private boolean failFlush;
+    private int flushCount;
+    private byte fileStatusAtClose;
+
+    @Override
+    public boolean isOpen() {
+      return open;
+    }
+
+    @Override
+    public boolean isEmpty() {
+      return header == null && segmentsTable == null && segments.isEmpty();
+    }
+
+    @Override
+    public int segmentSize() {
+      return SEGMENT_SIZE;
+    }
+
+    @Override
+    public int headerSize() {
+      return ExtendibleHashMap.REQUIRED_HEADER_SIZE;
+    }
+
+    @Override
+    public @NotNull MemorySegment header() {
+      if (header == null) {
+        if (!segments.isEmpty()) {
+          throw new IllegalStateException("Segments exist without a header");
+        }
+        header = arena.allocate(headerSize(), Integer.BYTES);
+      }
+      return header;
+    }
+
+    @Override
+    public @NotNull MemorySegment segmentsTable() {
+      if (header == null) {
+        throw new IllegalStateException("Call header() first");
+      }
+      if (segmentsTable == null) {
+        segmentsTable = arena.allocate(SEGMENT_SIZE, Long.BYTES);
+      }
+      return segmentsTable;
+    }
+
+    @Override
+    public @NotNull MemorySegment segment(int segmentIndex) {
+      return segments.get(segmentIndex);
+    }
+
+    @Override
+    public @NotNull MemorySegment allocateSegment(int segmentIndex) {
+      if (segmentIndex != segments.size()) {
+        throw new IllegalArgumentException("The segment index must be " + segments.size() + ", but it is " + segmentIndex);
+      }
+      var segment = arena.allocate(SEGMENT_SIZE, Integer.BYTES);
+      segments.add(segment);
+      return segment;
+    }
+
+    @Override
+    public void clear() {
+      header = null;
+      segmentsTable = null;
+      segments.clear();
+    }
+
+    @Override
+    public void flush() throws IOException {
+      flushCount++;
+      if (failFlush) {
+        throw new IOException("Test flush failure");
+      }
+    }
+
+    @Override
+    public void close() {
+      if (open) {
+        fileStatusAtClose = fileStatus();
+        open = false;
+        arena.close();
+      }
+    }
+
+    @Override
+    public void closeAndClean() {
+      close();
+      segments.clear();
+      header = null;
+      segmentsTable = null;
+    }
+
+    private byte fileStatus() {
+      return header.get(JAVA_BYTE, FILE_STATUS_OFFSET);
+    }
+  }
+}

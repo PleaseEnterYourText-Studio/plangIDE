@@ -1,0 +1,65 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.platform.bookmarks` start
+content_module_jar(module = ":bookmarks")
+### auto-generated section `dev intellij.platform.bookmarks` end
+
+### auto-generated section `build intellij.platform.bookmarks` start
+jvm_library(
+    name = "bookmarks",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.bookmarks",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/kernel/rpc",
+        "@lib//:kotlin-stdlib",
+        "//libraries/jetbrains/annotations",
+        "//platform/analysis-api:analysis",
+        "//platform/util/concurrency",
+        "//platform/core-api:core",
+        "//platform/core-impl",
+        "//platform/editor-ui-api:editor-ui",
+        "//libraries/kotlinx/serialization/core",
+        "//libraries/kotlinx/serialization/json",
+        "//platform/lang-core",
+        "//platform/project/shared:project",
+        "//platform/platform-impl:ide-impl",
+        "//platform/platform-impl/concurrency",
+        "//platform/lang-api:lang",
+        "//platform/favoritesTreeView",
+        "//platform/ide-core",
+        "//platform/core-ui",
+        "//platform/lang-impl",
+        "//platform/projectModel-api:projectModel",
+        "//platform/util:util-ui",
+        "//platform/util/jdom",
+        "//platform/util/diff",
+        "//platform/editor-ui-ex:editor-ex",
+        "//platform/execution",
+        "//platform/util/coroutines",
+    ],
+)
+### auto-generated section `build intellij.platform.bookmarks` end
+
+### auto-generated section `iml intellij.platform.bookmarks` start
+exports_files(
+    [
+        "intellij.platform.bookmarks.iml",
+        "resources/intellij.platform.bookmarks.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.bookmarks` end

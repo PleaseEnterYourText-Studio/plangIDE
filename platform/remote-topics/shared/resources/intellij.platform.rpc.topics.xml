@@ -1,0 +1,23 @@
+<idea-plugin visibility="public">
+  <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+  <dependencies>
+    <module name="fleet.openmap"/>
+    <module name="intellij.libraries.kotlinx.coroutines.core"/>
+    <module name="intellij.libraries.kotlinx.serialization.core"/>
+    <module name="intellij.platform.core"/>
+    <module name="intellij.platform.project"/>
+    <module name="intellij.platform.rpc.lite"/>
+    <module name="intellij.platform.util.coroutines"/>
+  </dependencies>
+  <!-- endregion -->
+  <extensionPoints>
+    <extensionPoint qualifiedName="com.intellij.platform.rpc.applicationRemoteTopicListener"
+                    beanClass="com.intellij.platform.rpc.topics.ApplicationRemoteTopicListenerBean" dynamic="true">
+      <with attribute="implementation" implements="com.intellij.platform.rpc.topics.ApplicationRemoteTopicListener"/>
+    </extensionPoint>
+    <extensionPoint qualifiedName="com.intellij.platform.rpc.projectRemoteTopicListener"
+                    beanClass="com.intellij.platform.rpc.topics.ProjectRemoteTopicListenerBean" dynamic="true">
+      <with attribute="implementation" implements="com.intellij.platform.rpc.topics.ProjectRemoteTopicListener"/>
+    </extensionPoint>
+  </extensionPoints>
+</idea-plugin>

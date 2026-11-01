@@ -1,0 +1,136 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library", "jvm_provided_library")
+
+jps_test(
+    name = "testFramework-tests_test",
+    timeout = "moderate",
+    tags = ["community-aggregator"],
+    runtime_deps = [":testFramework-tests_test_lib"],
+)
+
+### skip generation section `test intellij.maven.testFramework.tests`
+
+### auto-generated section `build intellij.maven.testFramework` start
+jvm_provided_library(
+    name = "libraries_junit4_provided",
+    lib = "//libraries/junit4",
+)
+
+jvm_provided_library(
+    name = "libraries_junit6_provided",
+    lib = "//libraries/junit6",
+)
+
+jvm_provided_library(
+    name = "libraries_junit6-params_provided",
+    lib = "//libraries/junit6-params",
+)
+
+jvm_library(
+    name = "testFramework",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.maven.testFramework",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/analysis-api:analysis",
+        "//platform/code-style-api:codeStyle",
+        "//platform/util/concurrency",
+        "//platform/core-ui",
+        "//platform/editor-ui-api:editor-ui",
+        "//java/java-syntax:syntax",
+        "//platform/external-system-impl:externalSystem-impl",
+        "//platform/indexing-api:indexing",
+        "//jps/model-api:model",
+        "//platform/lang-core",
+        "//platform/lang-api:lang",
+        "//platform/refactoring",
+        "//platform/testFramework",
+        "//plugins/maven",
+        "//plugins/maven/plugin",
+        "@lib//:maven-test_framework-io-takari-maven-wrapper",
+        "//platform/util/jdom",
+        "//java/java-runtime:rt",
+        "//java/java-impl:impl",
+        "//java/idea-ui:ui",
+        "//platform/usageView",
+        "//java/testFramework",
+        "//platform/projectModel-api:projectModel",
+        "//platform/core-api:core",
+        "//platform/core-impl",
+        "//xml/xml-psi-api:psi",
+        "//platform/backend/observation",
+        "//platform/backend/workspace",
+        "//platform/workspace/storage",
+        "//libraries/bouncy-castle-provider",
+        "//platform/testFramework/eelJava",
+        "//platform/eel-provider",
+        "//platform/util/progress",
+        "//xml/xml-analysis-api:analysis",
+        "//xml/xml-analysis-impl:analysis-impl",
+        "//platform/execution",
+        "//platform/ide-core",
+        "//java/testFramework/backend",
+        "//platform/util:util-ui",
+        "//platform/testFramework/junit5",
+        ":libraries_junit4_provided",
+        ":libraries_junit6_provided",
+        ":libraries_junit6-params_provided",
+    ],
+)
+### auto-generated section `build intellij.maven.testFramework` end
+
+### auto-generated section `iml intellij.maven.testFramework` start
+exports_files(
+    [
+        "intellij.maven.testFramework.iml",
+        "resources/intellij.maven.testFramework.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.maven.testFramework` end
+
+### auto-generated section `build intellij.maven.testFramework.tests` start
+jvm_library(
+    name = "testFramework-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "testSrc/**/*.kt",
+            "testSrc/**/*.java",
+            "testSrc/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.maven.testFramework.tests",
+    visibility = ["//visibility:public"],
+    runtime_deps = ["//plugins/maven/testFramework"],
+    deps = [
+        # do not sort,
+        "//plugins/maven",
+        "@lib//:maven-test_framework-tests-io-takari-maven-wrapper",
+        "//platform/core-impl",
+        "//libraries/junit6",
+    ],
+)
+### auto-generated section `build intellij.maven.testFramework.tests` end
+
+### auto-generated section `iml intellij.maven.testFramework.tests` start
+exports_files(
+    [
+        "intellij.maven.testFramework.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.maven.testFramework.tests` end

@@ -1,0 +1,175 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `build intellij.compose.ide.plugin.resources` start
+jvm_library(
+    name = "ide-plugin-resources",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.compose.ide.plugin.resources",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinc/kotlin-compiler-common:libraries-kotlinc-kotlin-compiler-common",
+        "//libraries/kotlinc/analysis-api:libraries-kotlinc-analysis-api",
+        "//libraries/kotlinc/symbol-light-classes:libraries-kotlinc-symbol-light-classes",
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//java/java-psi-api:psi",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/indexing-api:indexing",
+        "//platform/core-impl",
+        "//platform/projectModel-api:projectModel",
+        "//platform/refactoring",
+        "//platform/usageView-impl",
+        "//xml/xml-psi-api:psi",
+        "//plugins/kotlin/gradle/gradle-tooling/impl",
+        "//plugins/kotlin/base/project-model",
+        "//plugins/kotlin/base/facet",
+        "//plugins/kotlin/base/util",
+        "//platform/external-system-api:externalSystem",
+        "//plugins/gradle",
+        "//xml/xml-psi-impl:psi-impl",
+        "//platform/lang-impl",
+        "//platform/lang-api:lang",
+        "//xml/impl",
+        "//platform/util/coroutines",
+        "//platform/util:util-ui",
+        "//platform/platform-util-io:ide-util-io",
+        "//plugins/compose/intellij.compose.ide.plugin.gradleTooling:ide-plugin-gradleTooling-rt",
+        "//plugins/compose/intellij.compose.ide.plugin.shared:ide-plugin-shared",
+        "//xml/xml-parser:parser",
+        "//platform/usageView",
+        "//plugins/kotlin/base/indices",
+        "//plugins/kotlin/refactorings/kotlin.refactorings.common:kotlin-refactorings-base",
+        "//platform/core-ui",
+        "//platform/platform-impl:ide-impl",
+        "//platform/ide-core",
+        "//platform/statistics",
+        "//libraries/kotlin/reflect",
+        "//plugins/kotlin/gradle/gradle-java",
+        "//plugins/kotlin/base/psi",
+        "//plugins/kotlin/references",
+        "//platform/observable",
+        "//plugins/kotlin/code-insight/api",
+        "//plugins/kotlin/base/code-insight",
+        "//platform/code-style-api:codeStyle",
+        "//plugins/kotlin/base/analysis-api/analysis-api-utils:kotlin-base-analysis-utils",
+        "//platform/monolith",
+    ],
+)
+### auto-generated section `build intellij.compose.ide.plugin.resources` end
+
+### auto-generated section `iml intellij.compose.ide.plugin.resources` start
+exports_files(
+    [
+        "intellij.compose.ide.plugin.resources.iml",
+        "resources/intellij.compose.ide.plugin.resources.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.compose.ide.plugin.resources` end
+
+### auto-generated section `build intellij.compose.ide.plugin.resources.tests` start
+jvm_library(
+    name = "ide-plugin-resources-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "tests/**/*.kt",
+            "tests/**/*.java",
+            "tests/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    associates = ["//plugins/compose/intellij.compose.ide.plugin.resources:ide-plugin-resources"],
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//android/android-plugin/descriptor",
+        "//plugins/kotlin:kotlin-plugin-community-main",
+    ],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "@lib//:studio-platform",
+        "@lib//:studio-test-platform",
+        "//plugins/kotlin/references",
+        "//libraries/kotlinc/kotlin-compiler-common:libraries-kotlinc-kotlin-compiler-common",
+        "//libraries/kotlinc/analysis-api:libraries-kotlinc-analysis-api",
+        "//libraries/kotlinc/symbol-light-classes:libraries-kotlinc-symbol-light-classes",
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/core-impl",
+        "//platform/projectModel-api:projectModel",
+        "//xml/xml-psi-api:psi",
+        "//plugins/kotlin/base/facet",
+        "//platform/external-system-api:externalSystem",
+        "//plugins/gradle",
+        "//xml/xml-psi-impl:psi-impl",
+        "//platform/lang-impl",
+        "//platform/lang-api:lang",
+        "//libraries/kotlin/test:libraries-kotlinTest",
+        "//libraries/kotlin/test-junit:libraries-kotlin-test-junit",
+        "//libraries/junit4",
+        "//platform/testFramework",
+        "//platform/util:util-tests_test_lib",
+        "//platform/platform-util-io:ide-util-io",
+        "//plugins/compose/intellij.compose.ide.plugin.gradleTooling:ide-plugin-gradleTooling-rt",
+        "//plugins/compose/intellij.compose.ide.plugin.shared:ide-plugin-shared",
+        "//plugins/compose/intellij.compose.ide.plugin.shared:ide-plugin-shared-tests_test_lib",
+        "//xml/xml-parser:parser",
+        "//platform/core-ui",
+        "//platform/platform-impl:ide-impl",
+        "//plugins/kotlin/base/testFramework",
+        "//plugins/kotlin/gradle/gradle-java/tests.shared:tests.shared_test_lib",
+        "//plugins/gradle:gradle-tests_test_lib",
+        "//platform/external-system-impl:externalSystem-tests_test_lib",
+        "//platform/external-system-api/testFramework",
+        "@lib//:kotlinc-kotlin-compiler-tests",
+        "//plugins/gradle/tooling-extension-impl:toolingExtension-tests_test_lib",
+        "//libraries/kotlinx/coroutines/test",
+        "//plugins/kotlin/test-framework:test-framework_test_lib",
+        "//plugins/kotlin/tests-common:common-tests_test_lib",
+        "//plugins/compose/intellij.compose.ide.plugin.resources.android:ide-plugin-resources-android",
+        "//platform/ide-core",
+        "//plugins/kotlin/base/plugin",
+        "//android/android:core",
+        "//android/gradle-dsl-kotlin",
+        "//platform/util:util-ui",
+        "//plugins/kotlin/code-insight/api",
+        "//platform/testFramework/junit5",
+        "//libraries/junit6",
+        "//libraries/junit6-params",
+        "//platform/scratch/plugin",
+    ],
+)
+### auto-generated section `build intellij.compose.ide.plugin.resources.tests` end
+
+### auto-generated section `iml intellij.compose.ide.plugin.resources.tests` start
+exports_files(
+    [
+        "intellij.compose.ide.plugin.resources.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.compose.ide.plugin.resources.tests` end
+
+### auto-generated section `test intellij.compose.ide.plugin.resources.tests` start
+jps_test(
+    name = "ide-plugin-resources-tests_test",
+    runtime_deps = [":ide-plugin-resources-tests_test_lib"],
+)
+### auto-generated section `test intellij.compose.ide.plugin.resources.tests` end

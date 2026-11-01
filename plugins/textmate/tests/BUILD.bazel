@@ -1,0 +1,76 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+jps_test(
+    name = "tests_test",
+    timeout = "moderate",
+    tags = ["community-aggregator"],
+    runtime_deps = [":tests_test_lib"],
+)
+### skip generation section `test intellij.textmate.tests`
+
+### auto-generated section `build intellij.textmate.tests` start
+jvm_library(
+    name = "tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "tests/**/*.kt",
+            "tests/**/*.java",
+            "tests/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.textmate.tests",
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+        "//community-resources:customization",
+    ],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/jetbrains/annotations",
+        "//plugins/textmate/core",
+        "//plugins/textmate/joni",
+        "//platform/testFramework",
+        "//tools/intellij.tools.ide.metrics.benchmark:ide-metrics-benchmark",
+        "//libraries/junit6",
+        "//libraries/kotlin/test:libraries-kotlinTest",
+        "//libraries/kotlinx/coroutines/test",
+        "//platform/util",
+        "//platform/util/xmlDom",
+        "//libraries/kotlinx/collections-immutable:libraries-kotlinx-collections-immutable",
+        "//libraries/kotlinx/coroutines/core",
+        "//plugins/textmate",
+        "//platform/core-api:core",
+        "//platform/lang-api:lang",
+        "//platform/lang-impl",
+        "//platform/analysis-api:analysis",
+        "//platform/editor-ui-api:editor-ui",
+        "//spellchecker",
+        "//libraries/lucene.common",
+        "//platform/vcs/plugin",
+        "//plugins/grazie",
+        "//plugins/grazie/src:core",
+        "//platform/projectModel-api:projectModel",
+        "//platform/ide-core",
+        "//platform/structure-view-impl/plugin",
+        "//plugins/textmate/plugin",
+        "//plugins/textmate/backend",
+        "//plugins/textmate/core/tests:tests_test_lib",
+        "@lib//:kotlin-test-junit5",
+        "//libraries/junit4",
+    ],
+)
+### auto-generated section `build intellij.textmate.tests` end
+
+### auto-generated section `iml intellij.textmate.tests` start
+exports_files(
+    [
+        "intellij.textmate.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.textmate.tests` end

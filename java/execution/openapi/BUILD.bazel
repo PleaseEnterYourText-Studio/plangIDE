@@ -1,0 +1,62 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.java.execution` start
+content_module_jar(module = ":java-execution")
+### auto-generated section `dev intellij.java.execution` end
+
+### auto-generated section `build intellij.java.execution` start
+jvm_library(
+    name = "java-execution",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.java.execution",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    runtime_deps = ["//platform/backend"],
+    deps = [
+        # do not sort,
+        "//java/openapi:java",
+        "//java/java-syntax:syntax",
+        "//java/java-frontback-psi-api:frontback-psi",
+        "//java/java-indexing-api:indexing",
+        "@lib//:kotlin-stdlib",
+        "//platform/analysis-api:analysis",
+        "//platform/util/concurrency",
+        "//platform/core-api:core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/indexing-api:indexing",
+        "//jps/model-api:model",
+        "//platform/lang-core",
+        "//platform/projectModel-api:projectModel",
+        "//platform/util:util-ui",
+        "//platform/core-ui",
+        "//platform/platform-util-io:ide-util-io",
+        "//platform/execution",
+        "//platform/consoleView",
+        "//platform/platform-api:ide",
+        "//platform/ide-core",
+        "//platform/lang-api:lang",
+        "//java/java-psi-api:psi",
+    ],
+)
+### auto-generated section `build intellij.java.execution` end
+
+### auto-generated section `iml intellij.java.execution` start
+exports_files(
+    [
+        "intellij.java.execution.iml",
+        "resources/intellij.java.execution.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.java.execution` end

@@ -1,0 +1,145 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@community//platform/build-scripts/bazel-rules:ij_plugin.bzl", "ij_plugin")
+load("@community//platform/build-scripts/bazel-rules:ij_plugin_module.bzl", "ij_plugin_module")
+load("@jps_dynamic_deps_community//:targets.bzl", "dev_dist_plugin")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+jps_test(
+    name = "statsCollector-tests_test",
+    timeout = "moderate",
+    tags = ["community-aggregator"],
+    runtime_deps = [":statsCollector-tests_test_lib"],
+)
+### skip generation section `test intellij.statsCollector.tests`
+
+### auto-generated section `dev intellij.statsCollector` start
+dev_dist_plugin(
+    descriptor = "resources/META-INF/plugin.xml",
+    jars = {
+        "lib/statsCollector.jar": ["intellij.statsCollector"],
+        "lib/completion-log-events.jar": ["@lib//:stats_collector-completion-log-events"],
+    },
+    main_module = "intellij.statsCollector",
+)
+### auto-generated section `dev intellij.statsCollector` end
+
+### auto-generated section `build intellij.statsCollector` start
+ij_plugin_module(
+    name = "stats-collector",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.statsCollector",
+    packed_deps = ["@lib//:stats_collector-completion-log-events"],
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    runtime_deps = ["//platform/backend"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/platform-api:ide",
+        "//platform/lang-impl",
+        "//platform/core-impl",
+        "//plugins/completion-ml-ranking",
+        "//libraries/http-client",
+        "//platform/platform-impl:ide-impl",
+        "//platform/ide-core",
+        "//libraries/guava",
+        "//libraries/gson",
+        "@lib//:stats_collector-completion-log-events",
+        "//platform/projectModel-api:projectModel",
+        "//platform/statistics",
+        "//platform/core-ui",
+    ],
+)
+### auto-generated section `build intellij.statsCollector` end
+
+### auto-generated section `plugin intellij.statsCollector` start
+ij_plugin(
+    name = "stats-collector_plugin",
+    descriptor_module = ":stats-collector_plugin_module",
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `plugin intellij.statsCollector` end
+
+### auto-generated section `iml intellij.statsCollector` start
+exports_files(
+    [
+        "intellij.statsCollector.iml",
+        "resources/META-INF/plugin.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.statsCollector` end
+
+### auto-generated section `build intellij.statsCollector.tests` start
+jvm_library(
+    name = "statsCollector-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "test/**/*.kt",
+            "test/**/*.java",
+            "test/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.statsCollector.tests",
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+        "//community-resources:customization",
+        "//xml/plugin",
+    ],
+    deps = [
+        # do not sort,
+        "//java/testFramework",
+        "//java/java-psi-api:psi",
+        "//java/java-frontback-psi-api:frontback-psi",
+        "//java/java-syntax:syntax",
+        "//libraries/mockito",
+        "//libraries/assertj-core",
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//platform/lang-api:lang",
+        "//platform/editor-ui-api:editor-ui",
+        "//plugins/stats-collector",
+        "//plugins/completion-ml-ranking",
+        "@lib//:stats_collector-tests-completion-log-events",
+        "//platform/testFramework",
+        "//platform/core-ui",
+        "//platform/core-impl",
+        "//platform/ide-core",
+        "//libraries/junit6",
+        "//platform/testFramework/junit5",
+        "//libraries/kotlinx/coroutines/core",
+        "//java/plugin",
+        "//aether-dependency-resolver/plugin",
+        "//platform/structure-view-impl/plugin",
+        "//platform/todo/plugin",
+        "//platform/testRunner/plugin",
+        "//platform/vcs/plugin",
+    ],
+)
+### auto-generated section `build intellij.statsCollector.tests` end
+
+### auto-generated section `iml intellij.statsCollector.tests` start
+exports_files(
+    [
+        "intellij.statsCollector.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.statsCollector.tests` end

@@ -1,0 +1,238 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library", "jvm_provided_library")
+
+jps_test(
+    name = "testFramework-tests_test_smoke",
+    timeout = "moderate",
+    env = {
+        "JB_TEST_JUNIT5_FILTERS": "include-package=com.intellij.testFramework.extensions.ignore",
+    },
+    tags = ["ultimate-smoke"],
+    runtime_deps = [":testFramework-tests_test_lib"],
+)
+
+jps_test(
+    name = "testFramework-tests_test",
+    timeout = "moderate",
+    ####
+    ## testFramework-tests_test runs tests from testFramework-tests_test_lib.jar,
+    ## but its runtime classpath also contains testFramework.jar.
+    ## That production framework jar contains classes in the default package:
+    ## _FirstInSuiteTest.class, _LastInSuiteTest.class
+    ## to prevent them from being executed as actual tests, we use filtering by testFramework-tests_test_lib.jar
+    ####
+    env = {"JB_TEST_JAR": "testFramework-tests_test_lib.jar"},
+    tags = ["community-aggregator"],
+    runtime_deps = [":testFramework-tests_test_lib"],
+)
+
+### skip generation section `test intellij.platform.testFramework.tests`
+
+### auto-generated section `build intellij.platform.testFramework` start
+jvm_provided_library(
+    name = "libraries_junit6_provided",
+    lib = "//libraries/junit6",
+)
+
+jvm_provided_library(
+    name = "libraries_junit6-params_provided",
+    lib = "//libraries/junit6-params",
+)
+
+jvm_provided_library(
+    name = "libraries_junit4_provided",
+    lib = "//libraries/junit4",
+)
+
+jvm_provided_library(
+    name = "libraries_junit6-launcher_provided",
+    lib = "//libraries/junit6-launcher",
+)
+
+jvm_library(
+    name = "testFramework",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.testFramework",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    exports = [
+        # do not sort,
+        "//platform/ide-core-impl",
+        "//platform/platform-impl:ide-impl",
+        "//platform/testFramework/common",
+        "//platform/testFramework/core",
+    ],
+    runtime_deps = ["//images"],
+    deps = [
+        # do not sort,
+        "//libraries/jetcheck",
+        "//libraries/assertj-core",
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinx/coroutines/core",
+        "//java/java-runtime:rt",
+        "//platform/analysis-api:analysis",
+        "//platform/analysis-impl",
+        "//platform/backend/observation",
+        "//platform/backend/workspace",
+        "//platform/boot",
+        "//platform/code-style-api:codeStyle",
+        "//platform/code-style-impl:codeStyle-impl",
+        "//platform/util/concurrency",
+        "//platform/core-api:core",
+        "//platform/core-impl",
+        "//platform/projectModel-impl",
+        "//platform/core-ui",
+        "//platform/diagnostic/telemetry",
+        "//platform/editor-ui-ex:editor-ex",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/foldings",
+        "//platform/platform-impl/codeinsight-inline:ide-codeinsight-inline",
+        "//platform/ide-core-impl",
+        "//platform/ide-core",
+        "//platform/platform-impl:ide-impl",
+        "//platform/observable",
+        "//platform/platform-util-io:ide-util-io",
+        "//platform/platform-util-io-impl:ide-util-io-impl",
+        "//platform/platform-util-netty:ide-util-netty",
+        "//platform/progress/shared:ide-progress",
+        "//platform/indexing-api:indexing",
+        "//platform/indexing-impl",
+        "//jps/model-api:model",
+        "//jps/model-serialization",
+        "//platform/lang-api:lang",
+        "//platform/lang-core",
+        "//platform/lang-impl",
+        "//platform/lvcs-api:lvcs",
+        "//platform/projectModel-api:projectModel",
+        "//platform/refactoring",
+        "//platform/service-container",
+        "//platform/syntax/syntax-api:syntax",
+        "//platform/syntax/syntax-psi:psi",
+        "//platform/syntax/syntax-util:util",
+        "//platform/testFramework/common",
+        "//platform/testFramework/core",
+        "//platform/usageView",
+        "//platform/usageView-impl",
+        "//platform/util-class-loader:util-classLoader",
+        "//platform/util/coroutines",
+        "//platform/util/jdom",
+        "//platform/workspace/jps",
+        "//platform/workspace/storage",
+        "//platform/runtime/product",
+        "//platform/pluginSystem/parser/impl",
+        "//platform/consoleView",
+        "//platform/consoleView/impl",
+        "//libraries/fastutil",
+        "//libraries/kotlinx/collections-immutable:libraries-kotlinx-collections-immutable",
+        "//platform/eel",
+        "//platform/testFramework/eelJava",
+        "//platform/eel-provider",
+        "//jps/model-impl",
+        "//platform/util:util-ui",
+        "//platform/util-ex",
+        ":libraries_junit6_provided",
+        ":libraries_junit6-params_provided",
+        ":libraries_junit4_provided",
+        ":libraries_junit6-launcher_provided",
+    ],
+)
+### auto-generated section `build intellij.platform.testFramework` end
+
+### auto-generated section `iml intellij.platform.testFramework` start
+exports_files(
+    [
+        "intellij.platform.testFramework.iml",
+        "resources/intellij.platform.testFramework.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.testFramework` end
+
+### auto-generated section `build intellij.platform.testFramework.tests` start
+jvm_library(
+    name = "testFramework-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "testSrc/**/*.kt",
+            "testSrc/**/*.java",
+            "testSrc/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.testFramework.tests",
+    resource_strip_prefix = "testResources",
+    resources = glob(
+        ["testResources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    exports = ["//platform/platform-impl:ide-impl"],
+    runtime_deps = [
+        # do not sort,
+        "//images",
+        "//RegExpSupport:regexp",
+        "//xml/dom-impl",
+        "//xml/plugin",
+    ],
+    deps = [
+        # do not sort,
+        "//libraries/junit6",
+        "//libraries/junit6-params",
+        "//libraries/assertj-core",
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinx/coroutines/core",
+        "//libraries/kotlinx/coroutines/slf4j",
+        "//libraries/http-client",
+        "//libraries/jackson3/jackson:libraries-jackson3",
+        "//libraries/jackson3/databind",
+        "//libraries/jackson3/module-kotlin:libraries-jackson3-module-kotlin",
+        "//community-resources:customization",
+        "//libraries/junit4",
+        "//libraries/junit6-launcher",
+        "//platform/analysis-api:analysis",
+        "//platform/analysis-impl",
+        "//platform/backend/workspace",
+        "//platform/code-style-api:codeStyle",
+        "//platform/core-api:core",
+        "//platform/core-impl",
+        "//platform/projectModel-impl",
+        "//platform/core-ui",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/platform-impl:ide-impl",
+        "//platform/platform-util-io:ide-util-io",
+        "//jps/model-serialization",
+        "//platform/lang-api:lang",
+        "//platform/lang-impl",
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+        "//platform/projectModel-api:projectModel",
+        "//platform/structure-view-impl:structureView",
+        "//platform/testFramework/junit5",
+        "//platform/todo",
+        "//platform/workspace/jps",
+        "//platform/workspace/storage",
+        "//platform/testFramework/bootstrap:tools-testsBootstrap",
+        "//platform/execution",
+        "//platform/structure-view-impl/frontend",
+        "//platform/testFramework",
+    ],
+)
+### auto-generated section `build intellij.platform.testFramework.tests` end
+
+### auto-generated section `iml intellij.platform.testFramework.tests` start
+exports_files(
+    [
+        "intellij.platform.testFramework.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.testFramework.tests` end

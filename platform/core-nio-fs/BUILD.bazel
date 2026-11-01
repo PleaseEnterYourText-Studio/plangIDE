@@ -1,0 +1,87 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library", "kt_javac_options")
+
+jps_test(
+    name = "core-nio-fs-tests_test",
+    timeout = "moderate",
+    tags = ["community-aggregator"],
+    runtime_deps = [":core-nio-fs-tests_test_lib"],
+)
+### skip generation section `test intellij.platform.core.nio.fs.tests`
+
+### auto-generated section `build intellij.platform.core.nio.fs` start
+kt_javac_options(
+    name = "custom-javac-options",
+    add_exports = ["java.base/sun.nio.fs=ALL-UNNAMED"],
+    no_proc = True,
+    warn = "off",
+    x_ep_disable_all_checks = True,
+)
+
+jvm_library(
+    name = "core-nio-fs",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    javac_opts = ":custom-javac-options",
+    module_name = "intellij.platform.core.nio.fs",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = ["//libraries/jetbrains/annotations"],
+)
+### auto-generated section `build intellij.platform.core.nio.fs` end
+
+### auto-generated section `iml intellij.platform.core.nio.fs` start
+exports_files(
+    [
+        "intellij.platform.core.nio.fs.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.core.nio.fs` end
+
+### auto-generated section `build intellij.platform.core.nio.fs.tests` start
+jvm_library(
+    name = "core-nio-fs-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "test/**/*.kt",
+            "test/**/*.java",
+            "test/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.core.nio.fs.tests",
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/core-nio-fs",
+        "//platform/util",
+        "//libraries/mockk",
+        "//libraries/mockk/jvm",
+        "//libraries/junit6",
+        "//libraries/kotlin/reflect",
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlin/test-assertions-core-jvm:libraries-kotlinTestAssertionsCoreJvm",
+        "//libraries/mockito",
+    ],
+)
+### auto-generated section `build intellij.platform.core.nio.fs.tests` end
+
+### auto-generated section `iml intellij.platform.core.nio.fs.tests` start
+exports_files(
+    [
+        "intellij.platform.core.nio.fs.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.core.nio.fs.tests` end

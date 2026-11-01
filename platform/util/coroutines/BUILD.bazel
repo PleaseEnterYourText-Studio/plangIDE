@@ -1,0 +1,91 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+jps_test(
+    name = "coroutines-tests_test",
+    timeout = "moderate",
+    tags = ["community-aggregator"],
+    runtime_deps = [":coroutines-tests_test_lib"],
+)
+
+### skip generation section `test intellij.platform.util.coroutines.tests`
+
+### auto-generated section `dev intellij.platform.util.coroutines` start
+content_module_jar(module = ":coroutines")
+### auto-generated section `dev intellij.platform.util.coroutines` end
+
+### auto-generated section `build intellij.platform.util.coroutines` start
+jvm_library(
+    name = "coroutines",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = "@community//:k8",
+    module_name = "intellij.platform.util.coroutines",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//libraries/jetbrains/annotations",
+        "//libraries/kotlinx/coroutines/core",
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinx/collections-immutable:libraries-kotlinx-collections-immutable",
+    ],
+)
+### auto-generated section `build intellij.platform.util.coroutines` end
+
+### auto-generated section `iml intellij.platform.util.coroutines` start
+exports_files(
+    [
+        "intellij.platform.util.coroutines.iml",
+        "resources/intellij.platform.util.coroutines.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.util.coroutines` end
+
+### auto-generated section `build intellij.platform.util.coroutines.tests` start
+jvm_library(
+    name = "coroutines-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "tests/**/*.kt",
+            "tests/**/*.java",
+            "tests/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.util.coroutines.tests",
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinx/coroutines/core",
+        "//libraries/kotlinx/coroutines/test",
+        "//libraries/junit6",
+        "//libraries/junit6-params",
+        "//platform/testFramework/common",
+        "//platform/util/coroutines",
+        "//platform/util/concurrency",
+    ],
+)
+### auto-generated section `build intellij.platform.util.coroutines.tests` end
+
+### auto-generated section `iml intellij.platform.util.coroutines.tests` start
+exports_files(
+    [
+        "intellij.platform.util.coroutines.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.util.coroutines.tests` end

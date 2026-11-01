@@ -1,0 +1,23 @@
+pLang IDE
+=========
+
+This product is a derivative work based on the open source IntelliJ Platform
+and the IntelliJ IDEA Community Edition source code, which are
+Copyright (C) JetBrains s.r.o. and contributors and licensed under the
+Apache License, Version 2.0:
+https://github.com/JetBrains/intellij-community
+
+pLang IDE is not a JetBrains product. It is not endorsed by or affiliated
+with JetBrains s.r.o. "IntelliJ", "IntelliJ IDEA", and "JetBrains" are
+trademarks of JetBrains s.r.o. and are not used as product names here.
+
+This product adds support for the pLang language
+(https://github.com/PleaseEnterYourText-Studio/pLang).
+
+The original NOTICE of the upstream source code follows below.
+
+----------------------------------------------------------------------
+
+This software includes code from IntelliJ IDEA
+Copyright (C) JetBrains s.r.o.
+https://www.jetbrains.com/idea/

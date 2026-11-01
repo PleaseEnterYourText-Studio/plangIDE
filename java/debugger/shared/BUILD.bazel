@@ -1,0 +1,66 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.java.debugger.impl.shared` start
+content_module_jar(module = ":shared")
+### auto-generated section `dev intellij.java.debugger.impl.shared` end
+
+### auto-generated section `build intellij.java.debugger.impl.shared` start
+jvm_library(
+    name = "shared",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.java.debugger.impl.shared",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/kernel/rpc",
+        "@lib//:kotlin-stdlib",
+        "//platform/util/concurrency",
+        "//platform/core-api:core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/util/jdom",
+        "//platform/projectModel-api:projectModel",
+        "//platform/xdebugger-api:debugger",
+        "//platform/xdebugger-impl:debugger-impl",
+        "//platform/platform-impl:ide-impl",
+        "//platform/core-ui",
+        "//libraries/kotlinx/coroutines/core",
+        "//libraries/kotlinx/serialization/core",
+        "//libraries/kotlinx/serialization/json",
+        "//platform/platform-impl/rpc",
+        "//platform/ide-core",
+        "//platform/execution",
+        "//platform/execution-impl",
+        "//platform/consoleView",
+        "//java/java-frontback-impl:frontback-impl",
+        "//platform/util/coroutines",
+        "//platform/util:util-ui",
+        "//platform/xdebugger-impl/rpc",
+        "//platform/xdebugger-impl/shared",
+        "//platform/xdebugger-impl/ui",
+        "//platform/project/shared:project",
+    ],
+)
+### auto-generated section `build intellij.java.debugger.impl.shared` end
+
+### auto-generated section `iml intellij.java.debugger.impl.shared` start
+exports_files(
+    [
+        "intellij.java.debugger.impl.shared.iml",
+        "resources/intellij.java.debugger.impl.shared.content.xml",
+        "resources/intellij.java.debugger.impl.shared.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.java.debugger.impl.shared` end

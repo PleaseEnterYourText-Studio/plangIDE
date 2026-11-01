@@ -1,0 +1,52 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.platform.credentialStore.ui` start
+content_module_jar(module = ":credentialStore-ui")
+### auto-generated section `dev intellij.platform.credentialStore.ui` end
+
+### auto-generated section `build intellij.platform.credentialStore.ui` start
+jvm_library(
+    name = "credentialStore-ui",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.credentialStore.ui",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinx/coroutines/core",
+        "//platform/core-api:core",
+        "//platform/credential-store",
+        "//platform/credential-store-impl:credentialStore-impl",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/platform-api:ide",
+        "//platform/projectModel-api:projectModel",
+        "//platform/util:util-ui",
+        "//platform/platform-impl:ide-impl",
+        "//platform/ide-core",
+        "//platform/progress/shared:ide-progress",
+        "//platform/core-ui",
+    ],
+)
+### auto-generated section `build intellij.platform.credentialStore.ui` end
+
+### auto-generated section `iml intellij.platform.credentialStore.ui` start
+exports_files(
+    [
+        "intellij.platform.credentialStore.ui.iml",
+        "resources/intellij.platform.credentialStore.ui.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.credentialStore.ui` end

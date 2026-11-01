@@ -1,0 +1,57 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.maven.completion` start
+content_module_jar(module = ":completion")
+### auto-generated section `dev intellij.maven.completion` end
+
+### auto-generated section `build intellij.maven.completion` start
+jvm_library(
+    name = "completion",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.maven.completion",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//platform/projectModel-api:projectModel",
+        "//plugins/maven",
+        "//xml/xml-psi-api:psi",
+        "//platform/analysis-impl",
+        "//platform/lang-impl",
+        "//platform/backend/observation",
+        "//jps/model-api:model",
+        "//platform/util/concurrency",
+        "//platform/eel",
+        "//platform/eel-provider",
+        "//plugins/repository-search/completion",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/util:util-ui",
+        "//platform/lang-api:lang",
+        "//platform/platform-impl:ide-impl",
+    ],
+)
+### auto-generated section `build intellij.maven.completion` end
+
+### auto-generated section `iml intellij.maven.completion` start
+exports_files(
+    [
+        "intellij.maven.completion.iml",
+        "resources/intellij.maven.completion.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.maven.completion` end

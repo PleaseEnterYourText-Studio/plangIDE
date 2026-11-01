@@ -1,0 +1,57 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.java.codeserver.highlighting` start
+content_module_jar(module = ":highlighting")
+### auto-generated section `dev intellij.java.codeserver.highlighting` end
+
+### auto-generated section `build intellij.java.codeserver.highlighting` start
+jvm_library(
+    name = "highlighting",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.java.codeserver.highlighting",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    runtime_deps = ["//platform/backend"],
+    deps = [
+        # do not sort,
+        "//libraries/jetbrains/annotations",
+        "//libraries/stream",
+        "//platform/core-api:core",
+        "//platform/core-impl",
+        "//jps/model-api:model",
+        "//platform/util",
+        "//platform/projectModel-api:projectModel",
+        "//platform/indexing-api:indexing",
+        "//java/java-frontback-psi-api:frontback-psi",
+        "//java/java-psi-api:psi",
+        "//java/java-psi-impl:psi-impl",
+        "//java/java-syntax:syntax",
+        "//java/java-indexing-api:indexing",
+        "//java/codeserver/core",
+        "//java/java-frontback-impl:frontback-impl",
+        "//libraries/fastutil",
+    ],
+)
+### auto-generated section `build intellij.java.codeserver.highlighting` end
+
+### auto-generated section `iml intellij.java.codeserver.highlighting` start
+exports_files(
+    [
+        "intellij.java.codeserver.highlighting.iml",
+        "resources/META-INF/JavaCodeServerHighlighting.xml",
+        "resources/intellij.java.codeserver.highlighting.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.java.codeserver.highlighting` end

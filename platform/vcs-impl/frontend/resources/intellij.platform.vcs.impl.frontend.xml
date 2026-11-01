@@ -1,0 +1,59 @@
+<idea-plugin visibility="internal">
+  <projectListeners>
+  </projectListeners>
+  <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+  <dependencies>
+    <module name="intellij.platform.frontend"/>
+    <module name="fleet.rpc"/>
+    <module name="intellij.libraries.kotlinx.coroutines.core"/>
+    <module name="intellij.libraries.kotlinx.serialization.core"/>
+    <module name="intellij.libraries.kotlinx.serialization.json"/>
+    <module name="intellij.platform.analysis"/>
+    <module name="intellij.platform.concurrency"/>
+    <module name="intellij.platform.core"/>
+    <module name="intellij.platform.core.ui"/>
+    <module name="intellij.platform.diff"/>
+    <module name="intellij.platform.diff.impl"/>
+    <module name="intellij.platform.editor.ui"/>
+    <module name="intellij.platform.ide.core"/>
+    <module name="intellij.platform.ide.errorTreeView"/>
+    <module name="intellij.platform.ide.impl"/>
+    <module name="intellij.platform.ide.rpc"/>
+    <module name="intellij.platform.lang.core"/>
+    <module name="intellij.platform.lang.impl"/>
+    <module name="intellij.platform.project"/>
+    <module name="intellij.platform.projectModel"/>
+    <module name="intellij.platform.recentFiles"/>
+    <module name="intellij.platform.recentFiles.frontend"/>
+    <module name="intellij.platform.rpc.topics"/>
+    <module name="intellij.platform.util.coroutines"/>
+    <module name="intellij.platform.util.diff"/>
+    <module name="intellij.platform.util.ui"/>
+    <module name="intellij.platform.vcs.core"/>
+    <module name="intellij.platform.vcs.impl.shared"/>
+    <module name="intellij.platform.vcs.shared"/>
+  </dependencies>
+  <!-- endregion -->
+
+  <extensions defaultExtensionNs="com.intellij">
+    <projectService serviceInterface="com.intellij.openapi.vcs.changes.ui.StructuralChangesPreviewHighlighter"
+                    serviceImplementation="com.intellij.platform.vcs.impl.frontend.ui.StructuralChangesPreviewHighlighterImpl"/>
+
+    <ui.content.impl.toolWindowContentPostprocessor implementation="com.intellij.platform.vcs.impl.frontend.toolwindow.VcsToolWindowContentReplacer"/>
+
+    <frontend.splitComponentProvider implementation="com.intellij.platform.vcs.impl.frontend.changes.ChangesViewSplitComponentProvider"/>
+
+    <recentFiles.navigator implementation="com.intellij.platform.vcs.impl.frontend.diff.DiffRecentFilesNavigator"/>
+    <recentFiles.excluder implementation="com.intellij.platform.vcs.impl.frontend.diff.DiffRecentFilesExcluder"/>
+
+    <platform.rpc.projectRemoteTopicListener implementation="com.intellij.platform.vcs.impl.frontend.codeSmells.CodeSmellRemoteTopicListener"
+                                             topicId="vcs.codeSmell.show"/>
+  </extensions>
+
+  <extensionPoints>
+    <extensionPoint qualifiedName="com.intellij.frontendChangesViewContentProvider"
+                    interface="com.intellij.platform.vcs.impl.frontend.changes.FrontendChangesViewContentProvider"
+                    dynamic="true">
+    </extensionPoint>
+  </extensionPoints>
+</idea-plugin>

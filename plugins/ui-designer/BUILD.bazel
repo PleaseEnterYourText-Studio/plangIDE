@@ -1,0 +1,242 @@
+load("@community//build:bazel_targets_json.bzl", "current_bazel_targets_json")
+load("@community//build:tests-options.bzl", "jps_test")
+load("@jps_dynamic_deps_community//:targets.bzl", "ALL_COMMUNITY_TARGETS", "dev_dist_plugin")
+load("@rules_jvm//:jvm.bzl", "jvm_library", "resourcegroup")
+
+BAZEL_TARGETS_JSON = current_bazel_targets_json()
+
+jps_test(
+    name = "java-guiForms-designer-tests_test",
+    timeout = "long",
+    data = ALL_COMMUNITY_TARGETS + [BAZEL_TARGETS_JSON],
+    jvm_flags = [
+        "-Dintellij.build.bazel.targets.json.file=$(rlocationpath %s)" % BAZEL_TARGETS_JSON,
+    ],
+    tags = ["community-aggregator"],
+    runtime_deps = [":java-guiForms-designer-tests_test_lib"],
+)
+
+### skip generation section `test intellij.java.guiForms.designer.tests`
+
+### auto-generated section `dev intellij.java.guiForms.designer` start
+dev_dist_plugin(
+    content_modules = ["intellij.java.guiForms.jps"],
+    descriptor = "resources/META-INF/plugin.xml",
+    directory_name = "uiDesigner",
+    jars = {
+        "lib/jps/java-guiForms-jps.jar": ["intellij.java.guiForms.jps"],
+        "lib/uiDesigner.jar": ["intellij.java.guiForms.designer"],
+    },
+    main_module = "intellij.java.guiForms.designer",
+)
+### auto-generated section `dev intellij.java.guiForms.designer` end
+
+### auto-generated section `build intellij.java.guiForms.designer` start
+jvm_library(
+    name = "java-guiForms-designer",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.java.guiForms.designer",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+        allow_empty = True,
+        exclude = ["resources/**/icon-robots.txt"],
+    ),
+    visibility = ["//visibility:public"],
+    exports = [
+        # do not sort,
+        "//java/compiler/forms-compiler:java-guiForms-compiler",
+        "//plugins/java-i18n",
+    ],
+    deps = [
+        # do not sort,
+        "//java/openapi:java",
+        "//java/java-syntax:syntax",
+        "//java/java-psi-api:psi",
+        "//java/java-indexing-api:indexing",
+        "//platform/analysis-api:analysis",
+        "//platform/code-style-api:codeStyle",
+        "//platform/util/concurrency",
+        "//platform/core-api:core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/ide-core-impl",
+        "//platform/ide-core",
+        "//platform/indexing-api:indexing",
+        "//jps/model-api:model",
+        "//platform/lang-core",
+        "//platform/projectModel-api:projectModel",
+        "//platform/refactoring",
+        "//platform/platform-impl:ide-impl",
+        "//platform/platform-impl/concurrency",
+        "//platform/usageView-impl",
+        "//platform/util",
+        "//java/compiler/forms-compiler:java-guiForms-compiler",
+        "//platform/forms_rt:java-guiForms-rt",
+        "//java/compiler/openapi:java-compiler",
+        "//java/execution/impl",
+        "//java/execution/openapi:java-execution",
+        "//platform/usageView",
+        "//platform/editor-ui-ex:editor-ex",
+        "//java/compiler/impl",
+        "//platform/icons",
+        "//libraries/jgoodies/forms",
+        "//libraries/asm",
+        "//plugins/java-i18n",
+        "//java/idea-ui:ui",
+        "//java/java-impl:impl",
+        "//platform/platform-impl/designer",
+        "//platform/platform-api:ide",
+        "//spellchecker",
+        "//jps/jps-builders:build",
+        "//xml/impl",
+        "//plugins/properties/properties-psi-api:psi",
+        "//libraries/java-compatibility",
+        "//libraries/fastutil",
+        "//platform/util-class-loader:util-classLoader",
+        "//platform/core-ui",
+        "//platform/core-impl",
+        "//plugins/properties/properties-psi-impl:backend-psi",
+        "//platform/platform-util-io:ide-util-io",
+        "//java/java-impl-refactorings:impl-refactorings",
+        "//java/java-frontback-psi-api:frontback-psi",
+        "//platform/util/jdom",
+        "//platform/util:util-ui",
+        "//xml/xml-psi-api:psi",
+        "//platform/execution",
+        "//libraries/kotlinx/collections-immutable:libraries-kotlinx-collections-immutable",
+        "//platform/lang-api:lang",
+    ],
+)
+### auto-generated section `build intellij.java.guiForms.designer` end
+
+### auto-generated section `iml intellij.java.guiForms.designer` start
+exports_files(
+    [
+        "intellij.java.guiForms.designer.iml",
+        "resources/ClientPropertiesManager.xml",
+        "resources/META-INF/plugin.xml",
+        "resources/Palette2.xml",
+        "resources/com/intellij/uiDesigner/NewDialog.xml",
+        "resources/com/intellij/uiDesigner/NewForm.xml",
+        "resources/gui-designer-properties.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.java.guiForms.designer` end
+
+### auto-generated section `build intellij.java.guiForms.designer.tests` start
+resourcegroup(
+    name = "java-guiForms-designer-tests_test_resources",
+    srcs = glob(
+        ["testResources/**/*"],
+    ),
+    strip_prefix = "testResources",
+)
+
+jvm_library(
+    name = "java-guiForms-designer-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "testSrc/**/*.kt",
+            "testSrc/**/*.java",
+            "testSrc/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.java.guiForms.designer.tests",
+    resource_jars = [":java-guiForms-designer-tests_test_resources"],
+    resource_strip_prefix = "testData",
+    resources = glob(
+        ["testData/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    exports = ["//plugins/java-i18n"],
+    runtime_deps = [
+        # do not sort,
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+        "//community-resources:customization",
+    ],
+    deps = [
+        # do not sort,
+        "//java/openapi:java",
+        "//java/java-indexing-api:indexing",
+        "//java/java-syntax:syntax",
+        "//java/java-psi-api:psi",
+        "//platform/analysis-api:analysis",
+        "//platform/code-style-api:codeStyle",
+        "//platform/util/concurrency",
+        "//platform/core-api:core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/ide-core-impl",
+        "//platform/indexing-api:indexing",
+        "//jps/model-api:model",
+        "//platform/lang-core",
+        "//platform/lang-api:lang",
+        "//platform/projectModel-api:projectModel",
+        "//platform/refactoring",
+        "//platform/structure-view-impl:structureView",
+        "//platform/structure-view-impl/plugin",
+        "//platform/todo/plugin",
+        "//platform/testFramework",
+        "//platform/testFramework/junit5",
+        "//platform/testFramework/junit5/codeInsight",
+        "//libraries/junit6",
+        "//platform/platform-impl:ide-impl",
+        "//platform/util",
+        "//platform/forms_rt:java-guiForms-rt",
+        "//java/java-runtime:rt",
+        "//platform/editor-ui-ex:editor-ex",
+        "//java/compiler/impl",
+        "//libraries/jgoodies/forms",
+        "//libraries/asm",
+        "//plugins/java-i18n",
+        "//java/idea-ui:ui",
+        "//java/testFramework",
+        "//java/java-impl:impl",
+        "//platform/platform-impl/designer",
+        "//platform/platform-api:ide",
+        "//xml/impl",
+        "//plugins/properties/properties-psi-api:psi",
+        "//libraries/assertj-core",
+        "//java/compiler:compiler-tests_test_lib",
+        "//libraries/java-compatibility",
+        "//libraries/fastutil",
+        "//platform/core-ui",
+        "//platform/core-impl",
+        "//plugins/properties/properties-psi-impl:backend-psi",
+        "//platform/platform-util-io:ide-util-io",
+        "//platform/util/xmlDom",
+        "//java/java-impl-refactorings:impl-refactorings",
+        "//platform/util:util-ui",
+        "//jps/jps-builders:build-tests_test_lib",
+        "//xml/xml-psi-api:psi",
+        "//libraries/caffeine",
+        "//platform/execution",
+        "//plugins/ui-designer:java-guiForms-designer",
+        "//java/java-frontback-psi-api:frontback-psi",
+        "//libraries/junit4",
+        "//platform/testRunner/plugin",
+        "//platform/structuralsearch/plugin",
+        "//xml/plugin",
+        "//aether-dependency-resolver/plugin",
+        "//platform/vcs/plugin",
+    ],
+)
+### auto-generated section `build intellij.java.guiForms.designer.tests` end
+
+### auto-generated section `iml intellij.java.guiForms.designer.tests` start
+exports_files(
+    [
+        "intellij.java.guiForms.designer.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.java.guiForms.designer.tests` end

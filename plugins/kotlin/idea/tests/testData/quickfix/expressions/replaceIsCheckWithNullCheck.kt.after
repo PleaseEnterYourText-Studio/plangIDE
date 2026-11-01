@@ -1,0 +1,14 @@
+// "Replace 'is' check with null check" "true"
+// ENABLE_WARNINGS
+// WARNING: IMPOSSIBLE_IS_CHECK_RELYING_ON_NULL_WARNING
+class A
+class B
+
+fun test(obj: Any?) {
+    if (obj is A?) {
+        if (obj == null) {
+        }
+    }
+}
+
+// FUS_QUICKFIX_NAME: org.jetbrains.kotlin.idea.quickfix.ReplaceIsCheckWithNullCheckFix

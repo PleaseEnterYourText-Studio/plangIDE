@@ -1,0 +1,66 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+jps_test(
+    name = "tests_test",
+    timeout = "moderate",
+    tags = ["community-aggregator"],
+    runtime_deps = [":tests_test_lib"],
+)
+### skip generation section `test intellij.json.networknt.wrapper.tests`
+
+### auto-generated section `build intellij.json.networknt.wrapper.tests` start
+jvm_library(
+    name = "tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "test/**/*.kt",
+            "test/**/*.java",
+            "test/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.json.networknt.wrapper.tests",
+    resource_strip_prefix = "testData",
+    resources = glob(
+        ["testData/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+        "//community-resources:customization",
+    ],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "@lib//:slf4j-api",
+        "//libraries/joni",
+        "//libraries/opentelemetry",
+        "//json/networknt.wrapper",
+        "//json/backend",
+        "//platform/core-api:core",
+        "//platform/platform-api:ide",
+        "//platform/ide-core-impl",
+        "//libraries/caffeine",
+        "//platform/diagnostic/telemetry",
+        "//libraries/junit6",
+        "//libraries/junit6-jupiter",
+        "//platform/testFramework",
+        "//libraries/assertj-core",
+        "//libraries/lucene.common",
+        "//tools/intellij.tools.ide.metrics.benchmark:ide-metrics-benchmark",
+        "//libraries/junit4",
+    ],
+)
+### auto-generated section `build intellij.json.networknt.wrapper.tests` end
+
+### auto-generated section `iml intellij.json.networknt.wrapper.tests` start
+exports_files(
+    [
+        "intellij.json.networknt.wrapper.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.json.networknt.wrapper.tests` end

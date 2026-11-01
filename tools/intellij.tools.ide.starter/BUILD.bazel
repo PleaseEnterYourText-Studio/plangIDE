@@ -1,0 +1,83 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//build:compiler-options.bzl", "create_kotlinc_options")
+
+### auto-generated section `build intellij.tools.ide.starter` start
+create_kotlinc_options(
+    name = "custom_ide-starter",
+    opt_in = [
+        "kotlin.time.ExperimentalTime",
+        "com.intellij.util.system.LowLevelLocalMachineAccess",
+    ],
+)
+
+jvm_library(
+    name = "ide-starter",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = ":custom_ide-starter",
+    module_name = "intellij.tools.ide.starter",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    exports = [
+        # do not sort,
+        "//plugins/performanceTesting/commands-model:tools-ide-performanceTesting-commands",
+        "//libraries/allure/java-commons:libraries-allure-java-commons",
+        "//plugins/performanceTesting/event-bus:tools-ide-starter-bus",
+    ],
+    deps = [
+        # do not sort,
+        "//libraries/kotlinx/coroutines/core",
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlin/reflect",
+        "//libraries/jackson/jackson",
+        "//libraries/jackson/databind",
+        "//libraries/jackson/module-kotlin:libraries-jackson-module-kotlin",
+        "//libraries/http-client",
+        "//platform/core-api:core",
+        "//platform/platform-impl:ide-impl",
+        "//platform/eel",
+        "//libraries/kodein-di-jvm",
+        "//libraries/qodana/sarif",
+        "//platform/lang-impl",
+        "//plugins/performanceTesting/commands-model:tools-ide-performanceTesting-commands",
+        "//libraries/jetbrains/annotations",
+        "//libraries/monte-screen-recorder",
+        "//libraries/allure/java-commons:libraries-allure-java-commons",
+        "//platform/testFramework/common",
+        "//tools/intellij.tools.ide.util.common:ide-util-common",
+        "//plugins/performanceTesting/event-bus:tools-ide-starter-bus",
+        "//libraries/opentelemetry",
+        "//libraries/oshi-core",
+        "//platform/runtime/repository",
+        "//libraries/commons/compress",
+        "//libraries/commons/io",
+        "//platform/platform-util-io:ide-util-io",
+        "//platform/util:util-ui",
+        "//platform/util-ex",
+        "//jps/model-serialization",
+        "//platform/testFramework/teamCity",
+        "//platform/eel-nioFs",
+        "//platform/projectModel-api:projectModel",
+    ],
+)
+### auto-generated section `build intellij.tools.ide.starter` end
+
+### auto-generated section `iml intellij.tools.ide.starter` start
+exports_files(
+    [
+        "intellij.tools.ide.starter.iml",
+        "resources/ide.general.xml",
+        "resources/intellij.tools.ide.starter.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.tools.ide.starter` end

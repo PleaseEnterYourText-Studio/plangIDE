@@ -1,0 +1,141 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+filegroup(
+    name = "testSnapshots",
+    srcs = glob(["testSnapshots/**"]),
+    visibility = ["//visibility:public"],
+)
+
+jps_test(
+    name = "objectSerializer-tests_test",
+    timeout = "moderate",
+    data = [":testSnapshots"],
+    tags = ["community-aggregator"],
+    runtime_deps = [":objectSerializer-tests_test_lib"],
+)
+
+### skip generation section `test intellij.platform.objectSerializer.tests`
+
+### auto-generated section `dev intellij.platform.objectSerializer` start
+content_module_jar(module = ":object-serializer")
+### auto-generated section `dev intellij.platform.objectSerializer` end
+
+### auto-generated section `build intellij.platform.objectSerializer` start
+jvm_library(
+    name = "object-serializer",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.objectSerializer",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/ion",
+        "//platform/util",
+        "//libraries/kotlin/reflect",
+        "//platform/util/jdom",
+        "//platform/util-ex",
+        "//platform/core-api:core",
+        "//platform/projectModel-api:projectModel",
+        "//platform/object-serializer:objectSerializer-annotations",
+        "//libraries/lz4",
+        "//libraries/fastutil",
+        "//libraries/kotlinx/serialization/core",
+        "//libraries/kotlinx/serialization/json",
+        "//platform/util/xmlDom",
+        "//platform/util/base",
+        "//platform/settings",
+    ],
+)
+### auto-generated section `build intellij.platform.objectSerializer` end
+
+### auto-generated section `iml intellij.platform.objectSerializer` start
+exports_files(
+    [
+        "intellij.platform.objectSerializer.iml",
+        "resources/intellij.platform.objectSerializer.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.objectSerializer` end
+
+### auto-generated section `build intellij.platform.objectSerializer.annotations` start
+jvm_library(
+    name = "objectSerializer-annotations",
+    srcs = glob(
+        [
+            "annotations/**/*.kt",
+            "annotations/**/*.java",
+            "annotations/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = "@community//:k8",
+    module_name = "intellij.platform.objectSerializer.annotations",
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `build intellij.platform.objectSerializer.annotations` end
+
+### auto-generated section `iml intellij.platform.objectSerializer.annotations` start
+exports_files(
+    [
+        "intellij.platform.objectSerializer.annotations.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.objectSerializer.annotations` end
+
+### auto-generated section `build intellij.platform.objectSerializer.tests` start
+jvm_library(
+    name = "objectSerializer-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "testInternalSrc/**/*.kt",
+            "testInternalSrc/**/*.java",
+            "testInternalSrc/**/*.form",
+            "testSrc/**/*.kt",
+            "testSrc/**/*.java",
+            "testSrc/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    associates = ["//platform/object-serializer"],
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//platform/testFramework",
+        "//platform/bazel-runfiles",
+        "//libraries/junit4",
+        "//platform/testFramework/extensions:testExtensions",
+        "//libraries/assertj-core",
+        "//platform/util-ex",
+        "//platform/util/base",
+        "//platform/object-serializer:objectSerializer-annotations",
+        "//libraries/ion",
+        "//libraries/fastutil",
+    ],
+)
+### auto-generated section `build intellij.platform.objectSerializer.tests` end
+
+### auto-generated section `iml intellij.platform.objectSerializer.tests` start
+exports_files(
+    [
+        "intellij.platform.objectSerializer.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.objectSerializer.tests` end

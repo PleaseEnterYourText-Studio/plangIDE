@@ -1,0 +1,88 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+jps_test(
+    name = "propertyBased-tests_test",
+    jvm_flags = [
+        ## mirror settings set by org.jetbrains.intellij.build.impl.TestingTasksImpl.prepareEnvForTestRun
+        "-Djavax.xml.parsers.SAXParserFactory=com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl",
+    ],
+    tags = ["exploratory-tests"],
+    runtime_deps = [":propertyBased-tests_test_lib"],
+)
+### skip generation section `test intellij.properties.propertyBased.tests`
+
+### auto-generated section `build intellij.properties.propertyBased.tests` start
+jvm_library(
+    name = "propertyBased-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "testSrc/**/*.kt",
+            "testSrc/**/*.java",
+            "testSrc/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.properties.propertyBased.tests",
+    resource_strip_prefix = "testResources",
+    resources = glob(
+        ["testResources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    exports = ["//plugins/properties:properties-backend"],
+    deps = [
+        # do not sort,
+        "//plugins/properties/tests:tests_test_lib",
+        "//platform/analysis-api:analysis",
+        "//platform/code-style-api:codeStyle",
+        "//platform/core-api:core",
+        "//platform/diff-api:diff",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/indexing-api:indexing",
+        "//jps/model-api:model",
+        "//platform/lang-api:lang",
+        "//platform/platform-api:ide",
+        "//platform/lang-core",
+        "//platform/lang-impl",
+        "//platform/platform-impl:ide-impl",
+        "//platform/ide-core",
+        "//platform/projectModel-api:projectModel",
+        "//platform/refactoring",
+        "//platform/structure-view-impl:structureView",
+        "//platform/testFramework",
+        "//platform/util/diff",
+        "//platform/util:util-ui",
+        "//spellchecker",
+        "//plugins/grazie/src:core",
+        "//java/openapi:java",
+        "//xml/impl",
+        "//plugins/properties:properties-backend",
+        "//java/testFramework",
+        "//platform/platform-tests:tests_test_lib",
+        "//platform/boot",
+        "//platform/core-ui",
+        "//platform/core-impl",
+        "//plugins/properties/properties-psi-impl:backend-psi",
+        "//libraries/assertj-core",
+        "//platform/structuralsearch:structuralSearch-tests_test_lib",
+        "//tools/intellij.tools.ide.metrics.benchmark:ide-metrics-benchmark",
+        "//platform/diff-impl",
+        "//xml/xml-psi-api:psi",
+        "//libraries/fastutil",
+        "//libraries/jetcheck",
+        "//libraries/kotlinx/collections-immutable:libraries-kotlinx-collections-immutable",
+        "//platform/util/concurrency",
+        "//libraries/junit4",
+    ],
+)
+### auto-generated section `build intellij.properties.propertyBased.tests` end
+
+### auto-generated section `iml intellij.properties.propertyBased.tests` start
+exports_files(
+    [
+        "intellij.properties.propertyBased.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.properties.propertyBased.tests` end

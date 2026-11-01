@@ -1,0 +1,117 @@
+load("@community//build:bazel_targets_json.bzl", "current_bazel_targets_json")
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+BAZEL_TARGETS_JSON = current_bazel_targets_json()
+
+jps_test(
+    name = "model-serialization-tests_test",
+    timeout = "short",
+    data = [
+        ":testData",
+        BAZEL_TARGETS_JSON,
+    ],
+    jvm_flags = [
+        "-Dintellij.build.bazel.targets.json.file=$(rlocationpath %s)" % BAZEL_TARGETS_JSON,
+    ],
+    tags = ["community-compiler-test"],
+    runtime_deps = [":model-serialization-tests_test_lib"],
+)
+### skip generation section `test intellij.platform.jps.model.serialization.tests`
+
+filegroup(
+    name = "testData",
+    srcs = glob(["testData/**"]),
+    visibility = ["//visibility:public"],
+)
+
+### auto-generated section `build intellij.platform.jps.model.serialization` start
+jvm_library(
+    name = "model-serialization",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = "@community//:k11",
+    module_name = "intellij.platform.jps.model.serialization",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/util",
+        "//jps/model-api:model",
+        "//libraries/fastutil",
+        "//platform/util/jdom",
+        "//platform/util/base/multiplatform",
+        "//platform/util/base",
+        "//libraries/opentelemetry",
+        "//libraries/opentelemetry-semconv",
+        "//libraries/kotlinx/coroutines/core",
+    ],
+)
+### auto-generated section `build intellij.platform.jps.model.serialization` end
+
+### auto-generated section `iml intellij.platform.jps.model.serialization` start
+exports_files(
+    [
+        "intellij.platform.jps.model.serialization.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.jps.model.serialization` end
+
+### auto-generated section `build intellij.platform.jps.model.serialization.tests` start
+jvm_library(
+    name = "model-serialization-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "testSrc/**/*.kt",
+            "testSrc/**/*.java",
+            "testSrc/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.jps.model.serialization.tests",
+    resource_strip_prefix = "testResources",
+    resources = glob(
+        ["testResources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    runtime_deps = ["//platform/workspace/jps"],
+    deps = [
+        # do not sort,
+        "//jps/model-api:model",
+        "//platform/testFramework/junit5",
+        "//jps/model-serialization",
+        "//jps/model-impl:model-tests_test_lib",
+        "//platform/testFramework/extensions:testExtensions",
+        "@lib//:kotlin-stdlib",
+        "//libraries/assertj-core",
+        "//platform/testFramework",
+        "//platform/bazel-runfiles",
+        "//platform/util/jdom",
+        "//platform/projectModel-impl",
+        "//jps/model-test-framework:model-testFramework",
+        "//platform/util/base",
+        "//libraries/junit4",
+        "//libraries/junit6",
+    ],
+)
+### auto-generated section `build intellij.platform.jps.model.serialization.tests` end
+
+### auto-generated section `iml intellij.platform.jps.model.serialization.tests` start
+exports_files(
+    [
+        "intellij.platform.jps.model.serialization.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.jps.model.serialization.tests` end

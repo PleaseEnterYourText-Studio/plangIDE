@@ -1,0 +1,62 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//build:compiler-options.bzl", "create_kotlinc_options")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.python.spellchecker` start
+content_module_jar(module = ":spellchecker")
+### auto-generated section `dev intellij.python.spellchecker` end
+
+### auto-generated section `build intellij.python.spellchecker` start
+create_kotlinc_options(
+    name = "custom_spellchecker",
+    warn = "error",
+    x_warning_level = ["DEPRECATION:warning"],
+)
+
+jvm_library(
+    name = "spellchecker",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = ":custom_spellchecker",
+    module_name = "intellij.python.spellchecker",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/jetbrains/annotations",
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//platform/core-ui",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/ide-core",
+        "//platform/projectModel-api:projectModel",
+        "//platform/util",
+        "//spellchecker",
+        "//python/python-ast:ast",
+        "//python/python-psi-api:psi",
+        "//python/python-psi-impl:psi-impl",
+        "//python/python-pyproject:pyproject",
+        "//python/python-sdk/backend",
+    ],
+)
+### auto-generated section `build intellij.python.spellchecker` end
+
+### auto-generated section `iml intellij.python.spellchecker` start
+exports_files(
+    [
+        "intellij.python.spellchecker.iml",
+        "resources/intellij.python.spellchecker.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.python.spellchecker` end

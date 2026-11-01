@@ -1,0 +1,63 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.java.compiler` start
+content_module_jar(module = ":java-compiler")
+### auto-generated section `dev intellij.java.compiler` end
+
+### auto-generated section `build intellij.java.compiler` start
+jvm_library(
+    name = "java-compiler",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.java.compiler",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    exports = ["//platform/workspace/jps"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//java/openapi:java",
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//platform/editor-ui-api:editor-ui",
+        "//jps/model-api:model",
+        "//platform/lang-core",
+        "//platform/util/jdom",
+        "//platform/util:util-ui",
+        "//platform/external-system-api:externalSystem",
+        "//platform/core-ui",
+        "//platform/workspace/storage",
+        "//platform/projectModel-api:projectModel",
+        "//platform/workspace/jps",
+        "//platform/execution",
+        "//platform/ide-core",
+        "//platform/platform-api:ide",
+        "//platform/lang-api:lang",
+        "//java/java-psi-api:psi",
+        "//java/java-syntax:syntax",
+        "//platform/lang-impl",
+        "//platform/buildView",
+        "//platform/backend/workspace",
+    ],
+)
+### auto-generated section `build intellij.java.compiler` end
+
+### auto-generated section `iml intellij.java.compiler` start
+exports_files(
+    [
+        "intellij.java.compiler.iml",
+        "resources/intellij.java.compiler.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.java.compiler` end

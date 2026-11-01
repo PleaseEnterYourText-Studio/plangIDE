@@ -1,0 +1,114 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//build:compiler-options.bzl", "create_kotlinc_options")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.kotlin.projectConfiguration` start
+content_module_jar(module = ":project-configuration")
+### auto-generated section `dev intellij.kotlin.projectConfiguration` end
+
+### auto-generated section `build intellij.kotlin.projectConfiguration` start
+create_kotlinc_options(
+    name = "custom_project-configuration",
+    opt_in = [
+        "org.jetbrains.kotlin.psi.KtExperimentalApi",
+        "org.jetbrains.kotlin.psi.KtNonPublicApi",
+        "org.jetbrains.kotlin.psi.KtIdeApi",
+        "org.jetbrains.kotlin.analysis.api.KaExperimentalApi",
+        "org.jetbrains.kotlin.analysis.api.KaIdeApi",
+        "org.jetbrains.kotlin.analysis.api.KaPlatformInterface",
+        "org.jetbrains.kotlin.analysis.api.fir.diagnostics.KaUnstableDiagnosticApi",
+        "org.jetbrains.kotlin.analysis.api.KaNonPublicApi",
+        "org.jetbrains.kotlin.analysis.api.KaContextParameterApi",
+        "org.jetbrains.kotlin.analysis.api.permissions.KaAllowProhibitedAnalyzeFromWriteAction",
+    ],
+    x_context_parameters = True,
+)
+
+jvm_library(
+    name = "project-configuration",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = ":custom_project-configuration",
+    module_name = "intellij.kotlin.projectConfiguration",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinc/kotlin-compiler-common:libraries-kotlinc-kotlin-compiler-common",
+        "//libraries/kotlinc/kotlin-jps-common:libraries-kotlinc-kotlin-jps-common",
+        "//libraries/asm",
+        "//platform/analysis-api:analysis",
+        "//platform/lang-api:lang",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/platform-impl:ide-impl",
+        "//libraries/guava",
+        "//platform/indexing-api:indexing",
+        "//jps/model-api:model",
+        "//platform/lang-core",
+        "//platform/projectModel-api:projectModel",
+        "//platform/observable",
+        "//libraries/gson",
+        "//platform/ide-core-impl",
+        "//platform/ide-core",
+        "//platform/progress/shared:ide-progress",
+        "//plugins/kotlin/base/util",
+        "//platform/util/progress",
+        "//plugins/kotlin/base/psi",
+        "//plugins/kotlin/base/indices",
+        "//plugins/kotlin/base/plugin",
+        "//plugins/kotlin/base/platforms",
+        "//plugins/kotlin/base/facet",
+        "//plugins/kotlin/base/project-structure",
+        "//plugins/kotlin/base/compiler-configuration",
+        "//plugins/kotlin/base/analysis",
+        "//plugins/kotlin/base/code-insight",
+        "//plugins/kotlin/base/statistics",
+        "//platform/lang-impl",
+        "//platform/core-ui",
+        "//platform/external-system-api:externalSystem",
+        "//java/openapi:java",
+        "//java/java-psi-api:psi",
+        "//java/java-syntax:syntax",
+        "//java/idea-ui:ui",
+        "//java/java-impl:impl",
+        "//java/compiler/openapi:java-compiler",
+        "//aether-dependency-resolver",
+        "//platform/core-api:core",
+        "//platform/core-impl",
+        "//platform/util/coroutines",
+        "//libraries/maven-resolver-provider",
+        "//platform/util",
+        "//platform/util:util-ui",
+        "//platform/workspace/storage",
+        "//platform/backend/workspace",
+        "//platform/forms_rt:java-guiForms-rt",
+        "//platform/execution",
+        "//libraries/kotlinc/analysis-api-platform-interface:libraries-kotlinc-analysis-api-platform-interface",
+        "//libraries/kotlinc/analysis-api:libraries-kotlinc-analysis-api",
+        "//platform/backend/observation",
+        "//platform/util/concurrency",
+        "//platform/statistics",
+        "//jps/model-serialization",
+    ],
+)
+### auto-generated section `build intellij.kotlin.projectConfiguration` end
+
+### auto-generated section `iml intellij.kotlin.projectConfiguration` start
+exports_files(
+    [
+        "intellij.kotlin.projectConfiguration.iml",
+        "resources/intellij.kotlin.projectConfiguration.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.kotlin.projectConfiguration` end

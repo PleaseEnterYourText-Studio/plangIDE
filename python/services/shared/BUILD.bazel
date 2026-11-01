@@ -1,0 +1,109 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//build:compiler-options.bzl", "create_kotlinc_options")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+jps_test(
+    name = "python-community-services-shared-tests_test",
+    timeout = "moderate",
+    tags = ["community-aggregator"],
+    runtime_deps = [":python-community-services-shared-tests_test_lib"],
+)
+### skip generation section `test intellij.python.community.services.shared.tests`
+
+### auto-generated section `dev intellij.python.community.services.shared` start
+content_module_jar(module = ":shared")
+### auto-generated section `dev intellij.python.community.services.shared` end
+
+### auto-generated section `build intellij.python.community.services.shared` start
+create_kotlinc_options(
+    name = "custom_shared",
+    warn = "error",
+)
+
+jvm_library(
+    name = "shared",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = ":custom_shared",
+    module_name = "intellij.python.community.services.shared",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//python/openapi:community",
+        "//libraries/jetbrains/annotations",
+        "//platform/eel-provider",
+        "//python/python-exec-service/execService.python",
+        "//platform/diagnostic",
+        "//platform/util",
+    ],
+)
+### auto-generated section `build intellij.python.community.services.shared` end
+
+### auto-generated section `iml intellij.python.community.services.shared` start
+exports_files(
+    [
+        "intellij.python.community.services.shared.iml",
+        "resources/intellij.python.community.services.shared.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.python.community.services.shared` end
+
+### auto-generated section `build intellij.python.community.services.shared.tests` start
+create_kotlinc_options(
+    name = "custom_python-community-services-shared-tests",
+    warn = "error",
+    x_warning_level = ["DEPRECATION:warning"],
+)
+
+jvm_library(
+    name = "python-community-services-shared-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "tests/**/*.kt",
+            "tests/**/*.java",
+            "tests/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = ":custom_python-community-services-shared-tests",
+    module_name = "intellij.python.community.services.shared.tests",
+    resource_strip_prefix = "testResources",
+    resources = glob(
+        ["testResources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//python/openapi:community",
+        "//libraries/junit6",
+        "//libraries/kotlinx/coroutines/core",
+        "//platform/testFramework/junit5",
+        "//libraries/hamcrest",
+        "//python/services/shared",
+    ],
+)
+### auto-generated section `build intellij.python.community.services.shared.tests` end
+
+### auto-generated section `iml intellij.python.community.services.shared.tests` start
+exports_files(
+    [
+        "intellij.python.community.services.shared.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.python.community.services.shared.tests` end

@@ -1,0 +1,66 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `build intellij.kotlin.navigation.tests` start
+jvm_library(
+    name = "tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "test/**/*.kt",
+            "test/**/*.java",
+            "test/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.kotlin.navigation.tests",
+    visibility = ["//visibility:public"],
+    runtime_deps = ["//plugins/kotlin:kotlin-plugin-community-main"],
+    deps = [
+        # do not sort,
+        "//platform/analysis-api:analysis",
+        "//platform/core-ui",
+        "//platform/editor-ui-api:editor-ui",
+        "//xml/xml-psi-api:psi",
+        "@lib//:kotlin-stdlib",
+        "//java/openapi:java",
+        "//java/java-psi-api:psi",
+        "//plugins/kotlin/navigation",
+        "//java/testFramework",
+        "//plugins/kotlin/base/testFramework",
+        "//plugins/kotlin/test-framework:test-framework_test_lib",
+        "//plugins/kotlin/fir/tests:tests_test_lib",
+        "//plugins/kotlin/tests-common:common-tests_test_lib",
+        "//platform/core-api:core",
+        "//platform/lang-core",
+        "//platform/core-impl",
+        "//platform/testFramework",
+        "//platform/ide-core",
+        "@lib//:kotlinc-kotlin-compiler-tests",
+        "//libraries/kotlinc/kotlin-compiler-common:libraries-kotlinc-kotlin-compiler-common",
+        "//libraries/kotlinc/analysis-api:libraries-kotlinc-analysis-api",
+        "//libraries/kotlinc/analysis-api-k2:libraries-kotlinc-analysis-api-k2",
+        "//plugins/kotlin/base/plugin",
+        "//plugins/kotlin/base/project-structure",
+        "//plugins/kotlin/intellij.kotlin.base.test:base-test_test_lib",
+        "//libraries/junit4",
+        "//platform/scratch/plugin",
+    ],
+)
+### auto-generated section `build intellij.kotlin.navigation.tests` end
+
+### auto-generated section `iml intellij.kotlin.navigation.tests` start
+exports_files(
+    [
+        "intellij.kotlin.navigation.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.kotlin.navigation.tests` end
+
+### auto-generated section `test intellij.kotlin.navigation.tests` start
+jps_test(
+    name = "tests_test",
+    runtime_deps = [":tests_test_lib"],
+)
+### auto-generated section `test intellij.kotlin.navigation.tests` end

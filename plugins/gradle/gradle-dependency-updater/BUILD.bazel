@@ -1,0 +1,57 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.gradle.dependencyUpdater` start
+content_module_jar(module = ":dependencyUpdater")
+### auto-generated section `dev intellij.gradle.dependencyUpdater` end
+
+### auto-generated section `build intellij.gradle.dependencyUpdater` start
+jvm_library(
+    name = "dependencyUpdater",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.gradle.dependencyUpdater",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//android/gradle-dsl-kotlin",
+        "//android/gradle-dsl-toml",
+        "//android/gradle-dsl-declarative",
+        "//android/gradle-dsl-groovy",
+        "//android/gradle-dsl-android",
+    ],
+    deps = [
+        # do not sort,
+        "//plugins/gradle",
+        "//plugins/gradle:gradle-common",
+        "//platform/core-api:core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/lang-api:lang",
+        "//platform/lang-impl",
+        "//platform/external-system-api/dependency-updater",
+        "//android/gradle-dsl",
+        "//platform/core-ui",
+        "@lib//:kotlin-stdlib",
+    ],
+)
+### auto-generated section `build intellij.gradle.dependencyUpdater` end
+
+### auto-generated section `iml intellij.gradle.dependencyUpdater` start
+exports_files(
+    [
+        "intellij.gradle.dependencyUpdater.iml",
+        "resources/intellij.gradle.dependencyUpdater.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.gradle.dependencyUpdater` end

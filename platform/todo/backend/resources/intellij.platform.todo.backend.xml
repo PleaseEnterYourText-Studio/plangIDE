@@ -1,0 +1,36 @@
+<idea-plugin visibility="public">
+  <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+  <dependencies>
+    <module name="intellij.platform.todo"/>
+    <module name="intellij.platform.analysis"/>
+    <module name="intellij.platform.backend"/>
+    <module name="intellij.platform.concurrency"/>
+    <module name="intellij.platform.core"/>
+    <module name="intellij.platform.core.impl"/>
+    <module name="intellij.platform.editor.ex"/>
+    <module name="intellij.platform.editor.ui"/>
+    <module name="intellij.platform.ide.rpc"/>
+    <module name="intellij.platform.indexing"/>
+    <module name="intellij.platform.indexing.impl"/>
+    <module name="intellij.platform.lang.impl"/>
+    <module name="intellij.platform.lang.impl.backend"/>
+    <module name="intellij.platform.project"/>
+    <module name="intellij.platform.projectModel"/>
+    <module name="intellij.platform.rpc.backend"/>
+  </dependencies>
+  <!-- endregion -->
+
+  <extensions defaultExtensionNs="com.intellij">
+    <registryKey key="todo.toolwindow.split.host"
+                 defaultValue="true"
+                 description="Enables the `TODO toolwindow` implementation, optimized for Remote Development."
+                 restartRequired="true"/>
+
+    <fileBasedIndex implementation="com.intellij.psi.impl.cache.impl.todo.TodoIndex"/>
+    <projectService serviceInterface="com.intellij.psi.impl.cache.TodoCacheManager"
+                    serviceImplementation="com.intellij.psi.impl.cache.impl.IndexTodoCacheManagerImpl"
+                    overrides="true"/>
+    <platform.rpc.backend.remoteApiProvider implementation="com.intellij.platform.todo.backend.rpc.TodoRemoteApiProvider"
+                                            apiInterfaces="com.intellij.ide.todo.rpc.TodoRemoteApi"/>
+  </extensions>
+</idea-plugin>

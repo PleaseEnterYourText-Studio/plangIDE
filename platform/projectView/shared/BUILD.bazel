@@ -1,0 +1,62 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.platform.projectView` start
+content_module_jar(module = ":projectView")
+### auto-generated section `dev intellij.platform.projectView` end
+
+### auto-generated section `build intellij.platform.projectView` start
+jvm_library(
+    name = "projectView",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.projectView",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/refactoring",
+        "//platform/lang-core",
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinx/coroutines/core",
+        "//platform/platform-api:ide",
+        "//platform/core-api:core",
+        "//platform/util:util-ui",
+        "//platform/lang-impl",
+        "//platform/kernel/rpc.lite",
+        "//libraries/kotlinx/serialization/core",
+        "//platform/core-ui",
+        "//platform/project/shared:project",
+        "//platform/platform-impl:ide-impl",
+        "//platform/platform-impl/rpc",
+        "//platform/projectModel-api:projectModel",
+        "//platform/util/jdom",
+        "//platform/lang-api:lang",
+        "//platform/analysis-api:analysis",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/ide-core",
+        "//platform/util/coroutines",
+        "//platform/platform-impl/concurrency",
+        "//platform/util/concurrency",
+    ],
+)
+### auto-generated section `build intellij.platform.projectView` end
+
+### auto-generated section `iml intellij.platform.projectView` start
+exports_files(
+    [
+        "intellij.platform.projectView.iml",
+        "resources/intellij.platform.projectView.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.projectView` end

@@ -1,0 +1,73 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `build intellij.kotlin.jvm.debugger.performance.test` start
+jvm_library(
+    name = "kotlin-jvm-debugger-performance-test_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "test/**/*.kt",
+            "test/**/*.java",
+            "test/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.kotlin.jvm.debugger.performance.test",
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//xml/plugin",
+        "//platform/structure-view-impl/plugin",
+        "//plugins/kotlin:kotlin-plugin-community-main",
+        "//aether-dependency-resolver/plugin",
+        "//platform/testRunner/plugin",
+        "//platform/vcs/plugin",
+        "//community-resources:customization",
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+    ],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinc/kotlin-compiler-common:libraries-kotlinc-kotlin-compiler-common",
+        "@lib//:kotlinc-kotlin-compiler-tests",
+        "//java/debugger/jb-jdi:java-debugger-libraries-jb-jdi",
+        "//platform/core-ui",
+        "//platform/lang-core",
+        "//platform/testFramework",
+        "//tools/intellij.tools.ide.metrics.collector:ide-metrics-collector",
+        "//tools/intellij.tools.ide.metrics.benchmark:ide-metrics-benchmark",
+        "//java/debugger/openapi:java-debugger",
+        "//java/debugger/impl",
+        "//java/testFramework",
+        "//plugins/kotlin/base/testFramework",
+        "//plugins/kotlin/jvm-debugger/testFramework:testFramework_test_lib",
+        "//plugins/kotlin/base/plugin",
+        "//plugins/kotlin/tests-common:common-tests_test_lib",
+        "//platform/core-impl",
+        "//platform/core-api:core",
+        "//plugins/kotlin/jvm-debugger/test/k2/testFramework:testFramework_test_lib",
+        "//libraries/junit4",
+        "//platform/scratch/plugin",
+    ],
+)
+### auto-generated section `build intellij.kotlin.jvm.debugger.performance.test` end
+
+### auto-generated section `iml intellij.kotlin.jvm.debugger.performance.test` start
+exports_files(
+    [
+        "intellij.kotlin.jvm.debugger.performance.test.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.kotlin.jvm.debugger.performance.test` end
+
+### auto-generated section `test intellij.kotlin.jvm.debugger.performance.test` start
+jps_test(
+    name = "kotlin-jvm-debugger-performance-test_test",
+    runtime_deps = [
+        ":kotlin-jvm-debugger-performance-test_test_lib",
+        "//:main",
+    ],
+)
+### auto-generated section `test intellij.kotlin.jvm.debugger.performance.test` end

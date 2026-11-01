@@ -1,0 +1,79 @@
+load("@jps_dynamic_deps_community//:targets.bzl", "dev_dist_plugin")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `dev intellij.compilation.charts` start
+dev_dist_plugin(
+    content_modules = ["intellij.compilation.charts.jps"],
+    descriptor = "resources/META-INF/plugin.xml",
+    jars = {
+        "lib/compilation-charts.jar": ["intellij.compilation.charts"],
+        "lib/compilation-charts-jps.jar": ["intellij.compilation.charts.jps"],
+    },
+    main_module = "intellij.compilation.charts",
+)
+### auto-generated section `dev intellij.compilation.charts` end
+
+### auto-generated section `build intellij.compilation.charts` start
+jvm_library(
+    name = "compilation-charts",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.compilation.charts",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//java/compiler/impl",
+        "//platform/analysis-api:analysis",
+        "//platform/editor-ui-api:editor-ui",
+        "//jps/jps-builders:build",
+        "//platform/extensions",
+        "//platform/ide-core-impl",
+        "//platform/ide-core",
+        "//libraries/rd/framework",
+        "//platform/core-api:core",
+        "//jps/model-api:model",
+        "//platform/lang-api:lang",
+        "//platform/lang-core",
+        "@lib//:kotlin-stdlib",
+        "//platform/lang-impl",
+        "//platform/buildView",
+        "//libraries/jackson3/jackson:libraries-jackson3",
+        "//libraries/jackson3/databind",
+        "//libraries/jackson3/module-kotlin:libraries-jackson3-module-kotlin",
+        "//libraries/rd/core",
+        "//libraries/rd/swing",
+        "//libraries/kotlinx/coroutines/core",
+        "//platform/projectModel-api:projectModel",
+        "//platform/rd-platform-community:rd-community",
+        "//libraries/kotlinx/collections-immutable:libraries-kotlinx-collections-immutable",
+        "//platform/core-ui",
+        "//platform/platform-api:ide",
+        "//platform/util/concurrency",
+        "//java/idea-ui:ui",
+        "//platform/platform-impl:ide-impl",
+        "//platform/execution",
+        "//platform/consoleView",
+        "//platform/util:util-ui",
+    ],
+)
+### auto-generated section `build intellij.compilation.charts` end
+
+### auto-generated section `iml intellij.compilation.charts` start
+exports_files(
+    [
+        "intellij.compilation.charts.iml",
+        "resources/META-INF/plugin.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.compilation.charts` end

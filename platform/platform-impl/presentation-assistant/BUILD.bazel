@@ -1,0 +1,57 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.platform.ide.presentationAssistant` start
+content_module_jar(module = ":presentation-assistant")
+### auto-generated section `dev intellij.platform.ide.presentationAssistant` end
+
+### auto-generated section `build intellij.platform.ide.presentationAssistant` start
+jvm_library(
+    name = "presentation-assistant",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.ide.presentationAssistant",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    runtime_deps = ["//platform/platform-resources-en:resources-en"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/jetbrains/annotations",
+        "//libraries/kotlinx/coroutines/core",
+        "//platform/core-api:core",
+        "//platform/core-impl",
+        "//platform/core-ui",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/platform-api:ide",
+        "//platform/ide-core",
+        "//platform/ide-core-impl",
+        "//platform/platform-impl:ide-impl",
+        "//platform/observable",
+        "//platform/platform-impl/ui",
+        "//platform/projectModel-api:projectModel",
+        "//platform/util",
+        "//platform/util/coroutines",
+        "//platform/util:util-ui",
+    ],
+)
+### auto-generated section `build intellij.platform.ide.presentationAssistant` end
+
+### auto-generated section `iml intellij.platform.ide.presentationAssistant` start
+exports_files(
+    [
+        "intellij.platform.ide.presentationAssistant.iml",
+        "resources/intellij.platform.ide.presentationAssistant.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.ide.presentationAssistant` end

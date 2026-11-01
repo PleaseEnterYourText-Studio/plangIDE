@@ -1,0 +1,221 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@jps_dynamic_deps_community//:targets.bzl", "dev_dist_plugin")
+load("@rules_jvm//:jvm.bzl", "jvm_library", "resourcegroup")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+jps_test(
+    name = "vcs-github-tests_test",
+    timeout = "moderate",
+    tags = ["community-aggregator"],
+    runtime_deps = [":vcs-github-tests_test_lib"],
+)
+### skip generation section `test intellij.vcs.github.tests`
+
+### auto-generated section `dev intellij.vcs.github` start
+content_module_jar(module = ":vcs-github")
+
+dev_dist_plugin(
+    content_modules = [
+        # do not sort,
+        "intellij.vcs.github.git",
+        "intellij.vcs.github.ultimatePromo",
+        "intellij.vcs.github.tracker",
+        "intellij.vcs.github.json",
+    ],
+    main_module = "intellij.vcs.github",
+)
+### auto-generated section `dev intellij.vcs.github` end
+
+### auto-generated section `build intellij.vcs.github` start
+resourcegroup(
+    name = "vcs-github_resources",
+    srcs = glob(
+        ["gen-resources/**/*"],
+    ),
+    strip_prefix = "gen-resources",
+)
+
+jvm_library(
+    name = "vcs-github",
+    srcs = glob(
+        [
+            "gen/**/*.kt",
+            "gen/**/*.java",
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.vcs.github",
+    resource_jars = [":vcs-github_resources"],
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+        allow_empty = True,
+        exclude = ["resources/**/icon-robots.txt"],
+    ),
+    visibility = ["//visibility:public"],
+    exports = ["//plugins/git4idea/hosting"],
+    deps = [
+        # do not sort,
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//platform/credential-store",
+        "//platform/diff-api:diff",
+        "//platform/lvcs-api:lvcs",
+        "//platform/projectModel-api:projectModel",
+        "//platform/util/diff",
+        "//platform/vcs-api:vcs",
+        "//platform/external-process-auth-helper",
+        "//plugins/git4idea:vcs-git",
+        "//plugins/git4idea/backend",
+        "//plugins/git4idea/hosting",
+        "//plugins/git4idea/shared",
+        "//platform/core-impl",
+        "//platform/vcs-impl",
+        "//platform/platform-impl:ide-impl",
+        "//platform/util",
+        "//libraries/jackson3/jackson:libraries-jackson3",
+        "//platform/dvcs-impl:vcs-dvcs-impl",
+        "//platform/dvcs-api:vcs-dvcs",
+        "//platform/vcs-log/api:vcs-log",
+        "//platform/vcs-log/impl",
+        "//platform/util/progress",
+        "//libraries/guava",
+        "//platform/credential-store-ui:credentialStore-ui",
+        "//platform/lang-impl",
+        "//libraries/miglayout-swing",
+        "//libraries/jackson3/databind",
+        "//libraries/jackson3/module-kotlin:libraries-jackson3-module-kotlin",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/diff-impl",
+        "//platform/statistics",
+        "//platform/built-in-server:builtInServer-impl",
+        "//platform/built-in-server-api:builtInServer",
+        "//libraries/netty/codec-http:libraries-netty-codec-http",
+        "//platform/collaboration-tools",
+        "//libraries/netty/buffer",
+        "//platform/core-ui",
+        "//libraries/fastutil",
+        "//platform/platform-util-io:ide-util-io",
+        "//platform/platform-util-netty:ide-util-netty",
+        "//libraries/caffeine",
+        "//platform/collaboration-tools/auth",
+        "//platform/collaboration-tools/auth-base:collaborationTools-auth-base",
+        "//platform/markdown-utils",
+        "//libraries/kotlinx/coroutines/core",
+        "//libraries/markdown",
+        "//libraries/kotlinx/serialization/core",
+        "//libraries/kotlinx/serialization/json",
+        "//platform/util/coroutines",
+        "//platform/util:util-ui",
+        "//platform/util-ex",
+        "//platform/platform-impl/ui",
+        "//libraries/gson",
+        "//platform/dvcs-impl/shared",
+        "//platform/ide-core-impl",
+        "//platform/ide-core",
+        "//platform/progress/shared:ide-progress",
+        "//platform/vcs-impl/shared",
+        "//platform/lang-api:lang",
+        "//platform/util/concurrency",
+    ],
+)
+### auto-generated section `build intellij.vcs.github` end
+
+### auto-generated section `iml intellij.vcs.github` start
+exports_files(
+    [
+        "intellij.vcs.github.iml",
+        "resources/META-INF/plugin.xml",
+        "resources/intellij.vcs.github.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.vcs.github` end
+
+### auto-generated section `build intellij.vcs.github.tests` start
+jvm_library(
+    name = "vcs-github-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "test/**/*.kt",
+            "test/**/*.java",
+            "test/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    associates = ["//plugins/github/github-core:vcs-github"],
+    resource_strip_prefix = "test-resources",
+    resources = glob(
+        ["test-resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+        "//community-resources:customization",
+    ],
+    deps = [
+        # do not sort,
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//platform/diff-api:diff",
+        "//platform/projectModel-api:projectModel",
+        "//platform/util/diff",
+        "//platform/vcs-api:vcs",
+        "//plugins/git4idea/backend",
+        "//plugins/git4idea/shared",
+        "//platform/core-impl",
+        "//platform/vcs-impl",
+        "//platform/platform-impl:ide-impl",
+        "//platform/util",
+        "//libraries/jackson3/jackson:libraries-jackson3",
+        "//platform/dvcs-impl:vcs-dvcs-impl",
+        "//platform/testFramework",
+        "//xml/impl",
+        "//plugins/tasks/tasks-core/jira",
+        "//platform/vcs-tests:vcs-tests_test_lib",
+        "//platform/lang-impl",
+        "//libraries/jackson3/databind",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/diff-impl",
+        "//platform/statistics",
+        "//platform/collaboration-tools",
+        "//platform/core-ui",
+        "//libraries/kotlinx/coroutines/core",
+        "//platform/util/jdom",
+        "//libraries/kotlinc/kotlinx-serialization-compiler-plugin:libraries-kotlinc-kotlinx-serialization-compiler-plugin",
+        "//platform/util/coroutines",
+        "//platform/util:util-ui",
+        "//libraries/junit4",
+        "//libraries/kotlinx/coroutines/test",
+        "//libraries/mockk",
+        "//libraries/mockk/jvm",
+        "//libraries/classgraph",
+        "//libraries/assertj-core",
+        "//libraries/kotlin/reflect",
+        "@lib//:vcs-github-tests-apollographql-apollo-ast-jvm",
+        "//platform/ide-core",
+        "//platform/testFramework/junit5",
+        "//platform/lang-api:lang",
+        "//plugins/git4idea/testFramework:testFramework_test_lib",
+        "//platform/collaboration-tools:collaborationTools-tests_test_lib",
+        "//platform/testFramework/junit5/codeInsight",
+        "@lib//:app-cash-turbine-jvm",
+        "//libraries/junit6",
+        "//libraries/junit6-params",
+    ],
+)
+### auto-generated section `build intellij.vcs.github.tests` end
+
+### auto-generated section `iml intellij.vcs.github.tests` start
+exports_files(
+    [
+        "intellij.vcs.github.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.vcs.github.tests` end

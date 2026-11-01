@@ -1,0 +1,149 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@community//platform/build-scripts/bazel-rules:ij_plugin.bzl", "ij_plugin")
+load("@jps_dynamic_deps_community//:targets.bzl", "dev_dist_plugin")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+jps_test(
+    name = "html-tools-tests_test",
+    timeout = "moderate",
+    tags = ["community-aggregator"],
+    runtime_deps = [":html-tools-tests_test_lib"],
+)
+
+### skip generation section `test intellij.html.tools.tests`
+
+### auto-generated section `dev intellij.html.tools` start
+dev_dist_plugin(
+    descriptor = "resources/META-INF/plugin.xml",
+    jars = {
+        "lib/html-tools.jar": ["intellij.html.tools"],
+    },
+    main_module = "intellij.html.tools",
+)
+### auto-generated section `dev intellij.html.tools` end
+
+### auto-generated section `build intellij.html.tools` start
+jvm_library(
+    name = "html-tools",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.html.tools",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/analysis-api:analysis",
+        "//platform/core-api:core",
+        "//platform/lang-api:lang",
+        "//platform/core-impl",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/indexing-api:indexing",
+        "//platform/refactoring",
+        "//xml/impl",
+        "//platform/polySymbols/shared:polySymbols",
+        "//platform/polySymbols/backend",
+        "//platform/lang-impl",
+        "//images",
+        "//platform/platform-impl:ide-impl",
+        "//platform/ide-core",
+        "//xml/xml-parser:parser",
+        "//platform/indexing-impl",
+        "//xml/xml-psi-api:psi",
+        "//platform/core-ui",
+        "//xml/xml-analysis-api:analysis",
+        "//libraries/kotlinx/collections-immutable:libraries-kotlinx-collections-immutable",
+        "//platform/util:util-ui",
+    ],
+)
+### auto-generated section `build intellij.html.tools` end
+
+### auto-generated section `plugin intellij.html.tools` start
+ij_plugin(
+    name = "html-tools_plugin",
+    descriptor_module = ":html-tools",
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `plugin intellij.html.tools` end
+
+### auto-generated section `iml intellij.html.tools` start
+exports_files(
+    [
+        "intellij.html.tools.iml",
+        "resources/META-INF/plugin.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.html.tools` end
+
+### auto-generated section `build intellij.html.tools.tests` start
+jvm_library(
+    name = "html-tools-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "testSrc/**/*.kt",
+            "testSrc/**/*.java",
+            "testSrc/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.html.tools.tests",
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//spellchecker/xml/backend",
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+        "//community-resources:customization",
+    ],
+    deps = [
+        # do not sort,
+        "//plugins/htmltools:html-tools",
+        "//platform/analysis-api:analysis",
+        "//platform/code-style-api:codeStyle",
+        "//platform/core-api:core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/projectModel-api:projectModel",
+        "//xml/impl",
+        "//platform/testFramework",
+        "//spellchecker",
+        "//spellchecker/xml",
+        "//plugins/grazie/src:core",
+        "//xml/xml-psi-api:psi",
+        "//xml/tests:tests_test_lib",
+        "//platform/core-ui",
+        "//tools/intellij.tools.ide.metrics.benchmark:ide-metrics-benchmark",
+        "//platform/analysis-impl",
+        "//platform/lang-api:lang",
+        "//platform/lang-impl",
+        "//platform/structure-view-impl/plugin",
+        "//xml/xml-parser:parser",
+        "//platform/refactoring",
+        "//platform/core-impl",
+        "//xml/xml-analysis-api:analysis",
+        "//libraries/fastutil",
+        "//platform/util/concurrency",
+        "//platform/ide-core",
+        "//platform/util:util-ui",
+        "//libraries/junit4",
+        "//java/testFramework",
+    ],
+)
+### auto-generated section `build intellij.html.tools.tests` end
+
+### auto-generated section `iml intellij.html.tools.tests` start
+exports_files(
+    [
+        "intellij.html.tools.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.html.tools.tests` end

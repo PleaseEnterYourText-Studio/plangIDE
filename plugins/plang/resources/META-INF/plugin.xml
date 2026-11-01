@@ -1,0 +1,42 @@
+<!-- Copyright 2026 pLang IDE contributors. Use of this source code is governed by the Apache 2.0 license. -->
+<idea-plugin>
+  <id>org.plang.intellij</id>
+  <name>pLang</name>
+  <vendor>pLang IDE Contributors</vendor>
+  <category>Languages</category>
+  <description><![CDATA[
+    <p>Adds support for the <a href="https://github.com/PleaseEnterYourText-Studio/pLang">pLang</a> language:
+    file type for <code>.plang</code> sources, syntax highlighting, brace matching, and comments.</p>
+  ]]></description>
+
+  <dependencies>
+    <plugin id="com.intellij.modules.lang"/>
+    <module name="intellij.platform.core"/>
+    <module name="intellij.platform.core.impl"/>
+    <module name="intellij.platform.lang"/>
+    <module name="intellij.platform.lang.impl"/>
+    <module name="intellij.platform.analysis"/>
+    <module name="intellij.platform.editor.ui"/>
+    <module name="intellij.platform.ide"/>
+    <module name="intellij.platform.ide.core"/>
+    <module name="intellij.platform.ide.impl"/>
+    <module name="intellij.platform.util.ui"/>
+  </dependencies>
+
+  <!-- The namespace makes the plugin-level module dependencies visible to the internal 'jetbrains' platform modules. -->
+  <content namespace="jetbrains"/>
+
+  <resource-bundle>messages.PLangBundle</resource-bundle>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <fileType name="pLang" implementationClass="org.plang.lang.PLangFileType" fieldName="INSTANCE"
+              language="pLang" extensions="plang" icon="/icons/org/plang/plang.svg"/>
+    <lang.parserDefinition language="pLang" implementationClass="org.plang.lang.parser.PLangParserDefinition"/>
+    <lang.syntaxHighlighterFactory language="pLang" implementationClass="org.plang.lang.PLangSyntaxHighlighterFactory"/>
+    <colorSettings implementation="org.plang.lang.PLangColorSettingsPage"
+                   bundle="messages.PLangBundle" key="color.settings.plang.name"/>
+    <lang.braceMatcher language="pLang" implementationClass="org.plang.lang.PLangBraceMatcher"/>
+    <lang.commenter language="pLang" implementationClass="org.plang.lang.PLangCommenter"/>
+    <lang.quoteHandler language="pLang" implementationClass="org.plang.lang.PLangQuoteHandler"/>
+  </extensions>
+</idea-plugin>

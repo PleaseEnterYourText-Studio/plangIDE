@@ -1,0 +1,75 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library", "jvm_provided_library")
+load("//build:compiler-options.bzl", "create_kotlinc_options")
+
+### auto-generated section `build intellij.platform.jewel.markdown.intUiStandaloneStyling` start
+create_kotlinc_options(
+    name = "custom_int-ui-standalone-styling",
+    opt_in = [
+        "androidx.compose.ui.ExperimentalComposeUiApi",
+        "androidx.compose.foundation.ExperimentalFoundationApi",
+        "org.jetbrains.jewel.foundation.ExperimentalJewelApi",
+        "org.jetbrains.jewel.foundation.InternalJewelApi",
+    ],
+    x_context_parameters = True,
+    x_explicit_api_mode = "strict",
+)
+
+jvm_provided_library(
+    name = "platform_jewel_markdown_extensions_gfm-alerts_provided",
+    lib = "//platform/jewel/markdown/extensions/gfm-alerts",
+)
+
+jvm_provided_library(
+    name = "platform_jewel_markdown_extensions_gfm-tables_provided",
+    lib = "//platform/jewel/markdown/extensions/gfm-tables",
+)
+
+jvm_provided_library(
+    name = "platform_jewel_markdown_extensions_front-matter_provided",
+    lib = "//platform/jewel/markdown/extensions/front-matter",
+)
+
+jvm_library(
+    name = "int-ui-standalone-styling",
+    srcs = glob(
+        [
+            "src/main/kotlin/**/*.kt",
+            "src/main/kotlin/**/*.java",
+            "src/main/kotlin/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    kotlinc_opts = ":custom_int-ui-standalone-styling",
+    module_name = "intellij.platform.jewel.markdown.intUiStandaloneStyling",
+    resource_strip_prefix = "src/main/resources",
+    resources = glob(
+        ["src/main/resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//libraries/kotlinx/coroutines/core",
+        "//libraries/jetbrains/annotations",
+        "//platform/jewel/markdown/core",
+        "//platform/jewel/ui",
+        "//platform/jewel/foundation",
+        "//libraries/compose-runtime-desktop",
+        "//platform/jewel/int-ui/int-ui-standalone:jewel-intUi-standalone",
+        "//libraries/compose-foundation-desktop",
+        ":platform_jewel_markdown_extensions_gfm-alerts_provided",
+        ":platform_jewel_markdown_extensions_gfm-tables_provided",
+        ":platform_jewel_markdown_extensions_front-matter_provided",
+    ],
+)
+### auto-generated section `build intellij.platform.jewel.markdown.intUiStandaloneStyling` end
+
+### auto-generated section `iml intellij.platform.jewel.markdown.intUiStandaloneStyling` start
+exports_files(
+    [
+        "intellij.platform.jewel.markdown.intUiStandaloneStyling.iml",
+        "src/main/resources/intellij.platform.jewel.markdown.intUiStandaloneStyling.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.jewel.markdown.intUiStandaloneStyling` end

@@ -1,0 +1,162 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.settingsSync.core` start
+content_module_jar(module = ":settingsSync-core")
+### auto-generated section `dev intellij.settingsSync.core` end
+
+### auto-generated section `build intellij.settingsSync.core` start
+jvm_library(
+    name = "settingsSync-core",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.settingsSync.core",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+        allow_empty = True,
+        exclude = ["resources/**/icon-robots.txt"],
+    ),
+    visibility = ["//visibility:public"],
+    exports = ["//libraries/jgit"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//platform/analysis-api:analysis",
+        "//platform/util/concurrency",
+        "//platform/core-api:core",
+        "//platform/diff-api:diff",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/platform-api:ide",
+        "//platform/configuration-store-impl:configurationStore-impl",
+        "//platform/projectModel-api:projectModel",
+        "//platform/projectModel-impl",
+        "//platform/platform-impl:ide-impl",
+        "//libraries/jgit",
+        "@lib//:slf4j-api",
+        "//platform/service-container",
+        "//libraries/kotlinx/coroutines/core",
+        "//platform/core-impl",
+        "//platform/util/progress",
+        "//platform/lang-impl",
+        "//platform/util/jdom",
+        "//platform/util:util-ui",
+        "//platform/util-ex",
+        "//platform/core-ui",
+        "//platform/ide-core-impl",
+        "//platform/ide-core",
+        "//libraries/jackson3/jackson:libraries-jackson3",
+        "//libraries/jackson3/databind",
+        "//libraries/jackson3/module-kotlin:libraries-jackson3-module-kotlin",
+        "//libraries/kotlinx/serialization/core",
+        "//libraries/kotlinx/serialization/json",
+        "//platform/statistics",
+        "//platform/workspace/jps",
+        "//platform/editor-ui-ex:editor-ex",
+        "//platform/observable",
+        "//platform/progress/shared:ide-progress",
+        "//plugins/git4idea:vcs-git",
+        "//plugins/git4idea/backend",
+        "//platform/vcs-api:vcs",
+        "//platform/dvcs-impl:vcs-dvcs-impl",
+        "//platform/vcs-log/impl",
+        "//platform/vcs-log/api:vcs-log",
+        "//platform/vcs-impl",
+        "//platform/diff-impl",
+    ],
+)
+### auto-generated section `build intellij.settingsSync.core` end
+
+### auto-generated section `iml intellij.settingsSync.core` start
+exports_files(
+    [
+        "intellij.settingsSync.core.iml",
+        "resources/intellij.settingsSync.core.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.settingsSync.core` end
+
+### auto-generated section `build intellij.settingsSync.core.tests` start
+jvm_library(
+    name = "settingsSync-core-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "tests/**/*.kt",
+            "tests/**/*.java",
+            "tests/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    associates = ["//platform/settings-sync-core:settingsSync-core"],
+    resource_strip_prefix = "testResources",
+    resources = glob(
+        ["testResources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/analysis-api:analysis",
+        "//platform/code-style-api:codeStyle",
+        "//platform/util/concurrency",
+        "//platform/core-api:core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/platform-api:ide",
+        "//platform/configuration-store-impl:configurationStore-impl",
+        "//platform/projectModel-api:projectModel",
+        "//platform/projectModel-impl",
+        "//platform/platform-impl:ide-impl",
+        "//platform/service-container",
+        "//platform/testFramework",
+        "//libraries/kotlinx/coroutines/core",
+        "//libraries/kotlin/reflect",
+        "//platform/core-impl",
+        "//platform/lang-impl",
+        "//platform/util/jdom",
+        "//platform/util-ex",
+        "//platform/core-ui",
+        "//platform/ide-core-impl",
+        "//platform/ide-core",
+        "//libraries/kotlinx/serialization/core",
+        "//libraries/kotlinx/serialization/json",
+        "//libraries/kotlinx/coroutines/test",
+        "//platform/testFramework/extensions:testExtensions",
+        "//platform/workspace/jps",
+        "//platform/testFramework/junit5",
+        "//libraries/mockito",
+        "//platform/vcs-api:vcs",
+        "//platform/vcs-impl",
+        "//libraries/assertj-core",
+        "//platform/pluginSystem/testFramework",
+        "//platform/platform-tests:tests_test_lib",
+        "//platform/lang-api:lang",
+        "//libraries/junit4",
+        "//libraries/junit6",
+        "//libraries/junit6-params",
+    ],
+)
+### auto-generated section `build intellij.settingsSync.core.tests` end
+
+### auto-generated section `iml intellij.settingsSync.core.tests` start
+exports_files(
+    [
+        "intellij.settingsSync.core.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.settingsSync.core.tests` end
+
+### auto-generated section `test intellij.settingsSync.core.tests` start
+jps_test(
+    name = "settingsSync-core-tests_test",
+    runtime_deps = [":settingsSync-core-tests_test_lib"],
+)
+### auto-generated section `test intellij.settingsSync.core.tests` end

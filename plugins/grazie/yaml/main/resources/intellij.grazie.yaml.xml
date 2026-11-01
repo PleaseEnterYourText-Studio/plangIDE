@@ -1,0 +1,16 @@
+<idea-plugin>
+  <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
+  <dependencies>
+    <module name="intellij.grazie.core"/>
+    <module name="intellij.platform.core"/>
+    <module name="intellij.platform.core.impl"/>
+    <module name="intellij.platform.util.ex"/>
+    <module name="intellij.yaml"/>
+  </dependencies>
+  <!-- endregion -->
+
+  <extensions defaultExtensionNs="com.intellij.grazie">
+    <textExtractor language="yaml" implementationClass="com.intellij.grazie.ide.language.yaml.YamlTextExtractor"/>
+    <problemFilter language="yaml" implementationClass="com.intellij.grazie.ide.language.yaml.YamlProblemFilter"/>
+  </extensions>
+</idea-plugin>

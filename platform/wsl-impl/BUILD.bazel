@@ -1,0 +1,66 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.platform.wsl.impl` start
+content_module_jar(module = ":wsl-impl")
+### auto-generated section `dev intellij.platform.wsl.impl` end
+
+### auto-generated section `build intellij.platform.wsl.impl` start
+jvm_library(
+    name = "wsl-impl",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.wsl.impl",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//platform/execution",
+        "//platform/util",
+        "//libraries/kotlinx/coroutines/core",
+        "//platform/platform-util-io:ide-util-io",
+        "//platform/core-api:core",
+        "//libraries/lz4",
+        "//platform/util-ex",
+        "//libraries/ktor/utils",
+        "//libraries/ktor/io",
+        "//libraries/ktor/network-tls:libraries-ktor-network-tls",
+        "//platform/execution-impl",
+        "//platform/consoleView",
+        "//platform/platform-impl:ide-impl",
+        "//platform/macro",
+        "//platform/platform-api:ide",
+        "//platform/ide-core",
+        "//platform/util:util-ui",
+        "//platform/core-ui",
+        "//platform/projectModel-api:projectModel",
+        "//platform/eel",
+        "//platform/eel-provider",
+        "//platform/util/concurrency",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/lang-api:lang",
+        "//libraries/jediterm-core",
+        "//libraries/jediterm-ui",
+    ],
+)
+### auto-generated section `build intellij.platform.wsl.impl` end
+
+### auto-generated section `iml intellij.platform.wsl.impl` start
+exports_files(
+    [
+        "intellij.platform.wsl.impl.iml",
+        "resources/intellij.platform.wsl.impl.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.wsl.impl` end

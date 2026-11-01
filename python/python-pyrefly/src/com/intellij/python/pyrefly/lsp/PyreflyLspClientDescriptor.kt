@@ -1,0 +1,256 @@
+package com.intellij.python.pyrefly.lsp
+
+import com.intellij.codeInsight.intention.IntentionAction
+import com.intellij.execution.ExecutionException
+import com.intellij.execution.configurations.GeneralCommandLine
+import com.intellij.execution.process.BaseProcessHandler
+import com.intellij.lang.annotation.AnnotationHolder
+import com.intellij.openapi.application.readAction
+import com.intellij.openapi.application.runReadActionBlocking
+import com.intellij.openapi.components.service
+import com.intellij.openapi.diagnostic.ControlFlowException
+import com.intellij.openapi.util.TextRange
+import com.intellij.platform.lsp.api.Lsp4jServer
+import com.intellij.platform.lsp.api.LspClient
+import com.intellij.platform.lsp.api.LspServerState
+import com.intellij.platform.lsp.api.customization.LspFoldingRangeCustomizer
+import com.intellij.platform.lsp.api.customization.LspFoldingRangeDisabled
+import com.intellij.python.lsp.core.PyLspToolCustomization
+import com.intellij.python.lsp.core.PyLspToolDescriptor
+import com.intellij.python.lsp.core.PyLspToolSettings
+import com.intellij.python.lsp.core.typeEngine.PyTypeEngineUtils
+import com.intellij.python.lsp.core.utils.PyLspServerModificationTracker
+import com.intellij.python.pyrefly.PyreflyBundle
+import com.intellij.python.pyrefly.PyreflyConfiguration
+import com.intellij.python.pyrefly.PyreflyExecutableProvider
+import com.intellij.python.pyrefly.PyreflyPyTool
+import com.intellij.python.pyrefly.PyreflyUsageCollector
+import com.jetbrains.python.codeInsight.typing.PyBundledStubs
+import com.jetbrains.python.codeInsight.typing.PyTypeShed
+import com.jetbrains.python.project.PyProject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.eclipse.lsp4j.ConfigurationItem
+import org.eclipse.lsp4j.Diagnostic
+import org.eclipse.lsp4j.DidChangeConfigurationParams
+import org.eclipse.lsp4j.InitializeResult
+import java.nio.file.Path
+import kotlin.io.path.isExecutable
+
+class PyreflyLspClientDescriptor(
+  pyProject: PyProject,
+  servedProjects: List<PyProject> = listOf(pyProject),
+) : PyLspToolDescriptor(pyProject, PyreflyPyTool.getInstance(), servedProjects) {
+  override val toolConfig: PyLspToolSettings
+    get() = project.service<PyreflyConfiguration>()
+
+  override val lsp4jServerClass: Class<out Lsp4jServer>
+    get() = PyreflyLsp4jServer::class.java
+
+  override val lspCustomization: PyLspToolCustomization = object : PyLspToolCustomization(toolConfig, pyTool, project) {
+    override val foldingRangeCustomizer: LspFoldingRangeCustomizer = LspFoldingRangeDisabled
+
+    override val diagnosticsSupport: PyLspToolDiagnosticsSupport = object : PyLspToolDiagnosticsSupport() {
+      override val showSourceAndCode: Boolean
+        get() = !runsBundledPyrefly
+
+      override fun createAnnotation(
+        holder: AnnotationHolder,
+        diagnostic: Diagnostic,
+        textRange: TextRange,
+        quickFixes: List<IntentionAction>,
+      ) {
+        if (isSuppressedPyreflyDiagnostic(diagnostic)) return
+        val customizedQuickFixes = customizePyreflyQuickFixes(holder, diagnostic, textRange, quickFixes)
+        super.createAnnotation(holder, diagnostic, textRange, customizedQuickFixes)
+      }
+    }
+  }
+
+  override val lspServerListener: PyLspToolDescriptorLspServerListener = object : PyLspToolDescriptorLspServerListener() {
+    private var initialized = false
+
+    override fun serverInitialized(params: InitializeResult) {
+      super.serverInitialized(params)
+      initialized = true
+      PyreflyUsageCollector.logServerStartup(success = true, interpreter = startedInterpreterOf(pyProject))
+    }
+
+    override fun serverStopped(shutdownNormally: Boolean) {
+      super.serverStopped(shutdownNormally)
+      // The platform can report the stop after the project is gone.
+      if (project.isDisposed) return
+      if (!shutdownNormally && !initialized) {
+        PyreflyUsageCollector.logServerStartup(success = false, interpreter = startedInterpreterOf(pyProject))
+      }
+      initialized = false
+      PyLspServerModificationTracker.getInstance(project).incModificationCount()
+    }
+  }
+
+  /** The `pyrefly` of the environment runs as a plain LSP tool. */
+  override fun lspArguments(): List<String> = listOf("lsp")
+
+  override val usesSourceRoots: Boolean = true
+
+  override val usesExcludedRoots: Boolean = true
+
+  val runsBundledPyrefly: Boolean
+    get() = PyreflyPyTool.getInstance().isSelectedAsTypeEngine(project) && PyreflyPyTool.isBundledPyreflyEnabled()
+
+  override fun hasExecutable(): Boolean {
+    if (!runsBundledPyrefly) {
+      return super.hasExecutable()
+    }
+    return PyreflyExecutableProvider.executableExists()
+  }
+
+  override suspend fun resolveCommandLine(): GeneralCommandLine {
+    if (!runsBundledPyrefly) {
+      return super.resolveCommandLine()
+    }
+
+    val executable = getPyreflyPath()
+    if (!withContext(Dispatchers.IO) { executable.isExecutable() }) {
+      throw ExecutionException(PyreflyBundle.message("pyrefly.executable.unavailable", executable))
+    }
+    val workingDirectory = pyProject.baseDir
+    // The type engine sends `typeServer/*` requests, and only the TSP server answers them. That server
+    // answers the LSP requests too, so one connection serves the tool and the engine. The `lsp` server
+    // rejects `typeServer/*` with `Unknown request`, and every type is then `Any`.
+    return GeneralCommandLine(executable.toString())
+      .withWorkingDirectory(workingDirectory)
+      .withParameters(TSP_SERVER_ARGUMENT)
+  }
+
+  override fun createInitializationOptions(): Map<String, Any>? {
+    val pythonPath = startedPythonPathOf(pyProject) ?: return null
+    // The platform builds these options on its connect pool thread, which holds no lock, so the
+    // excludes are read here. The `workspace/configuration` replies only reuse them, because they
+    // run on the LSP listener thread, see [projectExcludes].
+    runReadActionBlocking {
+      refreshProjectExcludes()
+      refreshModuleRoots()
+    }
+    return buildMap {
+      put("pythonPath", pythonPath)
+      put("pyrefly", buildPyreflyClientSettings())
+      put("analysis", buildPyreflyAnalysisSettings())
+    }
+  }
+
+  /**
+   * Pyrefly's `apply_client_configuration` overwrites every known field on every call,
+   * resetting any value missing from the payload to `None`. The IDE replies to both the
+   * `initialize.initializationOptions` channel and the `workspace/configuration` request
+   * for `"python"`, so any setting we want Pyrefly to keep has to appear in **both**
+   * responses — otherwise the second response silently undoes the first.
+   *
+   * See [`apply_client_configuration`](https://github.com/facebook/pyrefly/blob/main/pyrefly/lib/lsp/non_wasm/workspace.rs)
+   * and the upstream `remove_*_clears_and_flags_modified` tests for the exact contract.
+   */
+  private fun buildPyreflyClientSettings(): Map<String, Any> = buildMap {
+    put("displayTypeErrors", "force-on")
+
+    // the default value for "typeCheckingMode" is "auto", which will often disable all error messages
+    // to keep behaviour close to pycharm, we set it to "default" instead of the default
+    put("typeCheckingMode", "default")
+    // Pyrefly keeps `extraPaths` as `search_path_from_args` and consults it before its own heuristics,
+    // which is the priority "Sources Root" has in the IDE. Content roots are deliberately left out:
+    // Pyrefly already derives them from the workspace folders, and repeating them here would lift
+    // them above typeshed in import resolution.
+    put("extraPaths", sourceRoots())
+    // The directories the user excluded, plus the modules nested in a folder of this server that it
+    // does not serve. Pyrefly would otherwise analyse such a module with the interpreter of the outer
+    // folder. Pyrefly reads this key from 1.3.0-dev.1, and an older one ignores it. See
+    // [excludedRoots] and [projectExcludes].
+    put("extraProjectExcludes", (excludedRoots() + projectExcludes()).distinct())
+
+    // Point Pyrefly at the stubs PyCharm ships, so that every declaration Pyrefly reports lies in a
+    // file PyCharm indexes: the standard library from the typeshed, and third-party stubs from the
+    // typeshed's `stubs` and from the bundled stubs, which hold one directory per distribution.
+    // With `thirdPartyStubsPaths` set, Pyrefly uses none of the stubs it bundles itself, which it
+    // would unpack into `<tmp>/pyrefly_bundled_*`. PyCharm has no root there, so
+    // `PyClass.qualifiedName` of those classes would be empty.
+    PyTypeShed.directory
+      ?.let { vf -> vf.fileSystem.getNioPath(vf)?.toString() }
+      ?.let { put("typeshedPath", it) }
+    put("thirdPartyStubsPaths", listOfNotNull(PyTypeShed.thirdPartyStubRoot, PyBundledStubs.root).mapNotNull { vf ->
+      vf.fileSystem.getNioPath(vf)?.toString()
+    })
+  }
+
+  private fun buildPyreflyAnalysisSettings(): Map<String, Any> = mapOf(
+    "completeFunctionParens" to true,
+    "typeCheckingMode" to "default",
+  )
+
+  /**
+   * Pyrefly keeps one workspace for each folder, and each workspace holds its own interpreter. It
+   * asks for the configuration of one folder at a time, so the reply holds the interpreter of that
+   * folder's module and every module gets its own. An item with no scope configures
+   * pyrefly's default workspace, which the primary module answers for.
+   *
+   * The reply carries `pythonPath` in every project, whether the server holds one module or all of
+   * them. Pyrefly resets a field the reply leaves out, see [buildPyreflyClientSettings], so a reply
+   * without it would drop the interpreter that [createInitializationOptions] sent.
+   */
+  override fun getWorkspaceConfiguration(item: ConfigurationItem): Map<String, Any> = buildMap {
+    val scopeProject = servedProjectForScope(item) ?: pyProject.takeUnless { it.residesOnModule.isDisposed }
+    scopeProject?.let(::startedPythonPathOf)?.let { put("pythonPath", it) }
+    put("pyrefly", buildPyreflyClientSettings())
+    put("analysis", buildPyreflyAnalysisSettings())
+  }
+
+  /**
+   * Computes the [projectExcludes] and the [sourceRoots] again, and tells pyrefly only when they
+   * changed. Pyrefly then asks for `workspace/configuration` again for each folder, and the replies
+   * carry the new values. It does not read the payload of the notification.
+   */
+  override suspend fun projectChangedAround(client: LspClient) {
+    // `or`, not `||`: both have to run, whichever one reports a change.
+    if (!readAction { refreshProjectExcludes() or refreshModuleRoots() }) return
+    if (client.state != LspServerState.Running) return
+    client.sendNotification { it.workspaceService.didChangeConfiguration(DidChangeConfigurationParams(emptyMap<String, Any>())) }
+    // Everything the server already answered came from the old search path and stays cached until the
+    // file changes, so ask for all of it again now that the push is on its way.
+    client.invalidateServerResults()
+    PyLspServerModificationTracker.getInstance(project).incModificationCount()
+  }
+
+  override fun startServerProcess(): BaseProcessHandler<*> {
+    // Pyrefly always runs against the module interpreter (discovery mode is no longer selectable).
+    val interpreter = currentInterpreterOf(pyProject) ?: error("Cannot find the Python interpreter of module " + module.name)
+    // Per-project check (not the single-module engine check): the Pyrefly tool runs against any
+    // native, non-read-only interpreter, including in multi-module projects (PY-89705).
+    if (!PyTypeEngineUtils.isServedInterpreter(interpreter)) {
+      error("Pyrefly is available only for native, non read-only interpreters. Current: $interpreter")
+    }
+
+    val handler = super.startServerProcess()
+    try {
+      PyreflyServerHeartbeat.getInstance(project).track(handler)
+    }
+    catch (e: Exception) {
+      // The server already runs. A failure here must not leave it without an owner.
+      if (e is ControlFlowException) {
+        handler.destroyProcess()
+        throw e
+      }
+      LOG.warn("The Pyrefly server runs without the resource heartbeat", e)
+    }
+    return handler
+  }
+
+  /** The Python binary of the interpreter that [pyProject] had when the server started, as pyrefly's `pythonPath`. */
+  private fun startedPythonPathOf(pyProject: PyProject): String? = startedInterpreterOf(pyProject)?.pythonBinary?.toString()
+
+  private companion object {
+    const val TSP_SERVER_ARGUMENT = "tsp"
+    const val PYREFLY_BINARY_PATH_PROPERTY = "pyrefly.binary.path"
+
+    suspend fun getPyreflyPath(): Path =
+      System.getProperty(PYREFLY_BINARY_PATH_PROPERTY)?.takeIf { it.isNotBlank() }?.let(Path::of)
+      ?: PyreflyExecutableProvider.getExecutable()
+  }
+}

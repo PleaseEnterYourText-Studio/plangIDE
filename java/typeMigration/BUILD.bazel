@@ -1,0 +1,133 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+jps_test(
+    name = "typeMigration-tests_test",
+    timeout = "long",
+    tags = ["community-aggregator"],
+    runtime_deps = [":typeMigration-tests_test_lib"],
+)
+### skip generation section `test intellij.java.typeMigration.tests`
+
+### auto-generated section `dev intellij.java.typeMigration` start
+content_module_jar(module = ":typeMigration")
+### auto-generated section `dev intellij.java.typeMigration` end
+
+### auto-generated section `build intellij.java.typeMigration` start
+jvm_library(
+    name = "typeMigration",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.java.typeMigration",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/analysis-api:analysis",
+        "//platform/code-style-api:codeStyle",
+        "//platform/core-api:core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/refactoring",
+        "//platform/util",
+        "//platform/lang-api:lang",
+        "//platform/lang-impl",
+        "//java/openapi:java",
+        "//platform/structuralsearch:structuralSearch",
+        "//java/java-syntax:syntax",
+        "//java/java-psi-api:psi",
+        "//java/java-impl:impl",
+        "//java/java-impl-refactorings:impl-refactorings",
+        "//java/codeserver/highlighting",
+        "//java/java-frontback-psi-api:frontback-psi",
+        "//libraries/fastutil",
+        "//libraries/kotlinx/collections-immutable:libraries-kotlinx-collections-immutable",
+        "//jps/model-api:model",
+        "//platform/core-impl",
+    ],
+)
+### auto-generated section `build intellij.java.typeMigration` end
+
+### auto-generated section `iml intellij.java.typeMigration` start
+exports_files(
+    [
+        "intellij.java.typeMigration.iml",
+        "resources/META-INF/TypeMigration.xml",
+        "resources/intellij.java.typeMigration.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.java.typeMigration` end
+
+### auto-generated section `build intellij.java.typeMigration.tests` start
+jvm_library(
+    name = "typeMigration-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "test/**/*.kt",
+            "test/**/*.java",
+            "test/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.java.typeMigration.tests",
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//platform/vcs/plugin",
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+        "//community-resources:customization",
+        "//xml/plugin",
+    ],
+    deps = [
+        # do not sort,
+        "//platform/analysis-api:analysis",
+        "//platform/code-style-api:codeStyle",
+        "//platform/core-api:core",
+        "//platform/core-ui",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/refactoring",
+        "//platform/util",
+        "//platform/lang-api:lang",
+        "//platform/lang-impl",
+        "//java/openapi:java",
+        "//platform/structuralsearch/plugin",
+        "//java/structuralsearch-java:structuralSearch",
+        "//platform/structure-view-impl/plugin",
+        "//platform/todo/plugin",
+        "//java/java-syntax:syntax",
+        "//java/java-psi-api:psi",
+        "//platform/testFramework",
+        "//platform/testRunner/plugin",
+        "//java/java-impl:impl",
+        "//java/testFramework",
+        "//platform/code-style-impl:codeStyle-impl",
+        "//java/java-impl-refactorings:impl-refactorings",
+        "//platform/projectModel-api:projectModel",
+        "//libraries/fastutil",
+        "//java/typeMigration",
+        "//java/java-frontback-psi-api:frontback-psi",
+        "//aether-dependency-resolver/plugin",
+        "//libraries/junit4",
+    ],
+)
+### auto-generated section `build intellij.java.typeMigration.tests` end
+
+### auto-generated section `iml intellij.java.typeMigration.tests` start
+exports_files(
+    [
+        "intellij.java.typeMigration.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.java.typeMigration.tests` end

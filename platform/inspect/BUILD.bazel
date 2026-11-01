@@ -1,0 +1,125 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+jps_test(
+    name = "inspect-tests_test",
+    timeout = "moderate",
+    tags = ["community-aggregator"],
+    runtime_deps = [":inspect-tests_test_lib"],
+)
+
+### skip generation section `test intellij.platform.inspect.tests`
+
+### auto-generated section `dev intellij.platform.inspect` start
+content_module_jar(module = ":inspect")
+### auto-generated section `dev intellij.platform.inspect` end
+
+### auto-generated section `build intellij.platform.inspect` start
+jvm_library(
+    name = "inspect",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.inspect",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    exports = ["//platform/extensions"],
+    runtime_deps = ["//platform/backend"],
+    deps = [
+        # do not sort,
+        "//platform/util/concurrency",
+        "//platform/core-api:core",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/lang-impl",
+        "//platform/util:util-ui",
+        "//platform/extensions",
+        "//platform/analysis-api:analysis",
+        "//platform/projectModel-api:projectModel",
+        "//platform/util/diff",
+        "//platform/util/jdom",
+        "//platform/analysis-impl",
+        "//platform/vcs-api/vcs-api-core:vcs-core",
+        "//platform/platform-impl:ide-impl",
+        "//platform/core-impl",
+        "//platform/projectModel-impl",
+        "//platform/diff-api:diff",
+        "//platform/vcs-api:vcs",
+        "//platform/diff-impl",
+        "//platform/boot",
+        "//libraries/cli-parser",
+        "//platform/platform-util-io:ide-util-io",
+        "//libraries/snakeyaml",
+        "//platform/ide-core-impl",
+        "//platform/ide-core",
+        "//libraries/kotlinx/coroutines/core",
+        "//libraries/jackson3/databind",
+        "//libraries/jsoup",
+        "//libraries/jackson3/jackson:libraries-jackson3",
+        "//libraries/kotlinx/serialization/json",
+        "//libraries/kotlinx/serialization/core",
+        "//platform/backend/observation",
+    ],
+)
+### auto-generated section `build intellij.platform.inspect` end
+
+### auto-generated section `iml intellij.platform.inspect` start
+exports_files(
+    [
+        "intellij.platform.inspect.iml",
+        "resources/intellij.platform.inspect.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.inspect` end
+
+### auto-generated section `build intellij.platform.inspect.tests` start
+jvm_library(
+    name = "inspect-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "test/**/*.kt",
+            "test/**/*.java",
+            "test/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.inspect.tests",
+    visibility = ["//visibility:public"],
+    runtime_deps = ["//platform/backend"],
+    deps = [
+        # do not sort,
+        "//platform/core-api:core",
+        "//platform/core-ui",
+        "//platform/lang-impl",
+        "//libraries/junit4",
+        "//platform/analysis-api:analysis",
+        "//platform/projectModel-api:projectModel",
+        "//platform/util/jdom",
+        "//platform/analysis-impl",
+        "//platform/core-impl",
+        "//platform/testFramework",
+        "//plugins/grazie",
+        "//platform/vcs/plugin",
+        "//platform/inspect",
+    ],
+)
+### auto-generated section `build intellij.platform.inspect.tests` end
+
+### auto-generated section `iml intellij.platform.inspect.tests` start
+exports_files(
+    [
+        "intellij.platform.inspect.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.inspect.tests` end

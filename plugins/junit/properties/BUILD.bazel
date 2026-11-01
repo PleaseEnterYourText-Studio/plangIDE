@@ -1,0 +1,54 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+load("//platform/build-scripts/bazel-rules:content_module_jar.bzl", "content_module_jar")
+
+### auto-generated section `dev intellij.junit.properties` start
+content_module_jar(module = ":properties")
+### auto-generated section `dev intellij.junit.properties` end
+
+### auto-generated section `build intellij.junit.properties` start
+jvm_library(
+    name = "properties",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.junit.properties",
+    resource_strip_prefix = "resources",
+    resources = glob(
+        ["resources/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    runtime_deps = ["//plugins/properties:properties-backend"],
+    deps = [
+        # do not sort,
+        "//platform/core-api:core",
+        "//platform/analysis-api:analysis",
+        "//java/java-psi-api:psi",
+        "//platform/core-impl",
+        "//java/java-psi-impl:psi-impl",
+        "//plugins/properties/properties-psi-impl:backend-psi",
+        "//platform/projectModel-api:projectModel",
+        "//java/openapi:java",
+        "//platform/code-style-api:codeStyle",
+        "//platform/editor-ui-api:editor-ui",
+        "//platform/lang-impl",
+        "//java/execution/impl",
+        "//platform/indexing-api:indexing",
+        "//json",
+    ],
+)
+### auto-generated section `build intellij.junit.properties` end
+
+### auto-generated section `iml intellij.junit.properties` start
+exports_files(
+    [
+        "intellij.junit.properties.iml",
+        "resources/intellij.junit.properties.xml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.junit.properties` end

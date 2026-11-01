@@ -1,0 +1,102 @@
+load("@community//build:bazel_targets_json.bzl", "current_bazel_targets_json")
+load("@community//build:tests-options.bzl", "jps_test")
+load("@jps_dynamic_deps_community//:targets.bzl", "ALL_COMMUNITY_TARGETS")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+BAZEL_TARGETS_JSON = current_bazel_targets_json()
+
+jps_test(
+    name = "monorepo-tests_test",
+    data = ALL_COMMUNITY_TARGETS + [BAZEL_TARGETS_JSON],
+    jvm_flags = [
+        "-Dintellij.build.bazel.targets.json.file=$(rlocationpath %s)" % BAZEL_TARGETS_JSON,
+    ],
+    runtime_deps = [":monorepo-tests_test_lib"],
+)
+### skip generation section `test intellij.platform.testFramework.monorepo.tests`
+
+### auto-generated section `build intellij.platform.testFramework.monorepo` start
+jvm_library(
+    name = "monorepo",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.testFramework.monorepo",
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//libraries/junit6-jupiter",
+        "@lib//:kotlin-stdlib",
+        "//platform/util/coroutines",
+        "//libraries/kotlinx/coroutines/core",
+        "//jps/model-api:model",
+        "//tools/apiDump",
+        "//platform/util-ex",
+        "//platform/util",
+        "//jps/model-serialization",
+        "//platform/testFramework",
+        "//platform/bazel-runfiles",
+    ],
+)
+### auto-generated section `build intellij.platform.testFramework.monorepo` end
+
+### auto-generated section `iml intellij.platform.testFramework.monorepo` start
+exports_files(
+    [
+        "intellij.platform.testFramework.monorepo.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.testFramework.monorepo` end
+
+### auto-generated section `build intellij.platform.testFramework.monorepo.tests` start
+jvm_library(
+    name = "monorepo-tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "tests/**/*.kt",
+            "tests/**/*.java",
+            "tests/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.testFramework.monorepo.tests",
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "//platform/testFramework/junit5",
+        "@lib//:kotlin-stdlib",
+        "//platform/util/coroutines",
+        "//libraries/kotlinx/coroutines/core",
+        "//libraries/kotlinx/coroutines/test",
+        "//libraries/jetbrains/annotations",
+        "//jps/model-api:model",
+        "//tools/apiDump",
+        "//platform/util/diff",
+        "//platform/util-ex",
+        "//libraries/junit6",
+        "//platform/util",
+        "//platform/testFramework/core",
+        "//jps/jps-builders:build",
+        "//platform/testFramework",
+        "//java/java-runtime:rt",
+        "//platform/runtime/repository",
+        "//platform/testFramework/monorepo",
+    ],
+)
+### auto-generated section `build intellij.platform.testFramework.monorepo.tests` end
+
+### auto-generated section `iml intellij.platform.testFramework.monorepo.tests` start
+exports_files(
+    [
+        "intellij.platform.testFramework.monorepo.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.testFramework.monorepo.tests` end

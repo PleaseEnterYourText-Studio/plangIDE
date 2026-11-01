@@ -1,0 +1,35 @@
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+### auto-generated section `build intellij.platform.testFramework.eelJava` start
+jvm_library(
+    name = "eelJava",
+    srcs = glob(
+        [
+            "src/**/*.kt",
+            "src/**/*.java",
+            "src/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.testFramework.eelJava",
+    visibility = ["//visibility:public"],
+    deps = [
+        # do not sort,
+        "@lib//:kotlin-stdlib",
+        "//platform/eel-provider",
+        "//platform/util/annotations",
+        "//platform/core-api:core",
+        "//platform/lang-core",
+        "//platform/lang-impl",
+    ],
+)
+### auto-generated section `build intellij.platform.testFramework.eelJava` end
+
+### auto-generated section `iml intellij.platform.testFramework.eelJava` start
+exports_files(
+    [
+        "intellij.platform.testFramework.eelJava.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.testFramework.eelJava` end

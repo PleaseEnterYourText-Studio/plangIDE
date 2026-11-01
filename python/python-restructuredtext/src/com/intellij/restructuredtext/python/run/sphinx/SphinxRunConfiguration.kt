@@ -1,0 +1,70 @@
+// Copyright 2000-2024 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+package com.intellij.restructuredtext.python.run.sphinx
+
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Dispatchers
+import com.intellij.openapi.application.EDT
+import com.jetbrains.python.packaging.utils.PyPackageCoroutine
+import com.intellij.execution.ExecutionException
+import com.intellij.execution.Executor
+import com.intellij.execution.configurations.ConfigurationFactory
+import com.intellij.execution.configurations.RunConfiguration
+import com.intellij.execution.configurations.RunProfileState
+import com.intellij.execution.configurations.RuntimeConfigurationError
+import com.intellij.execution.configurations.RuntimeConfigurationException
+import com.intellij.execution.runners.ExecutionEnvironment
+import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
+import com.intellij.openapi.options.SettingsEditor
+import com.intellij.openapi.project.Project
+import com.intellij.python.sdk.backend.findPythonInterpreter
+import com.intellij.restructuredtext.python.PythonRestBundle.message
+import com.intellij.restructuredtext.python.run.RestConfigurationEditor
+import com.intellij.restructuredtext.python.run.RestRunConfiguration
+import com.jetbrains.python.packaging.management.PythonPackageManager
+import com.jetbrains.python.packaging.management.hasInstalledPackageSnapshot
+
+/**
+ * User : catherine
+ */
+class SphinxRunConfiguration(
+  project: Project?,
+  factory: ConfigurationFactory?,
+) : RestRunConfiguration(project, factory) {
+  override fun createConfigurationEditor(): SettingsEditor<out RunConfiguration?> {
+    val model = SphinxTasksModel()
+    // The editor opens on the EDT, so the pdf task joins the list once the interpreter is known.
+    val sdk = sdk
+    if (!model.contains("pdf") && sdk != null) {
+      PyPackageCoroutine.launch(project) {
+        val interpreter = project.findPythonInterpreter(sdk) ?: return@launch
+        val isInstalled = PythonPackageManager.forPythonInterpreter(project, interpreter).hasInstalledPackageSnapshot("rst2pdf")
+        if (isInstalled) {
+          withContext(Dispatchers.EDT) { if (!model.contains("pdf")) model.add(13, "pdf") }
+        }
+      }
+    }
+
+    val editor = RestConfigurationEditor(project, this, model)
+    editor.setConfigurationName("Sphinx task")
+    editor.setOpenInBrowserVisible(false)
+    editor.setInputDescriptor(FileChooserDescriptorFactory.createSingleFolderDescriptor())
+    editor.setOutputDescriptor(FileChooserDescriptorFactory.createSingleFolderDescriptor())
+    return editor
+  }
+
+  @Throws(ExecutionException::class)
+  override fun getState(executor: Executor, env: ExecutionEnvironment): RunProfileState {
+    return SphinxCommandLineState(this, env)
+  }
+
+  @Throws(RuntimeConfigurationException::class)
+  override fun checkConfiguration() {
+    super.checkConfiguration()
+    if (inputFile.isNullOrBlank()) throw RuntimeConfigurationError(message("python.rest.specify.input.directory.name"))
+    if (outputFile.isNullOrBlank()) throw RuntimeConfigurationError(message("python.rest.specify.output.directory.name"))
+  }
+
+  override fun suggestedName(): String {
+    return message("python.rest.sphinx.run.cfg.default.name", name)
+  }
+}

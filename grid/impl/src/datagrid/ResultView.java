@@ -1,0 +1,195 @@
+package com.intellij.database.datagrid;
+
+import com.intellij.database.extractors.DisplayType;
+import com.intellij.database.run.ui.ResultViewFactory;
+import com.intellij.database.run.ui.grid.GridSearchSession;
+import com.intellij.database.run.ui.table.LocalFilterState;
+import com.intellij.find.FindModel;
+import com.intellij.find.SearchSession;
+import com.intellij.lang.Language;
+import com.intellij.openapi.Disposable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import javax.swing.AbstractAction;
+import javax.swing.JComponent;
+import javax.swing.KeyStroke;
+import java.awt.Component;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseListener;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
+
+public interface ResultView extends CoreResultView, GridModel.Listener<GridRow, GridColumn>, GridSearchSession.Listener, Disposable,
+                                    LocalFilterState.Listener, ColumnHierarchyListener {
+  /**
+   * The component that shows the view's main cells and receives its focus and input.
+   * {@link ResultViewFactory#wrap} returns the component that goes into the grid layout.
+   */
+  @NotNull
+  JComponent getComponent();
+
+  boolean isTransposed();
+
+  void setTransposed(boolean transposed);
+
+  void resetLayout();
+
+  void setColumnEnabled(@NotNull ModelIndex<GridColumn> columnIdx, boolean state);
+
+  default void setColumnsEnabled(@NotNull List<ModelIndex<GridColumn>> columns, boolean state) {
+    for (var column : columns) setColumnEnabled(column, state);
+  }
+
+  /** Brings the leftmost of {@code columns} into view, leaving the rows where they are. */
+  default void scrollColumnsIntoView(@NotNull List<ModelIndex<GridColumn>> columns) {
+  }
+
+  void setRowEnabled(@NotNull ModelIndex<GridRow> rowIdx, boolean state);
+
+  void showFirstCell(int rowNumOnCurrentPage);
+
+  void growSelection();
+
+  void shrinkSelection();
+
+  void addSelectionChangedListener(@NotNull Consumer<Boolean> listener);
+
+  void restoreColumnsOrder(Map<Integer, ModelIndex<GridColumn>> expectedToModel);
+
+  /** Whether the view has an active editor in any component that renders its cells. */
+  boolean isEditing();
+
+  /** The row under the mouse pointer, as a row of the view (a grid column while transposed), or -1 when there is none. */
+  default int getHoveredRow() {
+    return -1;
+  }
+
+  boolean isMultiEditingAllowed();
+
+  @NotNull
+  ModelIndexSet<GridRow> getVisibleRows();
+
+  @NotNull
+  ModelIndexSet<GridColumn> getVisibleColumns();
+
+  int getViewColumnCount();
+
+  int getViewRowCount();
+
+  boolean stopEditing();
+
+  void cancelEditing();
+
+  boolean isViewModified();
+
+  void contentLanguageUpdated(@NotNull ModelIndex<GridColumn> columnIdx, @NotNull Language language);
+
+  void displayTypeUpdated(@NotNull ModelIndex<GridColumn> columnIdx, @NotNull DisplayType displayType);
+
+  @NotNull
+  ModelIndex<GridColumn> getContextColumn();
+
+  void updateSortKeysFromColumnAttributes();
+
+  void orderingAndVisibilityChanged();
+
+  @NotNull
+  RawIndexConverter getRawIndexConverter();
+
+  void addMouseListenerToComponents(@NotNull MouseListener listener);
+
+  boolean supportsCustomSearchSession();
+
+  @Nullable
+  SearchSession createSearchSession(@Nullable FindModel findModel, @Nullable Component previousFilterComponent);
+
+  default void searchSessionStarted(@NotNull SearchSession searchSession) { }
+
+  default @NotNull JComponent getPreferredFocusedComponent() {
+    return getComponent();
+  }
+
+  default void registerEscapeAction(@NotNull AbstractAction action) {
+    String actionId = "grid.escape";
+    KeyStroke keyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+    getComponent().getInputMap(JComponent.WHEN_FOCUSED).put(keyStroke, actionId);
+    getComponent().getActionMap().put(actionId, action);
+  }
+
+  default void defaultBackgroundChanged() { }
+
+  void setValueAt(@Nullable Object v, @NotNull ModelIndex<GridRow> row, @NotNull ModelIndex<GridColumn> column, boolean allowImmediateUpdate, @NotNull GridRequestSource source);
+
+  default void setValueAt(@Nullable Object v,
+                          @NotNull ModelIndex<GridRow> row,
+                          @NotNull ModelIndex<GridColumn> column,
+                          boolean allowImmediateUpdate,
+                          @NotNull GridRequestSource source,
+                          @Nullable Object metadata) {
+    setValueAt(v, row, column, allowImmediateUpdate, source);
+  }
+
+  void columnAttributesUpdated();
+
+  void reinitSettings();
+
+  default void setVisibleRowCount(int v) {
+  }
+
+  /** Whether the columns share the width of the view instead of keeping their own widths. */
+  default void setFitColumnsToWidth(boolean v) {
+  }
+
+  default void showRowNumbers(boolean v) {
+  }
+
+  default void setTransparentColumnHeaderBackground(boolean v) {
+  }
+
+  default void setAdditionalRowsCount(int v) {
+  }
+
+  default void setShowHorizontalLines(boolean v) {
+  }
+
+  default void setShowVerticalLines(boolean v) {
+  }
+
+  default void setStriped(boolean v) {
+  }
+
+  default boolean getShowHorizontalLines() {
+    return false;
+  }
+
+  default boolean isStriped() {
+    return false;
+  }
+
+  default void setAllowMultilineLabel(boolean v) {
+  }
+
+  default void addSpaceForHorizontalScrollbar(boolean v) {
+  }
+
+  default void expandMultilineRows(boolean v) {
+  }
+
+  default void resetScroll() {
+  }
+
+  default boolean isHoveredRowBgHighlightingEnabled() {
+    return !getShowHorizontalLines() && !isStriped();
+  }
+
+  default void setHoveredRowHighlightMode(HoveredRowBgHighlightMode mode) {}
+
+
+  enum HoveredRowBgHighlightMode {
+    HIGHLIGHT,
+    NOT_HIGHLIGHT,
+    AUTO
+  }
+}

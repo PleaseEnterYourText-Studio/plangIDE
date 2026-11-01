@@ -1,0 +1,73 @@
+load("@community//build:tests-options.bzl", "jps_test")
+load("@rules_jvm//:jvm.bzl", "jvm_library")
+
+jps_test(
+    name = "tests_test",
+    timeout = "moderate",
+    tags = ["community-aggregator"],
+    runtime_deps = [":tests_test_lib"],
+)
+
+### skip generation section `test intellij.platform.polySymbols.tests`
+
+### auto-generated section `build intellij.platform.polySymbols.tests` start
+jvm_library(
+    name = "tests_test_lib",
+    testonly = True,
+    srcs = glob(
+        [
+            "testSrc/**/*.kt",
+            "testSrc/**/*.java",
+            "testSrc/**/*.form",
+        ],
+        allow_empty = True,
+    ),
+    module_name = "intellij.platform.polySymbols.tests",
+    resource_strip_prefix = "testData",
+    resources = glob(
+        ["testData/**/*"],
+    ),
+    visibility = ["//visibility:public"],
+    runtime_deps = [
+        # do not sort,
+        "//platform/main/intellij.platform.monolith.main:monolith-main",
+        "//community-resources:customization",
+    ],
+    deps = [
+        # do not sort,
+        "//platform/analysis-api:analysis",
+        "//platform/lang-impl",
+        "//platform/platform-impl:ide-impl",
+        "//platform/core-ui",
+        "//platform/core-impl",
+        "//platform/editor-ui-ex:editor-ex",
+        "//libraries/junit4",
+        "//platform/testFramework/junit5",
+        "//platform/core-api:core",
+        "//platform/usageView",
+        "//platform/refactoring",
+        "//platform/analysis-impl",
+        "//libraries/fastutil",
+        "//libraries/commons/compress",
+        "//libraries/markdown",
+        "//libraries/gson",
+        "//platform/markdown-utils",
+        "//platform/testFramework",
+        "//platform/polySymbols/shared:polySymbols",
+        "//platform/polySymbols/backend",
+        "//platform/polySymbols/web",
+        "//platform/polySymbols/testFramework",
+        "//java/java-runtime:rt",
+        "//libraries/junit6",
+    ],
+)
+### auto-generated section `build intellij.platform.polySymbols.tests` end
+
+### auto-generated section `iml intellij.platform.polySymbols.tests` start
+exports_files(
+    [
+        "intellij.platform.polySymbols.tests.iml",
+    ],
+    visibility = ["//visibility:public"],
+)
+### auto-generated section `iml intellij.platform.polySymbols.tests` end
