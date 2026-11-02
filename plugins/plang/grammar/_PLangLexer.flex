@@ -45,7 +45,7 @@ BIN_LITERAL=0[bB][01_]+
 FLOAT_LITERAL=(({DIGITS}\.{DIGITS}?|\.{DIGITS})({EXPONENT})?|{DIGITS}{EXPONENT})[fF]?|{DIGITS}[fF]
 INT_LITERAL={DIGITS}(ll|LL|[lL])?
 
-IDENTIFIER=[:letter:][:letter:\d_]*
+IDENTIFIER=[a-zA-Z_][a-zA-Z0-9_]*
 
 %%
 
