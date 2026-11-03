@@ -46,6 +46,7 @@ The build adds no proprietary JetBrains plugin.
 
 ## Known limits
 
-- The parser accepts every token stream and does not report syntax errors yet.
+- The parser builds a tolerant top-level tree. It reports an unclosed `}` or `)` or `]` and a missing `;`,
+  but it does not check names or types.
 - The pre-built native launchers keep the resources that the upstream build signs them with.
 - Some UI texts from upstream plugins can still mention IntelliJ IDEA.
